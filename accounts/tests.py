@@ -56,6 +56,17 @@ class AuthenticationTests(APITestCase):
         self.assertIn('access', response.data)
         self.assertIn('refresh', response.data)
 
+    def test_user_login_user_not_exist(self):
+        """Test user login with invalid credentials"""
+        data = {
+            'username': 'testuserdoesnotexist',
+            'password': 'testpass123'
+        }
+
+        response = self.client.post(self.login_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data, {'error': 'Invalid credentials'})
+
     def test_user_login_invalid_credentials(self):
         """Test user login with invalid credentials"""
         data = {
@@ -65,6 +76,16 @@ class AuthenticationTests(APITestCase):
 
         response = self.client.post(self.login_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data, {'error': 'Invalid credentials'})
+
+    def test_user_login_bad_request(self):
+        """Test user login without required credentials"""
+        data = {
+            'username': 'testuser',
+        }
+
+        response = self.client.post(self.login_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_profile_authenticated(self):
         """Test getting user profile when authenticated"""
@@ -74,8 +95,8 @@ class AuthenticationTests(APITestCase):
 
         response = self.client.get(self.profile_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['username'], 'testuser')
-        self.assertEqual(response.data['email'], 'test@example.com')
+        self.assertEqual(response.data['username'], self.test_user.username)
+        self.assertEqual(response.data['email'], self.test_user.email)
 
     def test_get_profile_unauthenticated(self):
         """Test getting user profile when not authenticated"""
@@ -93,8 +114,8 @@ class AuthenticationTests(APITestCase):
 
         response = self.client.put(self.profile_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['email'], 'testing@test.com')
+        self.assertEqual(response.data['email'], data['email'])
 
         # Verify the database was updated
         self.test_user.refresh_from_db()
-        self.assertEqual(self.test_user.email, 'testing@test.com')
+        self.assertEqual(self.test_user.email, data['email'])

@@ -44,7 +44,7 @@ class LoginView(APIView):
 
             return Response({
                 'error': 'Invalid credentials'
-            }, status=status.HTTP_401_UNAUTHORIZED)
+                }, status=status.HTTP_401_UNAUTHORIZED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
