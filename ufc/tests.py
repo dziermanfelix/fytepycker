@@ -16,11 +16,9 @@ class UfcTests(APITestCase):
 
         self.upcoming_url = reverse('api:ufc:upcoming')
 
-    # def test_upcoming(self):
-    #     """Test upcoming"""
+    def test_upcoming(self):
+        """Test upcoming"""
 
-    #     response = self.client.get(self.upcoming_url, format='json')
-        # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # self.assertTrue(User.objects.filter(username='newuser').exists())
-        # self.assertIn('access', response.data)
-        # self.assertIn('refresh', response.data)
+        response = self.client.get(self.upcoming_url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(response.data, {'error': 'Unable to fetch data from UFC API'})

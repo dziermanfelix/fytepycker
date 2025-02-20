@@ -8,17 +8,14 @@ from decouple import config
 
 class UfcFightList(APIView):
     def get(self, request):
-        url = "https://ufc-data1.p.rapidapi.com/Events/FindEventsByDateRange/1-1-24/1-31-24"
+        url = "https://unofficial-tapology-api.p.rapidapi.com/api/schedule/events/69"
         headers = {
             "X-RapidAPI-Key": config('RAPID_API_KEY'),
-            "X-RapidAPI-Host": "ufc-data1.p.rapidapi.com"
+            "X-RapidAPI-Host": "unofficial-tapology-api.p.rapidapi.com"
         }
-        querystring = {"limit": "10"}
+        querystring = {"fields": "organization,datetime,broadcast,city,subregion,main_event,weight_class"}
 
         response = requests.get(url, headers=headers, params=querystring)
-        print("Status Code:", response.status_code)
-        print("Raw Response:", response.text[:500])
-        # print(response.json())
 
         if response.status_code == 200:
             upcoming_fights = response.json()
