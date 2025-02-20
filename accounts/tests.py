@@ -1,4 +1,3 @@
-from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -37,12 +36,93 @@ class AuthenticationTests(APITestCase):
     def test_user_registration_invalid_data(self):
         """Test user registration with invalid data"""
         data = {
-            'username': 'newuser',
+            'username': 'newuser90',
             'password': 'newpass123',
+            'password2': 'newpass123',
         }
 
         response = self.client.post(self.register_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'email': ['This field is required.']})
+
+    def test_user_registration_unmatching_passwords(self):
+        """Test user registration with passwords that do not match"""
+        data = {
+            'username': 'newuser',
+            'email': 'cool@gmail.com',
+            'password': 'newpass123',
+            'password2': 'newpass456',
+        }
+
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'password': ['Password fields do not match.']})
+
+    def test_create_invalid_username_length(self):
+        """Test user registration with username lengthy username"""
+        data = {
+            'username': 'testusertestusertestusertestusertestuser',
+            'email': 'test11@example.com',
+            'password': 'testpass123',
+            'password2': 'testpass123',
+        }
+
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'username': ['Ensure this field has no more than 24 characters.']})
+
+    def test_create_duplicate_username(self):
+        """Test user registration with nonunique username"""
+        data = {
+            'username': 'testuser',
+            'email': 'test123@example.com',
+            'password': 'testpass123',
+            'password2': 'testpass123',
+        }
+
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'username': ['user with this username already exists.']})
+
+    def test_create_duplicate_email(self):
+        """Test user registration with nonunique email"""
+        data = {
+            'username': 'testuser12',
+            'email': 'test@example.com',
+            'password': 'testpass123',
+            'password2': 'testpass123',
+        }
+
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'email': ['user with this email address already exists.']})
+
+    def test_create_invalid_symbol(self):
+        """Test user registration with invalid symbol in username"""
+        data = {
+            'username': 'user!@#$%^',
+            'email': 'test1@example.com',
+            'password': 'testpass123',
+            'password2': 'testpass123',
+        }
+
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data,
+                         {'username': ['Username may contain only letters, numbers, and ./-/_ characters.']})
+
+    def test_create_invalid_email(self):
+        """Test user registration with invalid email address"""
+        data = {
+            'username': 'user1',
+            'email': 'test1@examplecom',
+            'password': 'testpass123',
+            'password2': 'testpass123',
+        }
+
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'email': ['Enter a valid email address.']})
 
     def test_user_login(self):
         """Test user login with valid credentials"""
@@ -86,10 +166,10 @@ class AuthenticationTests(APITestCase):
 
         response = self.client.post(self.login_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'password': ['This field is required.']})
 
     def test_get_profile_authenticated(self):
         """Test getting user profile when authenticated"""
-        # Get token for authentication
         refresh = RefreshToken.for_user(self.test_user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
@@ -116,6 +196,6 @@ class AuthenticationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['email'], data['email'])
 
-        # Verify the database was updated
+        # verify db
         self.test_user.refresh_from_db()
         self.assertEqual(self.test_user.email, data['email'])
