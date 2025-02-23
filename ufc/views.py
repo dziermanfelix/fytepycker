@@ -1,6 +1,8 @@
-import requests
+from rest_framework.permissions import IsAdminUser
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from playwright.sync_api import sync_playwright
 from rest_framework import status
 from .serializers import EventSerializer
 import requests
@@ -10,39 +12,37 @@ from datetime import datetime
 import pytz
 
 
-def parse_event_date(date_str):
-    date_format = "%a, %b %d / %I:%M %p"
-    date_str = date_str.rsplit(" ", 1)[0]
-    dt = datetime.strptime(date_str, date_format)
-    est = pytz.timezone("US/Eastern")
-    dt = est.localize(dt)
-    dt_utc = dt.astimezone(pytz.utc)
-    return dt_utc
-
-
 class ScraperView(APIView):
+    permission_classes = [IsAdminUser]
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+
     def get(self, request):
-        url = "https://www.ufc.com/events"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        }
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            print(f"Failed to fetch page: {response.status_code}")
-        soup = BeautifulSoup(response.content, "html.parser")
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto("https://www.ufc.com/events")
+            page.wait_for_timeout(500)
+            html_content = page.content()
+            browser.close()
+        soup = BeautifulSoup(html_content, "html.parser")
         num_events = int(soup.find("div", "althelete-total").text.split()[0])
-        fight_divs = soup.select(".c-card-event--result")[:3]
+        num_events = 3
+        fight_divs = soup.select(".c-card-event--result")[:num_events - 1]
         for fight in fight_divs:
             a_tag = fight.find("a")
             if a_tag and "href" in a_tag.attrs:
                 fight_url = "https://www.ufc.com" + a_tag["href"]
-                response = requests.get(fight_url, headers=headers)
-                soup = BeautifulSoup(response.content, "html.parser")
-                if response.status_code != 200:
-                    print(f"Failed to fetch fight page: {response.status_code}")
+                with sync_playwright() as p:
+                    browser = p.chromium.launch(headless=True)
+                    page = browser.new_page()
+                    page.goto(fight_url)
+                    page.wait_for_timeout(3000)
+                    html_content = page.content()
+                    browser.close()
+                soup = BeautifulSoup(html_content, "html.parser")
                 name = soup.find(
                     "div", class_="field field--name-node-title field--type-ds field--label-hidden field__item").find("h1").text.strip()
-                date = parse_event_date(soup.find("div", "c-hero__headline-suffix").text.strip())
+                date = self.parse_event_date(soup.find("div", "c-hero__headline-suffix").text.strip())
                 location = soup.find(
                     "div", class_="field field--name-venue field--type-entity-reference field--label-hidden field__item").text.strip().replace("\n", "")
                 event = Event.objects.get_or_create(
@@ -94,6 +94,15 @@ class ScraperView(APIView):
                 round=round
             )
             order += 1
+
+    def parse_event_date(self, date_str):
+        date_format = "%a, %b %d / %I:%M %p"
+        date_str = date_str.rsplit(" ", 1)[0]
+        dt = datetime.strptime(date_str, date_format)
+        est = pytz.timezone("US/Eastern")
+        dt = est.localize(dt)
+        dt_utc = dt.astimezone(pytz.utc)
+        return dt_utc
 
 
 class EventList(APIView):
