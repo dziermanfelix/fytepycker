@@ -14,11 +14,11 @@ class UfcTests(APITestCase):
         refresh = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
+        self.scrape_url = reverse('api:ufc:scrape')
         self.events_url = reverse('api:ufc:events')
 
-    def test_events(self):
-        """Test events"""
+    def test_scrape(self):
+        """Test scrape endpoint"""
 
-        response = self.client.get(self.events_url, format='json')
-        # self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # self.assertEqual(response.data, {'error': 'Unable to fetch data from UFC API'})
+        response = self.client.get(self.scrape_url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

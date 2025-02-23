@@ -34,7 +34,7 @@ class Fight(models.Model):
     red_img = models.URLField(blank=True, null=True)
     winner = models.CharField(max_length=255, null=True)
     method = models.CharField(max_length=255, null=True)
-    round = models.PositiveIntegerField(null=True, blank=True)
+    round = models.PositiveIntegerField(null=True)
 
     class Meta:
         constraints = [
@@ -45,4 +45,4 @@ class Fight(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.event_id}:{self.blue_name} vs. {self.red_name}'
+        return f'Event({self.event_id}):{self.blue_name} vs. {self.red_name}'

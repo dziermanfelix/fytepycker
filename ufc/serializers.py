@@ -1,8 +1,14 @@
 from rest_framework import serializers
-from .models import Event
+from .models import Event, Fight
 
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ['id', 'name', 'date', 'location', 'scraped_at']
+        fields = "__all__"
+
+
+class FightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Fight
+        fields = "__all__"
