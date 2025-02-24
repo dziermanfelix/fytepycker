@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from playwright.sync_api import sync_playwright
 from rest_framework import status
 from .serializers import EventSerializer
-import requests
 from bs4 import BeautifulSoup
 from .models import Event, Fight, FightCard
 from datetime import datetime
@@ -17,13 +16,7 @@ class ScraperView(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
     def get(self, request):
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto("https://www.ufc.com/events")
-            page.wait_for_timeout(500)
-            html_content = page.content()
-            browser.close()
+        html_content = self.get_html_content("https://www.ufc.com/events", 200)
         soup = BeautifulSoup(html_content, "html.parser")
         num_events = int(soup.find("div", "althelete-total").text.split()[0])
         num_events = 3
@@ -32,13 +25,7 @@ class ScraperView(APIView):
             a_tag = fight.find("a")
             if a_tag and "href" in a_tag.attrs:
                 fight_url = "https://www.ufc.com" + a_tag["href"]
-                with sync_playwright() as p:
-                    browser = p.chromium.launch(headless=True)
-                    page = browser.new_page()
-                    page.goto(fight_url)
-                    page.wait_for_timeout(3000)
-                    html_content = page.content()
-                    browser.close()
+                html_content = self.get_html_content(fight_url, 2000)
                 soup = BeautifulSoup(html_content, "html.parser")
                 name = soup.find(
                     "div", class_="field field--name-node-title field--type-ds field--label-hidden field__item").find("h1").text.strip()
@@ -58,6 +45,16 @@ class ScraperView(APIView):
         events = Event.objects.all()
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get_html_content(self, url, timeout):
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(url)
+            page.wait_for_timeout(timeout)
+            html_content = page.content()
+            browser.close()
+        return html_content
 
     def get_fights_for_card(self, card_listing, event, fight_card):
         main_card_fights = card_listing.select(".c-listing-fight__content") if card_listing else []
@@ -96,13 +93,12 @@ class ScraperView(APIView):
             order += 1
 
     def parse_event_date(self, date_str):
-        date_format = "%a, %b %d / %I:%M %p"
-        date_str = date_str.rsplit(" ", 1)[0]
-        dt = datetime.strptime(date_str, date_format)
-        est = pytz.timezone("US/Eastern")
-        dt = est.localize(dt)
-        dt_utc = dt.astimezone(pytz.utc)
-        return dt_utc
+        date_str = date_str.strip()
+        dt = datetime.strptime(date_str, "%a, %b %d / %I:%M %p UTC")
+        dt = dt.replace(year=datetime.now().year)
+        utc_zone = pytz.utc
+        dt = utc_zone.localize(dt)
+        return dt
 
 
 class EventList(APIView):
