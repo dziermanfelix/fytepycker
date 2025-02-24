@@ -1,14 +1,25 @@
+from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from playwright.sync_api import sync_playwright
 from rest_framework import status
-from .serializers import EventSerializer
+from .serializers import EventSerializer, FightSerializer
 from bs4 import BeautifulSoup
 from .models import Event, Fight, FightCard
 from datetime import datetime
 import pytz
+
+
+class EventList(generics.ListCreateAPIView):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+
+
+class FightList(generics.ListCreateAPIView):
+    queryset = Fight.objects.all()
+    serializer_class = FightSerializer
 
 
 class ScraperView(APIView):
@@ -99,11 +110,3 @@ class ScraperView(APIView):
         utc_zone = pytz.utc
         dt = utc_zone.localize(dt)
         return dt
-
-
-class EventList(APIView):
-    def get(self, request):
-        pass
-
-    def post(self, request):
-        pass
