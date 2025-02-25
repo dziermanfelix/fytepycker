@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { FRONTEND_URLS } from '../common/urls';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading, initialized } = useAuth();
@@ -10,7 +11,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!user) {
-    return <Navigate to='/login' state={{ from: location }} replace />;
+    return <Navigate to={FRONTEND_URLS.LOGIN} state={{ from: location }} replace />;
   }
 
   return children;

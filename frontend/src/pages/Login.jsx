@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { FRONTEND_URLS } from '../common/urls';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -24,7 +25,7 @@ const Login = () => {
 
     try {
       await login(formData);
-      navigate('/dash');
+      navigate(FRONTEND_URLS.DASH);
     } catch (err) {
       localStorage.removeItem('token');
       setError(err.response?.data?.non_field_errors?.[0] || 'Login failed. Please check your credentials.');
@@ -83,14 +84,14 @@ const Login = () => {
         <p>
           Don't have an account?{' '}
           <a
-            href='/register'
+            href={FRONTEND_URLS.REGISTER}
             className='text-blue-500 hover:text-blue-700'
             onClick={(e) => {
               e.preventDefault();
-              navigate('/register');
+              navigate(FRONTEND_URLS.REGISTER);
             }}
           >
-            Register here
+            Register
           </a>
         </p>
       </div>

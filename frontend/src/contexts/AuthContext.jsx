@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import client from '../api/client';
+import { API_URLS } from '../common/urls';
 
 const AuthContext = createContext(null);
 
@@ -10,7 +11,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const res = await client.get('/auth/user/');
+      const res = await client.get(API_URLS.USER);
       setUser(res.data);
       return res.data;
     } catch (err) {
@@ -24,14 +25,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
-    const res = await client.post('/auth/login/', credentials);
+    const res = await client.post(API_URLS.LOGIN, credentials);
     localStorage.setItem('token', res.data.access);
     await fetchUser();
     return res.data;
   };
 
   const register = async (userData) => {
-    const res = await client.post('/auth/register/', userData);
+    const res = await client.post(API_URLS.REGISTER, userData);
     localStorage.setItem('token', res.data.access);
     await fetchUser();
     return res.data;
@@ -39,7 +40,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await client.post('/auth/logout/');
+      await client.post(API_URLS.LOGOUT);
     } finally {
       localStorage.removeItem('token');
       setUser(null);

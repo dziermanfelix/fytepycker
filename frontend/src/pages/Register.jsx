@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { FRONTEND_URLS } from '../common/urls';
 
 const Register = () => {
   const { register } = useAuth();
@@ -28,7 +29,7 @@ const Register = () => {
 
     try {
       await register(formData);
-      navigate('/dash');
+      navigate(FRONTEND_URLS.DASH);
     } catch (err) {
       localStorage.removeItem('token');
       setError(err.response?.data?.password?.[0] || 'Registration failed.');
@@ -40,7 +41,7 @@ const Register = () => {
 
   return (
     <div className='max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md'>
-      <h2 className='text-2xl font-bold mb-6'>Create an Account</h2>
+      <h2 className='text-2xl font-bold mb-6'>Register</h2>
 
       {error && <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>{error}</div>}
 
@@ -96,7 +97,7 @@ const Register = () => {
             className='w-full px-3 py-2 border border-gray-300 rounded-md'
             required
           />
-          {errors.password1 && <p className='text-red-500 text-sm mt-1'>{errors.password1.join(', ')}</p>}
+          {errors.password && <p className='text-red-500 text-sm mt-1'>{errors.password.join(', ')}</p>}
         </div>
 
         <div className='mb-6'>
@@ -112,7 +113,6 @@ const Register = () => {
             className='w-full px-3 py-2 border border-gray-300 rounded-md'
             required
           />
-          {errors.password2 && <p className='text-red-500 text-sm mt-1'>{errors.password2.join(', ')}</p>}
         </div>
 
         <button
@@ -128,14 +128,14 @@ const Register = () => {
         <p>
           Already have an account?{' '}
           <a
-            href='/login'
+            href={FRONTEND_URLS.LOGIN}
             className='text-blue-500 hover:text-blue-700'
             onClick={(e) => {
               e.preventDefault();
-              navigate('/login');
+              navigate(FRONTEND_URLS.LOGIN);
             }}
           >
-            Login here
+            Login
           </a>
         </p>
       </div>
