@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer
 
 
 class RegisterView(APIView):
@@ -21,6 +21,8 @@ class RegisterView(APIView):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }, status=status.HTTP_201_CREATED)
+        else:
+            print(f'Serializer errors: {serializer.errors}')
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -44,20 +46,20 @@ class LoginView(APIView):
 
             return Response({
                 'error': 'Invalid credentials'
-                }, status=status.HTTP_401_UNAUTHORIZED)
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ProfileView(APIView):
+class UserView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        serializer = UserProfileSerializer(request.user)
+        serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
     def put(self, request):
-        serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

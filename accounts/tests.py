@@ -16,7 +16,7 @@ class AuthenticationTests(APITestCase):
         )
         self.register_url = reverse('api:accounts:register')
         self.login_url = reverse('api:accounts:login')
-        self.profile_url = reverse('api:accounts:profile')
+        self.user_url = reverse('api:accounts:user')
 
     def test_user_registration(self):
         """Test user registration with valid data"""
@@ -168,23 +168,23 @@ class AuthenticationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {'password': ['This field is required.']})
 
-    def test_get_profile_authenticated(self):
-        """Test getting user profile when authenticated"""
+    def test_get_user_authenticated(self):
+        """Test getting user when authenticated"""
         refresh = RefreshToken.for_user(self.test_user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
-        response = self.client.get(self.profile_url)
+        response = self.client.get(self.user_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['username'], self.test_user.username)
         self.assertEqual(response.data['email'], self.test_user.email)
 
-    def test_get_profile_unauthenticated(self):
-        """Test getting user profile when not authenticated"""
-        response = self.client.get(self.profile_url)
+    def test_get_user_unauthenticated(self):
+        """Test getting user user when not authenticated"""
+        response = self.client.get(self.user_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_update_profile(self):
-        """Test updating user profile"""
+    def test_update_user(self):
+        """Test updating user"""
         refresh = RefreshToken.for_user(self.test_user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
@@ -192,7 +192,7 @@ class AuthenticationTests(APITestCase):
             'email': 'testing@test.com'
         }
 
-        response = self.client.put(self.profile_url, data, format='json')
+        response = self.client.put(self.user_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['email'], data['email'])
 
