@@ -13,7 +13,7 @@ import pytz
 
 
 class EventList(generics.ListCreateAPIView):
-    queryset = Event.objects.all()
+    queryset = Event.objects.all().order_by("date")
     serializer_class = EventSerializer
 
 
@@ -78,10 +78,12 @@ class ScraperView(APIView):
                 "div", class_="c-listing-fight__corner-name--red").find("a").text.strip().replace("\n", " ")
             blue_name = fight_row.find(
                 "div", class_="c-listing-fight__corner-name--blue").find("a").text.strip().replace("\n", " ")
-            blue_img = fight_row.find("div", class_="c-listing-fight__corner-image--blue").find("a")["href"]
+            blue_img_tag = fight_row.select_one(".c-listing-fight__corner--blue .layout__region--content img")
+            blue_img = blue_img_tag["src"] if blue_img_tag else None
             red_corner = fight_row.find("div", class_="c-listing-fight__corner-body--red")
             red_winner = red_corner.find("div", class_="c-listing-fight__outcome--win")
-            red_img = fight_row.find("div", class_="c-listing-fight__corner-image--red").find("a")["href"]
+            red_img_tag = fight_row.select_one(".c-listing-fight__corner--red .layout__region--content img")
+            red_img = red_img_tag["src"] if red_img_tag else None
             winner = red_name if red_winner is not None else blue_name
             results = fight_row.find("div", class_="js-listing-fight__results")
             method_element = results.find("div", class_="c-listing-fight__result-text method")
@@ -90,16 +92,17 @@ class ScraperView(APIView):
             round = int(round_element.text.strip()) if round_element and round_element.text.strip().isdigit() else None
             fight = Fight.objects.update_or_create(
                 event_id=event.id,
-                card=fight_card,
-                order=order,
-                weight_class=weight_class,
                 blue_name=blue_name,
-                blue_img=blue_img,
                 red_name=red_name,
-                red_img=red_img,
-                winner=winner,
-                method=method,
-                round=round
+                defaults={
+                    "order": order,
+                    "weight_class": weight_class,
+                    "blue_img": blue_img,
+                    "red_img": red_img,
+                    "winner": winner,
+                    "method": method,
+                    "round": round,
+                }
             )
             order += 1
 

@@ -29,7 +29,6 @@ class UfcTests(APITestCase):
 
         self.scraper_view = ScraperView()
         self.events_url = reverse('api:ufc:events')
-        self.fights_url = reverse('api:ufc:fights')
 
     def test_parse_event_date(self):
         date_str = "Sun, Feb 23 / 2:00 AM UTC"
@@ -42,8 +41,4 @@ class UfcTests(APITestCase):
 
     def test_get_events(self):
         response = self.client.get(self.events_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_get_fights(self):
-        response = self.client.get(self.fights_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -10,4 +10,5 @@ export const API_URLS = {
   LOGIN: '/auth/login/',
   LOGOUT: '/auth/logout/',
   USER: '/auth/user/',
+  EVENTS: '/ufc/events/'
 };
