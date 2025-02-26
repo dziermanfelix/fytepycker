@@ -80,10 +80,12 @@ class ScraperView(APIView):
                 "div", class_="c-listing-fight__corner-name--blue").find("a").text.strip().replace("\n", " ")
             blue_img_tag = fight_row.select_one(".c-listing-fight__corner--blue .layout__region--content img")
             blue_img = blue_img_tag["src"] if blue_img_tag else None
+            blue_url = fight_row.find("div", class_="c-listing-fight__corner-image--blue").find("a")["href"]
             red_corner = fight_row.find("div", class_="c-listing-fight__corner-body--red")
             red_winner = red_corner.find("div", class_="c-listing-fight__outcome--win")
             red_img_tag = fight_row.select_one(".c-listing-fight__corner--red .layout__region--content img")
             red_img = red_img_tag["src"] if red_img_tag else None
+            red_url = fight_row.find("div", class_="c-listing-fight__corner-image--red").find("a")["href"]
             winner = red_name if red_winner is not None else blue_name
             results = fight_row.find("div", class_="js-listing-fight__results")
             method_element = results.find("div", class_="c-listing-fight__result-text method")
@@ -98,7 +100,9 @@ class ScraperView(APIView):
                     "order": order,
                     "weight_class": weight_class,
                     "blue_img": blue_img,
+                    "blue_url": blue_url,
                     "red_img": red_img,
+                    "red_url": red_url,
                     "winner": winner,
                     "method": method,
                     "round": round,

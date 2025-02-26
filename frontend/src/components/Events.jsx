@@ -65,10 +65,24 @@ const Events = () => {
                 <li key={fight.id} className='p-4 bg-white shadow rounded border'>
                   <p className='text-gray-600 text-center w-full mb-4'>{fight.weight_class}</p>
                   <div className='flex items-center justify-between w-full'>
-                    <img src={fight.blue_img} alt={fight.blue_name} className='w-50 h-50 rounded-full object-contain' />
-                    <span className='font-semibold'>{fight.blue_name}</span>
+                    <img src={fight.blue_img} alt={fight.blue_name} className='w-50 h-50 object-contain' />
+                    <a
+                      href={fight.blue_url}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='underline font-semibold'
+                    >
+                      {fight.blue_name}
+                    </a>
                     <span className='text-gray-600'>vs</span>
-                    <span className='font-semibold'>{fight.red_name}</span>
+                    <a
+                      href={fight.red_url}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='underline font-semibold'
+                    >
+                      {fight.red_name}
+                    </a>
                     <img src={fight.red_img} alt={fight.red_name} className='w-50 h-50 rounded-full object-contain' />
                   </div>
                   {fight.winner && fight.method && fight.round && (
