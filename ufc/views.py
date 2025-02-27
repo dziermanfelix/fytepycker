@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -15,6 +16,20 @@ import pytz
 class EventList(generics.ListCreateAPIView):
     queryset = Event.objects.all().order_by("date")
     serializer_class = EventSerializer
+
+    def list(self, request, *args, **kwargs):
+        now = timezone.now()
+
+        past_events = Event.objects.filter(date__lt=now).order_by('-date')
+        past_serializer = self.get_serializer(past_events, many=True)
+
+        upcoming_events = Event.objects.filter(date__gte=now).order_by('date')
+        upcoming_serializer = self.get_serializer(upcoming_events, many=True)
+
+        return Response({
+            'past': past_serializer.data,
+            'upcoming': upcoming_serializer.data
+        })
 
 
 class FightList(generics.ListCreateAPIView):

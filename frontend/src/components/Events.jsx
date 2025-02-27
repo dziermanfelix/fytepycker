@@ -9,41 +9,69 @@ const fetchEvents = async () => {
 };
 
 const Events = () => {
-  const {
-    data: events,
-    isLoading,
-    isError,
-  } = useQuery({
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [activeTab, setActiveTab] = useState('upcoming');
+
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['events'],
     queryFn: fetchEvents,
   });
 
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const EventCard = ({ event }) => (
+    <div
+      className='p-4 bg-white shadow-lg rounded-lg border border-gray-200 cursor-pointer'
+      onClick={() => setSelectedEvent(event)}
+    >
+      {event.url && (
+        <a href={event.url} target='_blank' rel='noopener noreferrer' className='underline'>
+          {event.name}
+        </a>
+      )}
+      <p className='text-gray-600'>{new Date(event.date).toLocaleString()}</p>
+      <p className='text-gray-700'>{event.location}</p>
+    </div>
+  );
+
+  const upcomingEvents = data?.upcoming || [];
+  const pastEvents = data?.past || [];
 
   if (isLoading) return <p className='text-center text-gray-500'>Loading events...</p>;
   if (isError) return <p className='text-center text-red-500'>Failed to load events.</p>;
 
   return (
     <div className='max-w-4xl mx-auto mt-8'>
-      <h1 className='text-2xl font-bold text-center mb-6'>{selectedEvent ? selectedEvent?.name : 'Upcoming Events'}</h1>
+      <h1 className='text-2xl font-bold text-center mb-6'>{selectedEvent ? selectedEvent?.name : 'Events'}</h1>
       {!selectedEvent && (
-        <div className='grid gap-6'>
-          {events.length > 0 ? (
-            events.map((event) => (
-              <div
-                key={event.id}
-                className='p-4 bg-white shadow-lg rounded-lg border border-gray-200 cursor-pointer'
-                onClick={() => setSelectedEvent(event)}
-              >
-                {event.url && (
-                  <a href={event.url} target='_blank' rel='noopener noreferrer' className='underline'>
-                    {event.name}
-                  </a>
-                )}
-                <p className='text-gray-600'>{new Date(event.date).toLocaleString()}</p>
-                <p className='text-gray-700'>{event.location}</p>
-              </div>
-            ))
+        <div className='flex border-b mb-6'>
+          <button
+            className={`px-4 py-2 mr-2 ${activeTab === 'upcoming' ? 'border-b-2 border-blue-500 font-semibold' : ''}`}
+            onClick={() => setActiveTab('upcoming')}
+          >
+            Upcoming Events ({upcomingEvents.length})
+          </button>
+          <button
+            className={`px-4 py-2 ${activeTab === 'past' ? 'border-b-2 border-blue-500 font-semibold' : ''}`}
+            onClick={() => setActiveTab('past')}
+          >
+            Past Events ({pastEvents.length})
+          </button>
+        </div>
+      )}
+
+      {!selectedEvent && activeTab === 'upcoming' && (
+        <div className='grid gap-4'>
+          {upcomingEvents.length > 0 ? (
+            upcomingEvents.map((event) => <EventCard key={event.id} event={event} />)
+          ) : (
+            <p className='text-center text-gray-500'>No events available.</p>
+          )}
+        </div>
+      )}
+
+      {!selectedEvent && activeTab === 'past' && (
+        <div className='grid gap-4'>
+          {pastEvents.length > 0 ? (
+            pastEvents.map((event) => <EventCard key={event.id} event={event} />)
           ) : (
             <p className='text-center text-gray-500'>No events available.</p>
           )}
