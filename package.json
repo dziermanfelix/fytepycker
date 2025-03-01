@@ -1,0 +1,24 @@
+{
+  "name": "fytepycker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"python manage.py runserver\" \"cd frontend && npm run dev\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dziermanfelix/fytepycker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dziermanfelix/fytepycker/issues"
+  },
+  "homepage": "https://github.com/dziermanfelix/fytepycker#readme",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
