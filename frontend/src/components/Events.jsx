@@ -32,6 +32,44 @@ const Events = () => {
     </div>
   );
 
+  const FightCard = ({ card }) => (
+    <div>
+      {card && card.length > 0 && (
+        <div>
+          <p className='mt-4'>{card[0].card}</p>
+          <ul className='space-y-4'>
+            {card.map((fight) => (
+              <li key={fight.id} className='p-4 bg-white shadow rounded border'>
+                <p className='text-gray-600 text-center w-full mb-4'>{fight.weight_class}</p>
+                <div className='flex items-center justify-between w-full'>
+                  <img src={fight.blue_img} alt={fight.blue_name} className='w-50 h-50 object-contain' />
+                  <a
+                    href={fight.blue_url}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='underline font-semibold'
+                  >
+                    {fight.blue_name}
+                  </a>
+                  <span className='text-gray-600'>vs</span>
+                  <a href={fight.red_url} target='_blank' rel='noopener noreferrer' className='underline font-semibold'>
+                    {fight.red_name}
+                  </a>
+                  <img src={fight.red_img} alt={fight.red_name} className='w-50 h-50 rounded-full object-contain' />
+                </div>
+                {fight.winner && fight.method && fight.round && (
+                  <p className='text-green-600 font-bold'>
+                    Winner: {fight.winner} ({fight.method})
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+
   const upcomingEvents = data?.upcoming || [];
   const pastEvents = data?.past || [];
 
@@ -80,49 +118,9 @@ const Events = () => {
 
       {selectedEvent && (
         <div className='mt-2 mb-2 rounded-lg'>
-          <button
-            className='mt-4 mb-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600'
-            onClick={() => setSelectedEvent(null)}
-          >
-            Close
-          </button>
-          {selectedEvent.fights.length > 0 ? (
-            <ul className='space-y-4'>
-              {selectedEvent.fights.map((fight) => (
-                <li key={fight.id} className='p-4 bg-white shadow rounded border'>
-                  <p className='text-gray-600 text-center w-full mb-4'>{fight.weight_class}</p>
-                  <div className='flex items-center justify-between w-full'>
-                    <img src={fight.blue_img} alt={fight.blue_name} className='w-50 h-50 object-contain' />
-                    <a
-                      href={fight.blue_url}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='underline font-semibold'
-                    >
-                      {fight.blue_name}
-                    </a>
-                    <span className='text-gray-600'>vs</span>
-                    <a
-                      href={fight.red_url}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='underline font-semibold'
-                    >
-                      {fight.red_name}
-                    </a>
-                    <img src={fight.red_img} alt={fight.red_name} className='w-50 h-50 rounded-full object-contain' />
-                  </div>
-                  {fight.winner && fight.method && fight.round && (
-                    <p className='text-green-600 font-bold'>
-                      Winner: {fight.winner} ({fight.method})
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className='text-gray-500'>No fights for this event.</p>
-          )}
+          <FightCard card={selectedEvent.fights.main} />
+          <FightCard card={selectedEvent.fights.prelim} />
+          <FightCard card={selectedEvent.fights.early} />
           <button
             className='mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600'
             onClick={() => setSelectedEvent(null)}

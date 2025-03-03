@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from .models import Event, Fight, FightCard
 from datetime import datetime
 import pytz
+from collections import defaultdict
 
 
 class EventList(generics.ListCreateAPIView):
@@ -21,14 +22,29 @@ class EventList(generics.ListCreateAPIView):
         now = timezone.now()
 
         past_events = Event.objects.filter(date__lt=now).order_by('-date')
-        past_serializer = self.get_serializer(past_events, many=True)
-
         upcoming_events = Event.objects.filter(date__gte=now).order_by('date')
-        upcoming_serializer = self.get_serializer(upcoming_events, many=True)
+
+        def serialize_events(events):
+            event_data = []
+            for event in events:
+                event_serializer = self.get_serializer(event)
+                fights = event.fights.all().order_by("order")
+
+                fights_by_card = defaultdict(list)
+                fight_serializer = FightSerializer(fights, many=True)
+                for fight in fight_serializer.data:
+                    fights_by_card[fight["card"]].append(fight)
+
+                event_data.append({
+                    **event_serializer.data,
+                    "fights": fights_by_card
+                })
+
+            return event_data
 
         return Response({
-            'past': past_serializer.data,
-            'upcoming': upcoming_serializer.data
+            'past': serialize_events(past_events),
+            'upcoming': serialize_events(upcoming_events)
         })
 
 
