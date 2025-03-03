@@ -112,6 +112,7 @@ class ScraperView(APIView):
                 blue_name=blue_name,
                 red_name=red_name,
                 defaults={
+                    "card": fight_card,
                     "order": order,
                     "weight_class": weight_class,
                     "blue_img": blue_img,
