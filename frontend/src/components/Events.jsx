@@ -10,7 +10,8 @@ const fetchEvents = async () => {
 
 const Events = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [activeTab, setActiveTab] = useState('upcoming');
+  const [activeEventTab, setActiveEventTab] = useState('upcoming');
+  const [activeFightTab, setActiveFightTab] = useState('all');
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['events'],
@@ -82,21 +83,25 @@ const Events = () => {
       {!selectedEvent && (
         <div className='flex border-b mb-6'>
           <button
-            className={`px-4 py-2 mr-2 ${activeTab === 'upcoming' ? 'border-b-2 border-blue-500 font-semibold' : ''}`}
-            onClick={() => setActiveTab('upcoming')}
+            className={`px-4 py-2 mr-2 cursor-pointer ${
+              activeEventTab === 'upcoming' ? 'border-b-2 border-blue-500 font-semibold' : ''
+            }`}
+            onClick={() => setActiveEventTab('upcoming')}
           >
             Upcoming Events ({upcomingEvents.length})
           </button>
           <button
-            className={`px-4 py-2 ${activeTab === 'past' ? 'border-b-2 border-blue-500 font-semibold' : ''}`}
-            onClick={() => setActiveTab('past')}
+            className={`px-4 py-2 cursor-pointer ${
+              activeEventTab === 'past' ? 'border-b-2 border-blue-500 font-semibold' : ''
+            }`}
+            onClick={() => setActiveEventTab('past')}
           >
             Past Events ({pastEvents.length})
           </button>
         </div>
       )}
 
-      {!selectedEvent && activeTab === 'upcoming' && (
+      {!selectedEvent && activeEventTab === 'upcoming' && (
         <div className='grid gap-4'>
           {upcomingEvents.length > 0 ? (
             upcomingEvents.map((event) => <EventCard key={event.id} event={event} />)
@@ -106,7 +111,7 @@ const Events = () => {
         </div>
       )}
 
-      {!selectedEvent && activeTab === 'past' && (
+      {!selectedEvent && activeEventTab === 'past' && (
         <div className='grid gap-4'>
           {pastEvents.length > 0 ? (
             pastEvents.map((event) => <EventCard key={event.id} event={event} />)
@@ -117,16 +122,84 @@ const Events = () => {
       )}
 
       {selectedEvent && (
-        <div className='mt-2 mb-2 rounded-lg'>
-          <FightCard card={selectedEvent.fights.main} />
-          <FightCard card={selectedEvent.fights.prelim} />
-          <FightCard card={selectedEvent.fights.early} />
-          <button
-            className='mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600'
-            onClick={() => setSelectedEvent(null)}
-          >
-            Close
-          </button>
+        <div>
+          <div className='flex border-b mb-6'>
+            <button
+              className={`px-4 py-2 mr-2 cursor-pointer ${
+                activeFightTab === 'all' ? 'border-b-2 border-blue-500 font-semibold' : ''
+              }`}
+              onClick={() => setActiveFightTab('all')}
+            >
+              All (
+              {selectedEvent.fights?.main?.length +
+                (selectedEvent.fights?.prelim?.length || 0) +
+                (selectedEvent.fights?.early?.length || 0)}
+              )
+            </button>
+            {selectedEvent.fights?.main && (
+              <button
+                className={`px-4 py-2 cursor-pointer ${
+                  activeFightTab === 'main' ? 'border-b-2 border-blue-500 font-semibold' : ''
+                }`}
+                onClick={() => setActiveFightTab('main')}
+              >
+                Main ({selectedEvent.fights.main.length})
+              </button>
+            )}
+            {selectedEvent.fights?.prelim && (
+              <button
+                className={`px-4 py-2 cursor-pointer ${
+                  activeFightTab === 'prelim' ? 'border-b-2 border-blue-500 font-semibold' : ''
+                }`}
+                onClick={() => setActiveFightTab('prelim')}
+              >
+                Prelim ({selectedEvent.fights.prelim.length})
+              </button>
+            )}
+            {selectedEvent.fights?.early && (
+              <button
+                className={`px-4 py-2 cursor-pointer ${
+                  activeFightTab === 'early' ? 'border-b-2 border-blue-500 font-semibold' : ''
+                }`}
+                onClick={() => setActiveFightTab('early')}
+              >
+                Early ({selectedEvent.fights.early.length})
+              </button>
+            )}
+            <button
+              className={`px-4 py-2 cursor-pointer bg-red-500 text-white rounded hover:bg-red-600`}
+              onClick={() => {
+                setSelectedEvent(null);
+                setActiveFightTab('all');
+              }}
+            >
+              Close
+            </button>
+          </div>
+          <div className='mt-2 mb-2 rounded-lg'>
+            {activeFightTab === 'all' && (
+              <div>
+                <FightCard card={selectedEvent.fights.main} />
+                <FightCard card={selectedEvent.fights.prelim} />
+                <FightCard card={selectedEvent.fights.early} />
+              </div>
+            )}
+            {activeFightTab === 'main' && (
+              <div>
+                <FightCard card={selectedEvent.fights.main} />
+              </div>
+            )}
+            {activeFightTab === 'prelim' && (
+              <div>
+                <FightCard card={selectedEvent.fights.prelim} />
+              </div>
+            )}
+            {activeFightTab === 'early' && (
+              <div>
+                <FightCard card={selectedEvent.fights.early} />
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
