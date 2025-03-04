@@ -33,6 +33,15 @@ const Events = () => {
     </div>
   );
 
+  const Fighter = ({ img, name, url }) => (
+    <div className='flex-row items-center text-center justify-between'>
+      <img src={img} alt={name} className='w-50 h-50 object-contain' />
+      <a href={url} target='_blank' rel='noopener noreferrer' className='underline font-semibold'>
+        {name}
+      </a>
+    </div>
+  );
+
   const FightCard = ({ card }) => (
     <div>
       {card && card.length > 0 && (
@@ -41,28 +50,18 @@ const Events = () => {
           <ul className='space-y-4'>
             {card.map((fight) => (
               <li key={fight.id} className='p-4 bg-white shadow rounded border'>
-                <p className='text-gray-600 text-center w-full mb-4'>{fight.weight_class}</p>
                 <div className='flex items-center justify-between w-full'>
-                  <img src={fight.blue_img} alt={fight.blue_name} className='w-50 h-50 object-contain' />
-                  <a
-                    href={fight.blue_url}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='underline font-semibold'
-                  >
-                    {fight.blue_name}
-                  </a>
-                  <span className='text-gray-600'>vs</span>
-                  <a href={fight.red_url} target='_blank' rel='noopener noreferrer' className='underline font-semibold'>
-                    {fight.red_name}
-                  </a>
-                  <img src={fight.red_img} alt={fight.red_name} className='w-50 h-50 rounded-full object-contain' />
+                  <Fighter img={fight.blue_img} name={fight.blue_name} url={fight.blue_url} />
+                  <div className='flex-row text-center justify-between'>
+                    <p className='text-gray-600 mb-4'>{fight.weight_class}</p>
+                    {fight.winner && fight.method && fight.round && (
+                      <p className='text-green-600 font-bold'>
+                        Winner: {fight.winner} ({fight.method})
+                      </p>
+                    )}
+                  </div>
+                  <Fighter img={fight.red_img} name={fight.red_name} url={fight.red_url} />
                 </div>
-                {fight.winner && fight.method && fight.round && (
-                  <p className='text-green-600 font-bold'>
-                    Winner: {fight.winner} ({fight.method})
-                  </p>
-                )}
               </li>
             ))}
           </ul>
@@ -88,7 +87,7 @@ const Events = () => {
             }`}
             onClick={() => setActiveEventTab('upcoming')}
           >
-            Upcoming Events ({upcomingEvents.length})
+            Upcoming ({upcomingEvents.length})
           </button>
           <button
             className={`px-4 py-2 cursor-pointer ${
@@ -96,7 +95,7 @@ const Events = () => {
             }`}
             onClick={() => setActiveEventTab('past')}
           >
-            Past Events ({pastEvents.length})
+            Past ({pastEvents.length})
           </button>
         </div>
       )}
