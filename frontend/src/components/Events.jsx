@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import client from '../api/client';
 import { API_URLS } from '../common/urls';
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 const fetchEvents = async () => {
   const { data } = await client.get(API_URLS.EVENTS);
@@ -9,6 +10,7 @@ const fetchEvents = async () => {
 };
 
 const Events = () => {
+  const { user } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [activeEventTab, setActiveEventTab] = useState('upcoming');
   const [activeFightTab, setActiveFightTab] = useState('all');
@@ -42,10 +44,11 @@ const Events = () => {
     </div>
   );
 
-  const FightCard = ({ card }) => {
+  const FightCard = ({ card, selectable }) => {
     const [selectedFighters, setSelectedFighters] = useState({});
 
     const fighterClicked = (fightId, fighterName) => {
+      console.log(`${user.username} selected ${fighterName} for ${fightId}`);
       setSelectedFighters((prev) => {
         if (prev[fightId] === fighterName) {
           const updatedFighters = { ...prev };
@@ -68,20 +71,27 @@ const Events = () => {
               {card.map((fight) => (
                 <li key={fight.id} className='p-4 bg-white shadow rounded border'>
                   <div className='flex items-center justify-between w-full'>
-                    <button
-                      className={`cursor-pointer p-2 rounded transition-colors duration-300 ${
-                        selectedFighters[fight.id] === fight.blue_name ? 'bg-blue-500' : 'bg-gray-200'
-                      }`}
-                      onClick={(e) => {
-                        if (e.target.tagName === 'A') {
-                          e.stopPropagation();
-                          return;
-                        }
-                        fighterClicked(fight.id, fight.blue_name);
-                      }}
-                    >
-                      <Fighter img={fight.blue_img} name={fight.blue_name} url={fight.blue_url} />
-                    </button>
+                    {selectable ? (
+                      <button
+                        className={`cursor-pointer p-2 rounded transition-colors duration-300 ${
+                          selectedFighters[fight.id] === fight.blue_name ? 'bg-blue-500' : 'bg-gray-200'
+                        }`}
+                        onClick={(e) => {
+                          if (e.target.tagName === 'A') {
+                            e.stopPropagation();
+                            return;
+                          }
+                          fighterClicked(fight.id, fight.blue_name);
+                        }}
+                      >
+                        <Fighter img={fight.blue_img} name={fight.blue_name} url={fight.blue_url} />
+                      </button>
+                    ) : (
+                      <div>
+                        <Fighter img={fight.blue_img} name={fight.blue_name} url={fight.blue_url} />
+                      </div>
+                    )}
+
                     <div className='flex-row text-center justify-between'>
                       <p className='text-gray-600 mb-4'>{fight.weight_class}</p>
                       {fight.winner && fight.method && fight.round && (
@@ -90,20 +100,26 @@ const Events = () => {
                         </p>
                       )}
                     </div>
-                    <button
-                      className={`cursor-pointer p-2 rounded transition-colors duration-300 ${
-                        selectedFighters[fight.id] === fight.red_name ? 'bg-red-500' : 'bg-gray-200'
-                      }`}
-                      onClick={(e) => {
-                        if (e.target.tagName === 'A') {
-                          e.stopPropagation();
-                          return;
-                        }
-                        fighterClicked(fight.id, fight.red_name);
-                      }}
-                    >
-                      <Fighter img={fight.red_img} name={fight.red_name} url={fight.red_url} />
-                    </button>
+                    {selectable ? (
+                      <button
+                        className={`cursor-pointer p-2 rounded transition-colors duration-300 ${
+                          selectedFighters[fight.id] === fight.red_name ? 'bg-red-500' : 'bg-gray-200'
+                        }`}
+                        onClick={(e) => {
+                          if (e.target.tagName === 'A') {
+                            e.stopPropagation();
+                            return;
+                          }
+                          fighterClicked(fight.id, fight.red_name);
+                        }}
+                      >
+                        <Fighter img={fight.red_img} name={fight.red_name} url={fight.red_url} />
+                      </button>
+                    ) : (
+                      <div>
+                        <Fighter img={fight.red_img} name={fight.red_name} url={fight.red_url} />
+                      </div>
+                    )}
                   </div>
                 </li>
               ))}
@@ -222,24 +238,24 @@ const Events = () => {
           <div className='mt-2 mb-2 rounded-lg'>
             {activeFightTab === 'all' && (
               <div>
-                <FightCard card={selectedEvent.fights.main} />
-                <FightCard card={selectedEvent.fights.prelim} />
-                <FightCard card={selectedEvent.fights.early} />
+                <FightCard card={selectedEvent.fights.main} selectable={activeEventTab === 'upcoming'} />
+                <FightCard card={selectedEvent.fights.prelim} selectable={activeEventTab === 'upcoming'} />
+                <FightCard card={selectedEvent.fights.early} selectable={activeEventTab === 'upcoming'} />
               </div>
             )}
             {activeFightTab === 'main' && (
               <div>
-                <FightCard card={selectedEvent.fights.main} />
+                <FightCard card={selectedEvent.fights.main} selectable={activeEventTab === 'upcoming'} />
               </div>
             )}
             {activeFightTab === 'prelim' && (
               <div>
-                <FightCard card={selectedEvent.fights.prelim} />
+                <FightCard card={selectedEvent.fights.prelim} selectable={activeEventTab === 'upcoming'} />
               </div>
             )}
             {activeFightTab === 'early' && (
               <div>
-                <FightCard card={selectedEvent.fights.early} />
+                <FightCard card={selectedEvent.fights.early} selectable={activeEventTab === 'upcoming'} />
               </div>
             )}
           </div>
