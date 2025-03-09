@@ -3,6 +3,7 @@ const EventCards = ({ setSelectedEvent, events }) => (
     {events.length > 0 ? (
       events.map((event) => (
         <div
+          key={event.id}
           className='p-4 bg-white shadow-lg rounded-lg border border-gray-200 cursor-pointer'
           onClick={() => setSelectedEvent(event)}
         >
