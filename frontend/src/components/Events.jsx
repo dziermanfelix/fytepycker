@@ -44,6 +44,25 @@ const Events = () => {
     </div>
   );
 
+  const FightCards = () => {
+    const fightTabs = {
+      all: ['main', 'prelim', 'early'],
+      main: ['main'],
+      prelim: ['prelim'],
+      early: ['early'],
+    };
+
+    const selectedFights = fightTabs[activeFightTab] || [];
+
+    return (
+      <div>
+        {selectedFights.map((fightKey) => (
+          <FightCard key={fightKey} card={selectedEvent.fights[fightKey]} selectable={activeEventTab === 'upcoming'} />
+        ))}
+      </div>
+    );
+  };
+
   const FightCard = ({ card, selectable }) => {
     const [selectedFighters, setSelectedFighters] = useState({});
 
@@ -236,28 +255,7 @@ const Events = () => {
             </button>
           </div>
           <div className='mt-2 mb-2 rounded-lg'>
-            {activeFightTab === 'all' && (
-              <div>
-                <FightCard card={selectedEvent.fights.main} selectable={activeEventTab === 'upcoming'} />
-                <FightCard card={selectedEvent.fights.prelim} selectable={activeEventTab === 'upcoming'} />
-                <FightCard card={selectedEvent.fights.early} selectable={activeEventTab === 'upcoming'} />
-              </div>
-            )}
-            {activeFightTab === 'main' && (
-              <div>
-                <FightCard card={selectedEvent.fights.main} selectable={activeEventTab === 'upcoming'} />
-              </div>
-            )}
-            {activeFightTab === 'prelim' && (
-              <div>
-                <FightCard card={selectedEvent.fights.prelim} selectable={activeEventTab === 'upcoming'} />
-              </div>
-            )}
-            {activeFightTab === 'early' && (
-              <div>
-                <FightCard card={selectedEvent.fights.early} selectable={activeEventTab === 'upcoming'} />
-              </div>
-            )}
+            <FightCards />
           </div>
         </div>
       )}
