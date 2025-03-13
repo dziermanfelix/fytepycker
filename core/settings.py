@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'api',
     'accounts',
     'ufc',
+    'matchups',
 ]
 
 MIDDLEWARE = [
