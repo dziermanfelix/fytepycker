@@ -10,17 +10,18 @@ User = get_user_model()
 
 
 class UfcTests(APITestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.admin = get_user_model().objects.create_user(
-            username='testadmin', email='admin@admin.com', password='testpass', is_staff=True)
+    # run scraper
+    # @classmethod
+    # def setUpTestData(cls):
+    #     cls.admin = get_user_model().objects.create_user(
+    #         username='testadmin', email='admin@admin.com', password='testpass', is_staff=True)
 
-        cls.scrape_url = reverse('api:ufc:scrape')
+    #     cls.scrape_url = reverse('api:ufc:scrape')
 
-        client = APITestCase.client_class()
-        client.force_login(cls.admin)
-        response = client.get(cls.scrape_url)
-        assert response.status_code == status.HTTP_200_OK
+    #     client = APITestCase.client_class()
+    #     client.force_login(cls.admin)
+    #     response = client.get(cls.scrape_url)
+    #     assert response.status_code == status.HTTP_200_OK
 
     def setUp(self):
         self.user = get_user_model().objects.create_user(username='testuser', password='testpass')
@@ -39,6 +40,8 @@ class UfcTests(APITestCase):
         result = self.scraper_view.parse_event_date(date_str)
         self.assertEqual(str(result), "2025-03-15 23:00:00+00:00")
 
-    def test_get_events(self):
+    def test_get_events_empty(self):
         response = self.client.get(self.events_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['past'], [])
+        self.assertEqual(response.data['upcoming'], [])

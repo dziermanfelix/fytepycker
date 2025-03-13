@@ -21,8 +21,6 @@ class RegisterView(APIView):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }, status=status.HTTP_201_CREATED)
-        else:
-            print(f'Serializer errors: {serializer.errors}')
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -46,5 +46,8 @@ class Fight(models.Model):
             )
         ]
 
+    def get_fighters(self):
+        return [self.blue_name, self.red_name]
+
     def __str__(self):
         return f'Event({self.event_id}):{self.blue_name} vs. {self.red_name}'

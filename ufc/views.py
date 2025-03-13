@@ -3,6 +3,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from playwright.sync_api import sync_playwright
 from rest_framework import status
@@ -14,43 +15,19 @@ import pytz
 from collections import defaultdict
 
 
-class EventList(generics.ListCreateAPIView):
-    queryset = Event.objects.all().order_by("date")
-    serializer_class = EventSerializer
+class EventView(APIView):
+    permission_classes = (IsAuthenticated,)
 
-    def list(self, request, *args, **kwargs):
+    def get(self, request):
         now = timezone.now()
 
-        past_events = Event.objects.filter(date__lt=now).order_by('-date')
-        upcoming_events = Event.objects.filter(date__gte=now).order_by('date')
-
-        def serialize_events(events):
-            event_data = []
-            for event in events:
-                event_serializer = self.get_serializer(event)
-                fights = event.fights.all().order_by("order")
-
-                fights_by_card = defaultdict(list)
-                fight_serializer = FightSerializer(fights, many=True)
-                for fight in fight_serializer.data:
-                    fights_by_card[fight["card"]].append(fight)
-
-                event_data.append({
-                    **event_serializer.data,
-                    "fights": fights_by_card
-                })
-
-            return event_data
+        past_events = Event.objects.prefetch_related('fights').filter(date__lt=now).order_by('-date')
+        upcoming_events = Event.objects.prefetch_related('fights').filter(date__gte=now).order_by('date')
 
         return Response({
-            'past': serialize_events(past_events),
-            'upcoming': serialize_events(upcoming_events)
+            'past': EventSerializer(past_events, many=True).data,
+            'upcoming': EventSerializer(upcoming_events, many=True).data
         })
-
-
-class FightList(generics.ListCreateAPIView):
-    queryset = Fight.objects.all()
-    serializer_class = FightSerializer
 
 
 class ScraperView(APIView):

@@ -5,5 +5,5 @@ app_name = 'ufc'
 
 urlpatterns = [
     path('scrape/', views.ScraperView.as_view(), name='scrape'),
-    path('events/', views.EventList.as_view(), name='events'),
+    path('events/', views.EventView.as_view(), name='events'),
 ]
