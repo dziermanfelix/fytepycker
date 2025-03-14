@@ -1,15 +1,15 @@
-import client from '../api/client';
-import { API_URLS } from '../common/urls';
-import { useAuth } from '@/contexts/AuthContext';
+import client from '@/api/client';
+import { API_URLS } from '@/common/urls';
+import { useEventsContext } from '@/components/Events';
 
-const EventCards = ({ setSelectedEvent, events, setMatchup }) => {
-  const { user } = useAuth();
+const EventCards = ({ events }) => {
+  const { user, setSelectedEvent, setMatchup } = useEventsContext();
 
   const handleClick = async (event) => {
     setSelectedEvent(event);
     const { data } = await client.post(API_URLS.MATCHUP, { event: event.id, creator: user.id, opponent: user.id });
     console.log(`data = ${JSON.stringify(data)}`);
-    setMatchup(data.matchup.id)
+    setMatchup(data.matchup.id);
   };
 
   return (

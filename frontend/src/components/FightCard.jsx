@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import Fighter from '@/components/Fighter';
-import { useAuth } from '@/contexts/AuthContext';
-import client from '../api/client';
-import { API_URLS } from '../common/urls';
+import client from '@/api/client';
+import { API_URLS } from '@/common/urls';
+import { useEventsContext } from '@/components/Events';
 
-const FightCard = ({ card, selectable, matchup }) => {
-  const { user } = useAuth();
+const FightCard = ({ card, selectable }) => {
   const [selectedFighters, setSelectedFighters] = useState({});
+  const { user, matchup } = useEventsContext();
 
   const fighterClicked = async (fightId, fighterName) => {
     console.log(`${user.username} selected ${fighterName} for fight ${fightId} in matchup ...`);

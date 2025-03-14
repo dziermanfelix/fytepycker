@@ -1,6 +1,9 @@
 import FightCard from '@/components/FightCard';
+import { useEventsContext } from '@/components/Events';
 
-const FightCards = ({ selectedEvent, activeEventTab, activeFightTab, matchup }) => {
+const FightCards = () => {
+  const { selectedEvent, activeEventTab, activeFightTab, matchup } = useEventsContext();
+
   const fightTabs = {
     all: ['main', 'prelim', 'early'],
     main: ['main'],
