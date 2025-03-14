@@ -18,7 +18,7 @@ class SelectionManager(models.Manager):
             )
 
         # Verify that the fight is part of the matchup
-        if selection.fight not in selection.matchup.fights.all():
+        if selection.fight not in selection.matchup.event.fights.all():
             raise ValidationError(
                 f"Fight {selection.fight} is not part of matchup {selection.matchup}"
             )
