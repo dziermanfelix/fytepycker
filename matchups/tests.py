@@ -73,6 +73,29 @@ class MatchupTests(APITestCase):
         create()
         get()
 
+    # TODO add test when serializers accept duplicates
+    # def test_create_duplicate_matchup(self):
+    #     def create():
+    #         data = {
+    #             "event": self.event.id,
+    #             "creator": self.user.id,
+    #             "opponent": self.user2.id,
+    #         }
+    #         response = self.client.post(self.matchups_url, data=data, format="json")
+    #         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    #     def get():
+    #         response = self.client.get(self.matchups_url)
+    #         self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #         self.assertEqual(response.data[0]['event'], self.event.id)
+    #         self.assertEqual(response.data[0]['creator'], self.user.id)
+    #         self.assertEqual(response.data[0]['opponent'], self.user2.id)
+
+    #     create()
+    #     get()
+    #     create()
+    #     get()
+
 
 class SelectionTests(APITestCase):
     def setUp(self):
@@ -215,3 +238,5 @@ class SelectionTests(APITestCase):
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # TODO assert error message
+
+    # TODO add test for multiple selections in same matchup, realistic test

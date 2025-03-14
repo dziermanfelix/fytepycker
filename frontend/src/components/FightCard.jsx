@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import Fighter from '@/components/Fighter';
 import { useAuth } from '@/contexts/AuthContext';
+import client from '../api/client';
+import { API_URLS } from '../common/urls';
 
-const FightCard = ({ card, selectable }) => {
+const FightCard = ({ card, selectable, matchup }) => {
   const { user } = useAuth();
   const [selectedFighters, setSelectedFighters] = useState({});
 
-  const fighterClicked = (fightId, fighterName) => {
-    console.log(`${user.username} selected ${fighterName} for ${fightId}`);
+  const fighterClicked = async (fightId, fighterName) => {
+    console.log(`${user.username} selected ${fighterName} for fight ${fightId} in matchup ...`);
     setSelectedFighters((prev) => {
       if (prev[fightId] === fighterName) {
         const updatedFighters = { ...prev };
@@ -19,6 +21,13 @@ const FightCard = ({ card, selectable }) => {
         [fightId]: fighterName,
       };
     });
+    const { data } = await client.post(API_URLS.SELECTION, {
+      matchup: matchup,
+      fight: fightId,
+      user: user.id,
+      fighter: fighterName,
+    });
+    console.log(`data = ${JSON.stringify(data)}`);
   };
 
   return (

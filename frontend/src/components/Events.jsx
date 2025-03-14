@@ -14,6 +14,7 @@ const fetchEvents = async () => {
 
 const Events = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [matchup, setMatchup] = useState(null);
   const [activeEventTab, setActiveEventTab] = useState('upcoming');
   const [activeFightTab, setActiveFightTab] = useState('all');
 
@@ -41,6 +42,7 @@ const Events = () => {
           />
           <EventCards
             setSelectedEvent={setSelectedEvent}
+            setMatchup={setMatchup}
             events={activeEventTab === 'upcoming' ? upcomingEvents : pastEvents}
           />
         </div>
@@ -55,7 +57,12 @@ const Events = () => {
             setActiveFightTab={setActiveFightTab}
           />
           <div className='mt-2 mb-2 rounded-lg'>
-            <FightCards selectedEvent={selectedEvent} activeEventTab={activeEventTab} activeFightTab={activeFightTab} />
+            <FightCards
+              selectedEvent={selectedEvent}
+              activeEventTab={activeEventTab}
+              activeFightTab={activeFightTab}
+              matchup={matchup}
+            />
           </div>
         </div>
       )}
