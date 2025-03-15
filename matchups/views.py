@@ -28,7 +28,7 @@ class MatchupView(APIView):
     def get(self, request):
         matchups = Matchup.objects.all()
         serializer = MatchupSerializer(matchups, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class SelectionView(APIView):
