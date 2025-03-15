@@ -245,3 +245,16 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_selection_change(self):
+        data = {
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data['fighter'] = self.fight.red_name
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
