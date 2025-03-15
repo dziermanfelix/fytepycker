@@ -53,3 +53,9 @@ class SelectionView(APIView):
             except Exception as e:
                 return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        matchup = request.query_params.get('matchup')
+        selections = Selection.objects.filter(matchup=matchup)
+        serializer = SelectionSerializer(selections, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

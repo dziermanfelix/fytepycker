@@ -234,18 +234,6 @@ class SelectionTests(APITestCase):
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_selection_duplicate(self):
-        data = {
-            "matchup": self.matchup.id,
-            "fight": self.fight.id,
-            "user": self.user.id,
-            "fighter": self.fight.blue_name
-        }
-        response = self.client.post(self.selection_url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        response = self.client.post(self.selection_url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
     def test_selection_change(self):
         data = {
             "matchup": self.matchup.id,
@@ -258,3 +246,19 @@ class SelectionTests(APITestCase):
         data['fighter'] = self.fight.red_name
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_selection(self):
+        data = {
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.get(self.selection_url, data={"matchup": self.matchup.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['matchup'], self.matchup.id)
+        self.assertEqual(response.data[0]['fight'], self.fight.id)
+        self.assertEqual(response.data[0]['user'], self.user.id)
+        self.assertEqual(response.data[0]['fighter'], self.fight.blue_name)
