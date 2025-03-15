@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import MatchupSerializer, SelectionSerializer
-from .models import Matchup
+from .models import Matchup, Selection
 
 
 class MatchupView(APIView):
@@ -35,11 +35,21 @@ class SelectionView(APIView):
     def post(self, request):
         serializer = SelectionSerializer(data=request.data)
         if serializer.is_valid():
-            # TODO make save handle duplicates
+            validated_data = serializer.validated_data
+            unique_fields = {
+                'matchup': validated_data['matchup'],
+                'fight': validated_data['fight'],
+                'user': validated_data['user'],
+            }
+            defaults = {k: v for k, v in validated_data.items() if k not in unique_fields}
             try:
-                serializer.save()
-                return Response({'selection': serializer.data, }, status=status.HTTP_201_CREATED)
-            except:
-                # TODO get error, cleanup logic
-                return Response(None, status=status.HTTP_400_BAD_REQUEST)
+                selection, created = Selection.objects.get_or_create(
+                    **unique_fields,
+                    defaults=defaults
+                )
+                result_serializer = SelectionSerializer(selection)
+                status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+                return Response({'selection': result_serializer.data, }, status=status_code)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

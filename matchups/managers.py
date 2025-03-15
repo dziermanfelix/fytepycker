@@ -9,6 +9,14 @@ class SelectionManager(models.Manager):
         selection.save(using=self._db)
         return selection
 
+    def get_or_create(self, defaults=None, **kwargs):
+        defaults = defaults or {}
+        try:
+            return self.get(**kwargs), False
+        except self.model.DoesNotExist:
+            params = {**kwargs, **defaults}
+            return self.create(**params), True
+
     def validate_selection(self, selection):
         # Check if the user is part of the matchup
         matchup_users = selection.matchup.get_users()

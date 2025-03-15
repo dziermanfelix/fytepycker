@@ -188,7 +188,6 @@ class SelectionTests(APITestCase):
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # TODO assert error message
 
     def test_create_selection_invalid_fight(self):
         other_event = Event.objects.get_or_create(
@@ -224,7 +223,6 @@ class SelectionTests(APITestCase):
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # TODO assert error message
 
     def test_create_selection_invalid_fighter(self):
         data = {
@@ -235,6 +233,15 @@ class SelectionTests(APITestCase):
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # TODO assert error message
 
-    # TODO add test for multiple selections in same matchup, realistic test
+    def test_create_selection_duplicate(self):
+        data = {
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
