@@ -9,9 +9,20 @@ class MatchupView(APIView):
     def post(self, request):
         serializer = MatchupSerializer(data=request.data)
         if serializer.is_valid():
-            # TODO make save handle duplicates
-            serializer.save()
-            return Response({'matchup': serializer.data, }, status=status.HTTP_201_CREATED)
+            validated_data = serializer.validated_data
+            unique_fields = {
+                'event': validated_data['event'],
+                'creator': validated_data['creator'],
+                'opponent': validated_data['opponent'],
+            }
+            defaults = {k: v for k, v in validated_data.items() if k not in unique_fields}
+            matchup, created = Matchup.objects.get_or_create(
+                **unique_fields,
+                defaults=defaults
+            )
+            result_serializer = MatchupSerializer(matchup)
+            status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+            return Response({'matchup': result_serializer.data, }, status=status_code)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):

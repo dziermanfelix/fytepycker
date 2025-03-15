@@ -73,28 +73,26 @@ class MatchupTests(APITestCase):
         create()
         get()
 
-    # TODO add test when serializers accept duplicates
-    # def test_create_duplicate_matchup(self):
-    #     def create():
-    #         data = {
-    #             "event": self.event.id,
-    #             "creator": self.user.id,
-    #             "opponent": self.user2.id,
-    #         }
-    #         response = self.client.post(self.matchups_url, data=data, format="json")
-    #         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-    #     def get():
-    #         response = self.client.get(self.matchups_url)
-    #         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #         self.assertEqual(response.data[0]['event'], self.event.id)
-    #         self.assertEqual(response.data[0]['creator'], self.user.id)
-    #         self.assertEqual(response.data[0]['opponent'], self.user2.id)
-
-    #     create()
-    #     get()
-    #     create()
-    #     get()
+    def test_create_duplicate_matchup(self):
+        def get():
+            response = self.client.get(self.matchups_url)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data[0]['event'], self.event.id)
+            self.assertEqual(response.data[0]['creator'], self.user.id)
+            self.assertEqual(response.data[0]['opponent'], self.user2.id)
+        data = {
+            "event": self.event.id,
+            "creator": self.user.id,
+            "opponent": self.user2.id,
+        }
+        # post request (first time user clicks event)
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        get()
+        # post request again (user clicks event later)
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        get()
 
 
 class SelectionTests(APITestCase):
