@@ -43,10 +43,10 @@ const FightCard = ({ card, selectable }) => {
 
   const fighterClicked = async (fightId, fighterName) => {
     let localFighterName = fighterName;
-    if (selections[fightId]['fighter'] === fighterName) localFighterName = '';
+    if (selections[fightId]?.fighter === fighterName) localFighterName = ''; // undo
     setSelections((prevSelections) => ({
       ...prevSelections,
-      [fightId]: { fighter: localFighterName },
+      [fightId]: { fighter: localFighterName, user: user.id },
     }));
     try {
       const { data } = await client.post(API_URLS.SELECTION, {
@@ -66,72 +66,88 @@ const FightCard = ({ card, selectable }) => {
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading selections.</p>;
 
-  return (
-    <div>
-      {card && card.length > 0 && (
+  const determineColor = (fight, fighterName) => {
+    let color = 'bg-gray-200';
+    if (selections[fight.id]?.fighter == fighterName) {
+      if (selections[fight.id]?.user === user.id) {
+        color = 'bg-red-500';
+      } else {
+        color = 'bg-blue-500';
+      }
+    }
+    return color;
+  };
+
+  if (card && card.length > 0) {
+    return (
+      <div>
         <div>
           <p className='mt-4'>{card[0].card}</p>
           <ul className='space-y-4'>
-            {card.map((fight) => (
-              <li key={fight.id} className='p-4 bg-white shadow rounded border'>
-                <div className='flex items-center justify-between w-full'>
-                  {selectable ? (
-                    <button
-                      className={`cursor-pointer p-2 rounded transition-colors duration-300 ${
-                        selections[fight.id]?.fighter === fight.blue_name ? 'bg-blue-500' : 'bg-gray-200'
-                      }`}
-                      onClick={(e) => {
-                        if (e.target.tagName === 'A') {
-                          e.stopPropagation();
-                          return;
-                        }
-                        fighterClicked(fight.id, fight.blue_name);
-                      }}
-                    >
-                      <Fighter img={fight.blue_img} name={fight.blue_name} url={fight.blue_url} />
-                    </button>
-                  ) : (
-                    <div>
-                      <Fighter img={fight.blue_img} name={fight.blue_name} url={fight.blue_url} />
-                    </div>
-                  )}
+            {card.map((fight) => {
+              return (
+                <li key={fight.id} className='p-4 bg-white shadow rounded border'>
+                  <div className='flex items-center justify-between w-full'>
+                    {selectable ? (
+                      <button
+                        className={`cursor-pointer p-2 rounded transition-colors duration-300 ${determineColor(
+                          fight,
+                          fight.blue_name
+                        )}`}
+                        onClick={(e) => {
+                          if (e.target.tagName === 'A') {
+                            e.stopPropagation();
+                            return;
+                          }
+                          fighterClicked(fight.id, fight.blue_name);
+                        }}
+                      >
+                        <Fighter img={fight.blue_img} name={fight.blue_name} url={fight.blue_url} />
+                      </button>
+                    ) : (
+                      <div>
+                        <Fighter img={fight.blue_img} name={fight.blue_name} url={fight.blue_url} />
+                      </div>
+                    )}
 
-                  <div className='flex-row text-center justify-between'>
-                    <p className='text-gray-600 mb-4'>{fight.weight_class}</p>
-                    {fight.winner && fight.method && fight.round && (
-                      <p className='text-green-600 font-bold'>
-                        Winner: {fight.winner} ({fight.method})
-                      </p>
+                    <div className='flex-row text-center justify-between'>
+                      <p className='text-gray-600 mb-4'>{fight.weight_class}</p>
+                      {fight.winner && fight.method && fight.round && (
+                        <p className='text-green-600 font-bold'>
+                          Winner: {fight.winner} ({fight.method})
+                        </p>
+                      )}
+                    </div>
+                    {selectable ? (
+                      <button
+                        className={`cursor-pointer p-2 rounded transition-colors duration-300 ${determineColor(
+                          fight,
+                          fight.red_name
+                        )}`}
+                        onClick={(e) => {
+                          if (e.target.tagName === 'A') {
+                            e.stopPropagation();
+                            return;
+                          }
+                          fighterClicked(fight.id, fight.red_name);
+                        }}
+                      >
+                        <Fighter img={fight.red_img} name={fight.red_name} url={fight.red_url} />
+                      </button>
+                    ) : (
+                      <div>
+                        <Fighter img={fight.red_img} name={fight.red_name} url={fight.red_url} />
+                      </div>
                     )}
                   </div>
-                  {selectable ? (
-                    <button
-                      className={`cursor-pointer p-2 rounded transition-colors duration-300 ${
-                        selections[fight.id]?.fighter === fight.red_name ? 'bg-red-500' : 'bg-gray-200'
-                      }`}
-                      onClick={(e) => {
-                        if (e.target.tagName === 'A') {
-                          e.stopPropagation();
-                          return;
-                        }
-                        fighterClicked(fight.id, fight.red_name);
-                      }}
-                    >
-                      <Fighter img={fight.red_img} name={fight.red_name} url={fight.red_url} />
-                    </button>
-                  ) : (
-                    <div>
-                      <Fighter img={fight.red_img} name={fight.red_name} url={fight.red_url} />
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
 };
 
 export default FightCard;
