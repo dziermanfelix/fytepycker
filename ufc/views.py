@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from playwright.sync_api import sync_playwright
 from rest_framework import status
-from .serializers import EventSerializer, FightSerializer
+from .serializers import EventSerializer
 from bs4 import BeautifulSoup
 from .models import Event, Fight, FightCard
 from datetime import datetime
@@ -35,35 +35,39 @@ class ScraperView(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
     def get(self, request):
-        html_content = self.get_html_content("https://www.ufc.com/events", 200)
+        html_content = self.get_html_content('https://www.ufc.com/events', 200)
+        with open(f'events.html', 'w', encoding='utf-8') as f:
+            f.write(str(html_content))
         soup = BeautifulSoup(html_content, "html.parser")
-        num_events = int(soup.find("div", "althelete-total").text.split()[0])
-        num_events = 3
-        fight_divs = soup.select(".c-card-event--result")[:num_events - 1]
+        num_upcoming_events = int(soup.find("div", "althelete-total").text.split()[0])
+        all_fight_divs = soup.select(".c-card-event--result")
+        fight_divs = all_fight_divs[:2] + all_fight_divs[num_upcoming_events:num_upcoming_events + 2]
         for fight in fight_divs:
             a_tag = fight.find("a")
             if a_tag and "href" in a_tag.attrs:
                 fight_url = "https://www.ufc.com" + a_tag["href"]
-                html_content = self.get_html_content(fight_url, 2000)
-                soup = BeautifulSoup(html_content, "html.parser")
-                name = soup.find(
-                    "div", class_="field field--name-node-title field--type-ds field--label-hidden field__item").find("h1").text.strip()
-                date = self.parse_event_date(soup.find("div", "c-hero__headline-suffix").text.strip())
-                location = soup.find(
-                    "div", class_="field field--name-venue field--type-entity-reference field--label-hidden field__item").text.strip().replace("\n", "")
-                event = Event.objects.get_or_create(
-                    name=name,
-                    url=fight_url,
-                    date=date,
-                    location=location,
-                )
-                self.get_fights_for_card(soup.find("div", class_="main-card"), event[0], FightCard.MAIN)
-                self.get_fights_for_card(soup.find("div", class_="fight-card-prelims"), event[0], FightCard.PRELIM)
-                self.get_fights_for_card(soup.find("div", class_="fight-card-prelims-early"),
-                                         event[0], FightCard.EARLY_PRELIM)
+                self.scrape_fight_from_url(fight_url)
         events = Event.objects.all()
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def scrape_fight_from_url(self, url):
+        html_content = self.get_html_content(url, 2000)
+        soup = BeautifulSoup(html_content, "html.parser")
+        name = soup.find(
+            "div", class_="field field--name-node-title field--type-ds field--label-hidden field__item").find("h1").text.strip()
+        date = self.parse_event_date(soup.find("div", "c-hero__headline-suffix").text.strip())
+        location = soup.find(
+            "div", class_="field field--name-venue field--type-entity-reference field--label-hidden field__item").text.strip().replace("\n", "")
+        event = Event.objects.get_or_create(
+            name=name,
+            url=url,
+            date=date,
+            location=location,
+        )
+        self.get_fights_for_card(soup.find("div", class_="main-card"), event[0], FightCard.MAIN)
+        self.get_fights_for_card(soup.find("div", class_="fight-card-prelims"), event[0], FightCard.PRELIM)
+        self.get_fights_for_card(soup.find("div", class_="fight-card-prelims-early"), event[0], FightCard.EARLY_PRELIM)
 
     def get_html_content(self, url, timeout):
         with sync_playwright() as p:
