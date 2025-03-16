@@ -41,7 +41,12 @@ const FightCard = ({ card, selectable }) => {
     }
   }, [initialSelections]);
 
-  const fighterClicked = async (fightId, fighterName) => {
+  const fighterClicked = async (e, fightId, fighterName) => {
+    if (e.target.tagName === 'A') {
+      e.stopPropagation();
+      return;
+    }
+
     let localFighterName = fighterName;
     if (selections[fightId]?.fighter === fighterName) localFighterName = ''; // undo
     setSelections((prevSelections) => ({
@@ -78,6 +83,34 @@ const FightCard = ({ card, selectable }) => {
     return color;
   };
 
+  const FighterButton = ({ fight, color }) => {
+    let name = fight.blue_name;
+    let img = fight.blue_img;
+    let url = fight.blue_url;
+    if (color === 'red') {
+      name = fight.red_name;
+      img = fight.red_img;
+      url = fight.red_url;
+    }
+    return (
+      <button
+        className={`${selectable && 'cursor-pointer'} p-2 rounded transition-colors duration-300 ${determineColor(
+          fight,
+          name
+        )}`}
+        onClick={
+          selectable
+            ? (e) => {
+                fighterClicked(e, fight.id, name);
+              }
+            : null
+        }
+      >
+        <Fighter img={img} name={name} url={url} />
+      </button>
+    );
+  };
+
   if (card && card.length > 0) {
     return (
       <div>
@@ -88,28 +121,7 @@ const FightCard = ({ card, selectable }) => {
               return (
                 <li key={fight.id} className='p-4 bg-white shadow rounded border'>
                   <div className='flex items-center justify-between w-full'>
-                    {selectable ? (
-                      <button
-                        className={`cursor-pointer p-2 rounded transition-colors duration-300 ${determineColor(
-                          fight,
-                          fight.blue_name
-                        )}`}
-                        onClick={(e) => {
-                          if (e.target.tagName === 'A') {
-                            e.stopPropagation();
-                            return;
-                          }
-                          fighterClicked(fight.id, fight.blue_name);
-                        }}
-                      >
-                        <Fighter img={fight.blue_img} name={fight.blue_name} url={fight.blue_url} />
-                      </button>
-                    ) : (
-                      <div>
-                        <Fighter img={fight.blue_img} name={fight.blue_name} url={fight.blue_url} />
-                      </div>
-                    )}
-
+                    <FighterButton fight={fight} color='blue' />
                     <div className='flex-row text-center justify-between'>
                       <p className='text-gray-600 mb-4'>{fight.weight_class}</p>
                       {fight.winner && fight.method && fight.round && (
@@ -118,27 +130,7 @@ const FightCard = ({ card, selectable }) => {
                         </p>
                       )}
                     </div>
-                    {selectable ? (
-                      <button
-                        className={`cursor-pointer p-2 rounded transition-colors duration-300 ${determineColor(
-                          fight,
-                          fight.red_name
-                        )}`}
-                        onClick={(e) => {
-                          if (e.target.tagName === 'A') {
-                            e.stopPropagation();
-                            return;
-                          }
-                          fighterClicked(fight.id, fight.red_name);
-                        }}
-                      >
-                        <Fighter img={fight.red_img} name={fight.red_name} url={fight.red_url} />
-                      </button>
-                    ) : (
-                      <div>
-                        <Fighter img={fight.red_img} name={fight.red_name} url={fight.red_url} />
-                      </div>
-                    )}
+                    <FighterButton fight={fight} color='red' />
                   </div>
                 </li>
               );
