@@ -36,8 +36,6 @@ class ScraperView(APIView):
 
     def get(self, request):
         html_content = self.get_html_content('https://www.ufc.com/events', 200)
-        with open(f'events.html', 'w', encoding='utf-8') as f:
-            f.write(str(html_content))
         soup = BeautifulSoup(html_content, "html.parser")
         num_upcoming_events = int(soup.find("div", "althelete-total").text.split()[0])
         all_fight_divs = soup.select(".c-card-event--result")

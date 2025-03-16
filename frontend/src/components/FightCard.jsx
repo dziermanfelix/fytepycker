@@ -94,10 +94,9 @@ const FightCard = ({ card, selectable }) => {
     }
     return (
       <button
-        className={`${selectable && 'cursor-pointer'} p-2 rounded transition-colors duration-300 ${determineColor(
-          fight,
-          name
-        )}`}
+        className={`${selectable && 'cursor-pointer'} ${
+          fight.winner === name && fight.method && fight.round && 'border-2 border-green-500'
+        } p-2 rounded transition-colors duration-300 ${determineColor(fight, name)}`}
         onClick={
           selectable
             ? (e) => {
@@ -121,7 +120,7 @@ const FightCard = ({ card, selectable }) => {
               return (
                 <li key={fight.id} className='p-4 bg-white shadow rounded border'>
                   <div className='flex items-center justify-between w-full'>
-                    <FighterButton fight={fight} color='blue' />
+                    <FighterButton fight={fight} color='red' />
                     <div className='flex-row text-center justify-between'>
                       <p className='text-gray-600 mb-4'>{fight.weight_class}</p>
                       {fight.winner && fight.method && fight.round && (
@@ -130,7 +129,7 @@ const FightCard = ({ card, selectable }) => {
                         </p>
                       )}
                     </div>
-                    <FighterButton fight={fight} color='red' />
+                    <FighterButton fight={fight} color='blue' />
                   </div>
                 </li>
               );
