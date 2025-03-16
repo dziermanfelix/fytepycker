@@ -16,12 +16,7 @@ const FightCards = () => {
   return (
     <div>
       {selectedFights.map((fightKey) => (
-        <FightCard
-          key={fightKey}
-          card={selectedEvent.fights[fightKey]}
-          selectable={activeEventTab === 'upcoming'}
-          matchup={matchup}
-        />
+        <FightCard key={fightKey} card={selectedEvent.fights[fightKey]} selectable={activeEventTab === 'upcoming'} />
       ))}
     </div>
   );

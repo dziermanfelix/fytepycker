@@ -12,6 +12,15 @@ class SelectionManager(models.Manager):
     def get_or_create(self, defaults=None, **kwargs):
         defaults = defaults or {}
         try:
+            selection = self.get(**kwargs)
+            # selection undo
+            if selection.fighter == defaults.get('fighter'):
+                selection.fighter = ''
+                selection.save()
+            # selection change
+            else:
+                selection.fighter = defaults.get('fighter')
+                selection.save()
             return self.get(**kwargs), False
         except self.model.DoesNotExist:
             params = {**kwargs, **defaults}

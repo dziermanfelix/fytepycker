@@ -243,9 +243,65 @@ class SelectionTests(APITestCase):
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['selection']['matchup'], self.matchup.id)
+        self.assertEqual(response.data['selection']['fight'], self.fight.id)
+        self.assertEqual(response.data['selection']['user'], self.user.id)
+        self.assertEqual(response.data['selection']['fighter'], self.fight.blue_name)
+        # verify with get
+        response = self.client.get(self.selection_url, data={"matchup": self.matchup.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['matchup'], self.matchup.id)
+        self.assertEqual(response.data[0]['fight'], self.fight.id)
+        self.assertEqual(response.data[0]['user'], self.user.id)
+        self.assertEqual(response.data[0]['fighter'], self.fight.blue_name)
         data['fighter'] = self.fight.red_name
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['selection']['matchup'], self.matchup.id)
+        self.assertEqual(response.data['selection']['fight'], self.fight.id)
+        self.assertEqual(response.data['selection']['user'], self.user.id)
+        self.assertEqual(response.data['selection']['fighter'], self.fight.red_name)
+        # verify with get
+        response = self.client.get(self.selection_url, data={"matchup": self.matchup.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['matchup'], self.matchup.id)
+        self.assertEqual(response.data[0]['fight'], self.fight.id)
+        self.assertEqual(response.data[0]['user'], self.user.id)
+        self.assertEqual(response.data[0]['fighter'], self.fight.red_name)
+
+    def test_selection_undo(self):
+        data = {
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['selection']['matchup'], self.matchup.id)
+        self.assertEqual(response.data['selection']['fight'], self.fight.id)
+        self.assertEqual(response.data['selection']['user'], self.user.id)
+        self.assertEqual(response.data['selection']['fighter'], self.fight.blue_name)
+        # verify with get
+        response = self.client.get(self.selection_url, data={"matchup": self.matchup.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['matchup'], self.matchup.id)
+        self.assertEqual(response.data[0]['fight'], self.fight.id)
+        self.assertEqual(response.data[0]['user'], self.user.id)
+        self.assertEqual(response.data[0]['fighter'], self.fight.blue_name)
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['selection']['matchup'], self.matchup.id)
+        self.assertEqual(response.data['selection']['fight'], self.fight.id)
+        self.assertEqual(response.data['selection']['user'], self.user.id)
+        self.assertEqual(response.data['selection']['fighter'], '')
+        # verify with get
+        response = self.client.get(self.selection_url, data={"matchup": self.matchup.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['matchup'], self.matchup.id)
+        self.assertEqual(response.data[0]['fight'], self.fight.id)
+        self.assertEqual(response.data[0]['user'], self.user.id)
+        self.assertEqual(response.data[0]['fighter'], '')
 
     def test_get_selection(self):
         data = {

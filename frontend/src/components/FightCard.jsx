@@ -1,34 +1,70 @@
-import { useState } from 'react';
 import Fighter from '@/components/Fighter';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 import { useEventsContext } from '@/components/Events';
+import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 
 const FightCard = ({ card, selectable }) => {
-  const [selectedFighters, setSelectedFighters] = useState({});
   const { user, matchup } = useEventsContext();
+  const [selections, setSelections] = useState({});
+
+  const fetchSelections = async ({ queryKey }) => {
+    const [, matchup] = queryKey;
+    if (!matchup) return {};
+    try {
+      const { data } = await client.get(API_URLS.SELECTION, { params: { matchup } });
+      const transformedData = data.reduce((acc, selection) => {
+        acc[selection.fight] = selection;
+        return acc;
+      }, {});
+      return transformedData;
+    } catch (error) {
+      console.error(`Error fetching selections for matchup ${matchup}:`, error);
+      return {};
+    }
+  };
+
+  const {
+    data: initialSelections = {},
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['selections', matchup],
+    queryFn: fetchSelections,
+    enabled: !!matchup,
+  });
+
+  useEffect(() => {
+    if (Object.keys(initialSelections).length > 0) {
+      setSelections(initialSelections);
+    }
+  }, [initialSelections]);
 
   const fighterClicked = async (fightId, fighterName) => {
-    console.log(`${user.username} selected ${fighterName} for fight ${fightId} in matchup ...`);
-    setSelectedFighters((prev) => {
-      if (prev[fightId] === fighterName) {
-        const updatedFighters = { ...prev };
-        delete updatedFighters[fightId];
-        return updatedFighters;
-      }
-      return {
-        ...prev,
-        [fightId]: fighterName,
-      };
-    });
-    const { data } = await client.post(API_URLS.SELECTION, {
-      matchup: matchup,
-      fight: fightId,
-      user: user.id,
-      fighter: fighterName,
-    });
-    console.log(`data = ${JSON.stringify(data)}`);
+    let localFighterName = fighterName;
+    if (selections[fightId]['fighter'] === fighterName) localFighterName = '';
+    setSelections((prevSelections) => ({
+      ...prevSelections,
+      [fightId]: { fighter: localFighterName },
+    }));
+    try {
+      const { data } = await client.post(API_URLS.SELECTION, {
+        matchup: matchup,
+        fight: fightId,
+        user: user.id,
+        fighter: fighterName,
+      });
+    } catch (error) {
+      console.error('Error saving selection:', error);
+      setSelections((prevSelections) => {
+        return { ...prevSelections };
+      });
+    }
   };
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Error loading selections.</p>;
 
   return (
     <div>
@@ -42,7 +78,7 @@ const FightCard = ({ card, selectable }) => {
                   {selectable ? (
                     <button
                       className={`cursor-pointer p-2 rounded transition-colors duration-300 ${
-                        selectedFighters[fight.id] === fight.blue_name ? 'bg-blue-500' : 'bg-gray-200'
+                        selections[fight.id]?.fighter === fight.blue_name ? 'bg-blue-500' : 'bg-gray-200'
                       }`}
                       onClick={(e) => {
                         if (e.target.tagName === 'A') {
@@ -71,7 +107,7 @@ const FightCard = ({ card, selectable }) => {
                   {selectable ? (
                     <button
                       className={`cursor-pointer p-2 rounded transition-colors duration-300 ${
-                        selectedFighters[fight.id] === fight.red_name ? 'bg-red-500' : 'bg-gray-200'
+                        selections[fight.id]?.fighter === fight.red_name ? 'bg-red-500' : 'bg-gray-200'
                       }`}
                       onClick={(e) => {
                         if (e.target.tagName === 'A') {
