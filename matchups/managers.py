@@ -2,6 +2,32 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 
+class MatchupManager(models.Manager):
+    def get_or_create(self, defaults=None, **kwargs):
+        defaults = defaults or {}
+        event = kwargs.get('event')
+        creator = kwargs.get('creator')
+        opponent = kwargs.get('opponent')
+
+        existing = self.filter(
+            event=event,
+            creator__id__in=[creator.id, opponent.id],
+            opponent__id__in=[creator.id, opponent.id]
+        ).first()
+
+        if existing:
+            return existing, False
+
+        users = sorted([creator, opponent], key=lambda user: user.id)
+
+        kwargs['creator'] = users[0]
+        kwargs['opponent'] = users[1]
+
+        all_kwargs = {**kwargs, **defaults}
+
+        return self.create(**all_kwargs), True
+
+
 class SelectionManager(models.Manager):
     def create(self, **kwargs):
         selection = self.model(**kwargs)

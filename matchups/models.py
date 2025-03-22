@@ -1,7 +1,7 @@
 from django.db import models
 from ufc.models import Event, Fight
 from accounts.models import User
-from .managers import SelectionManager
+from .managers import MatchupManager, SelectionManager
 
 
 class Matchup(models.Model):
@@ -10,10 +10,17 @@ class Matchup(models.Model):
     opponent = models.ForeignKey(User, on_delete=models.CASCADE, related_name="opponent_matchups")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = MatchupManager()
+
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["event", "creator", "opponent"],
-                                    name="unique_creator_and_opponent_per_event"),
+            models.UniqueConstraint(
+                fields=["event", "creator", "opponent"],
+                name="unique_creator_and_opponent_per_event"),
+            models.CheckConstraint(
+                check=models.Q(creator__lte=models.F('opponent')),
+                name="ensure_creator_less_than_opponent"
+            )
         ]
 
     def get_users(self):

@@ -68,6 +68,36 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['creator'], self.user.id)
         self.assertEqual(response.data[0]['opponent'], self.user2.id)
 
+    def test_create_duplicate_matchup(self):
+        data = {
+            "event": self.event.id,
+            "creator": self.user.id,
+            "opponent": self.user2.id,
+        }
+        data2 = {
+            "event": self.event.id,
+            "creator": self.user2.id,
+            "opponent": self.user.id,
+        }
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # verify with get
+        response = self.client.get(self.matchups_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['event'], self.event.id)
+        self.assertEqual(response.data[0]['creator'], self.user.id)
+        self.assertEqual(response.data[0]['opponent'], self.user2.id)
+        # try duplicate (switching users)
+        response = self.client.post(self.matchups_url, data=data2, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get(self.matchups_url)
+        # verify with get
+        response = self.client.get(self.matchups_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['event'], self.event.id)
+        self.assertEqual(response.data[0]['creator'], self.user.id)
+        self.assertEqual(response.data[0]['opponent'], self.user2.id)
+
     def test_user_matchup(self):
         data = {
             "event": self.event.id,
