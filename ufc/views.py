@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from .models import Event, Fight, FightCard
 from datetime import datetime
 import pytz
-from collections import defaultdict
+from unidecode import unidecode
 
 
 class EventView(APIView):
@@ -84,10 +84,10 @@ class ScraperView(APIView):
             fight_row = fight.find("div", class_="c-listing-fight__content-row")
             details = fight_row.find("div", class_="c-listing-fight__details")
             weight_class = details.find("div", class_="c-listing-fight__class-text").text.strip()
-            red_name = fight_row.find(
-                "div", class_="c-listing-fight__corner-name--red").find("a").text.strip().replace("\n", " ")
-            blue_name = fight_row.find(
-                "div", class_="c-listing-fight__corner-name--blue").find("a").text.strip().replace("\n", " ")
+            red_name = self.normalize_name(fight_row.find(
+                "div", class_="c-listing-fight__corner-name--red").find("a").text.strip().replace("\n", " "))
+            blue_name = self.normalize_name(fight_row.find(
+                "div", class_="c-listing-fight__corner-name--blue").find("a").text.strip().replace("\n", " "))
             blue_img_tag = fight_row.select_one(".c-listing-fight__corner--blue .layout__region--content img")
             blue_img = blue_img_tag["src"] if blue_img_tag else None
             blue_url = fight_row.find("div", class_="c-listing-fight__corner-image--blue").find("a")["href"]
@@ -120,6 +120,9 @@ class ScraperView(APIView):
                 }
             )
             order += 1
+
+    def normalize_name(self, name):
+        return unidecode(name)
 
     def parse_event_date(self, date_str):
         date_str = date_str.strip()

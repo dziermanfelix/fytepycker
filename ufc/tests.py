@@ -40,6 +40,13 @@ class UfcTests(APITestCase):
         result = self.scraper_view.parse_event_date(date_str)
         self.assertEqual(str(result), "2025-03-15 23:00:00+00:00")
 
+    def test_normalize_name(self):
+        result = self.scraper_view.normalize_name("Jan Błachowicz")
+        self.assertEqual(str(result), "Jan Blachowicz")
+
+        result = self.scraper_view.normalize_name("Jan Blachowicz")
+        self.assertEqual(str(result), "Jan Blachowicz")
+
     def test_get_events_empty(self):
         response = self.client.get(self.events_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
