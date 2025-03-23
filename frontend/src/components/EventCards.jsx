@@ -3,12 +3,14 @@ import { API_URLS } from '@/common/urls';
 import { useEventsContext } from '@/components/Events';
 
 const EventCards = ({ events }) => {
-  const { user, setSelectedEvent, setMatchup } = useEventsContext();
+  const { user, setSelectedEvent, activeEventTab, setMatchup } = useEventsContext();
 
   const handleClick = async (event) => {
     setSelectedEvent(event);
-    const { data } = await client.post(API_URLS.MATCHUP, { event: event.id, user_a: user.id, user_b: user.id });
-    setMatchup(data.matchup.id);
+    if (activeEventTab == 'upcoming') {
+      const { data } = await client.post(API_URLS.MATCHUP, { event: event.id, user_a: user.id, user_b: user.id });
+      setMatchup(data.matchup.id);
+    }
   };
 
   return (
