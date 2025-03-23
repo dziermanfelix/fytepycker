@@ -7,7 +7,7 @@ const EventCards = ({ events }) => {
 
   const handleClick = async (event) => {
     setSelectedEvent(event);
-    const { data } = await client.post(API_URLS.MATCHUP, { event: event.id, creator: user.id, opponent: user.id });
+    const { data } = await client.post(API_URLS.MATCHUP, { event: event.id, user_a: user.id, user_b: user.id });
     setMatchup(data.matchup.id);
   };
 

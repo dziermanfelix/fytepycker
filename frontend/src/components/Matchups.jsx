@@ -20,8 +20,6 @@ const Matchups = () => {
   if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
   if (isError) return <p className='text-center text-red-500'>Failed to load matchups.</p>;
 
-  console.log(`data = ${JSON.stringify(data)}`);
-
   function handleClick(matchup) {}
 
   return (
@@ -34,8 +32,8 @@ const Matchups = () => {
             className='p-4 bg-white shadow-lg rounded-lg border border-gray-200 cursor-pointer'
             onClick={() => handleClick(matchup)}
           >
-            <p className='text-gray-600'>{matchup.creator}</p>
-            <p className='text-gray-700'>{matchup.opponent}</p>
+            <p className='text-gray-600'>{matchup.user_a}</p>
+            <p className='text-gray-700'>{matchup.user_b}</p>
           </div>
         ))
       ) : (

@@ -6,22 +6,22 @@ class MatchupManager(models.Manager):
     def get_or_create(self, defaults=None, **kwargs):
         defaults = defaults or {}
         event = kwargs.get('event')
-        creator = kwargs.get('creator')
-        opponent = kwargs.get('opponent')
+        user_a = kwargs.get('user_a')
+        user_b = kwargs.get('user_b')
 
         existing = self.filter(
             event=event,
-            creator__id__in=[creator.id, opponent.id],
-            opponent__id__in=[creator.id, opponent.id]
+            user_a__id__in=[user_a.id, user_b.id],
+            user_b__id__in=[user_a.id, user_b.id]
         ).first()
 
         if existing:
             return existing, False
 
-        users = sorted([creator, opponent], key=lambda user: user.id)
+        users = sorted([user_a, user_b], key=lambda user: user.id)
 
-        kwargs['creator'] = users[0]
-        kwargs['opponent'] = users[1]
+        kwargs['user_a'] = users[0]
+        kwargs['user_b'] = users[1]
 
         all_kwargs = {**kwargs, **defaults}
 

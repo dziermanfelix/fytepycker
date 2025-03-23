@@ -6,8 +6,8 @@ from .managers import MatchupManager, SelectionManager
 
 class Matchup(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="event_matchups")
-    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="creator_matchups")
-    opponent = models.ForeignKey(User, on_delete=models.CASCADE, related_name="opponent_matchups")
+    user_a = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_a_matchups")
+    user_b = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_b_matchups")
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = MatchupManager()
@@ -15,19 +15,19 @@ class Matchup(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["event", "creator", "opponent"],
-                name="unique_creator_and_opponent_per_event"),
+                fields=["event", "user_a", "user_b"],
+                name="unique_users_per_event"),
             models.CheckConstraint(
-                check=models.Q(creator__lte=models.F('opponent')),
-                name="ensure_creator_less_than_opponent"
+                check=models.Q(user_a__lte=models.F('user_b')),
+                name="ensure_user_a_less_than_user_b"
             )
         ]
 
     def get_users(self):
-        return [self.creator, self.opponent]
+        return [self.user_a, self.user_b]
 
     def __str__(self):
-        return f"Matchup for {self.event}, creator {self.creator.username}, opponent {self.opponent.username}"
+        return f"Matchup for {self.event}, {self.user_a.username} vs. {self.user_b.username}"
 
 
 class Selection(models.Model):

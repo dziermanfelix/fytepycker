@@ -11,7 +11,7 @@ class SelectionInline(admin.TabularInline):
 
 
 class MatchupAdmin(admin.ModelAdmin):
-    list_display = ('event', 'creator', 'opponent', 'created_at')
+    list_display = ('event', 'user_a', 'user_b', 'created_at')
     inlines = [SelectionInline]
 
 

@@ -56,8 +56,8 @@ class MatchupTests(APITestCase):
     def test_create_matchup(self):
         data = {
             "event": self.event.id,
-            "creator": self.user.id,
-            "opponent": self.user2.id,
+            "user_a": self.user.id,
+            "user_b": self.user2.id,
         }
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -65,19 +65,19 @@ class MatchupTests(APITestCase):
         response = self.client.get(self.matchups_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['creator'], self.user.id)
-        self.assertEqual(response.data[0]['opponent'], self.user2.id)
+        self.assertEqual(response.data[0]['user_a'], self.user.id)
+        self.assertEqual(response.data[0]['user_b'], self.user2.id)
 
     def test_create_duplicate_matchup(self):
         data = {
             "event": self.event.id,
-            "creator": self.user.id,
-            "opponent": self.user2.id,
+            "user_a": self.user.id,
+            "user_b": self.user2.id,
         }
         data2 = {
             "event": self.event.id,
-            "creator": self.user2.id,
-            "opponent": self.user.id,
+            "user_a": self.user2.id,
+            "user_b": self.user.id,
         }
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -85,8 +85,8 @@ class MatchupTests(APITestCase):
         response = self.client.get(self.matchups_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['creator'], self.user.id)
-        self.assertEqual(response.data[0]['opponent'], self.user2.id)
+        self.assertEqual(response.data[0]['user_a'], self.user.id)
+        self.assertEqual(response.data[0]['user_b'], self.user2.id)
         # try duplicate (switching users)
         response = self.client.post(self.matchups_url, data=data2, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -95,14 +95,14 @@ class MatchupTests(APITestCase):
         response = self.client.get(self.matchups_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['creator'], self.user.id)
-        self.assertEqual(response.data[0]['opponent'], self.user2.id)
+        self.assertEqual(response.data[0]['user_a'], self.user.id)
+        self.assertEqual(response.data[0]['user_b'], self.user2.id)
 
     def test_user_matchup(self):
         data = {
             "event": self.event.id,
-            "creator": self.user.id,
-            "opponent": self.user.id,
+            "user_a": self.user.id,
+            "user_b": self.user.id,
         }
         # first time clicking on event
         response = self.client.post(self.matchups_url, data=data, format="json")
@@ -121,8 +121,8 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['creator'], self.user.id)
-        self.assertEqual(response.data[0]['opponent'], self.user.id)
+        self.assertEqual(response.data[0]['user_a'], self.user.id)
+        self.assertEqual(response.data[0]['user_b'], self.user.id)
 
 
 class SelectionTests(APITestCase):
@@ -163,8 +163,8 @@ class SelectionTests(APITestCase):
         self.fight = fight[0]
         matchup = Matchup.objects.update_or_create(
             event_id=self.event.id,
-            creator=self.user,
-            opponent=self.user2,
+            user_a=self.user,
+            user_b=self.user2,
         )
         self.matchup = matchup[0]
 

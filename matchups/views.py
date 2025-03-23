@@ -12,8 +12,8 @@ class MatchupView(APIView):
             validated_data = serializer.validated_data
             unique_fields = {
                 'event': validated_data['event'],
-                'creator': validated_data['creator'],
-                'opponent': validated_data['opponent'],
+                'user_a': validated_data['user_a'],
+                'user_b': validated_data['user_b'],
             }
             defaults = {k: v for k, v in validated_data.items() if k not in unique_fields}
             matchup, created = Matchup.objects.get_or_create(
