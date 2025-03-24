@@ -48,7 +48,7 @@ class MatchupTests(APITestCase):
         )
         self.fight = fight[0]
 
-    def test_get_empty_matchups(self):
+    def test_get_all_matchups_empty(self):
         response = self.client.get(self.matchups_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, [])
@@ -62,7 +62,7 @@ class MatchupTests(APITestCase):
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # verify with get
-        response = self.client.get(self.matchups_url)
+        response = self.client.get(f'{self.matchups_url}{self.user.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['event'], self.event.id)
         self.assertEqual(response.data[0]['user_a'], self.user.id)
@@ -82,7 +82,7 @@ class MatchupTests(APITestCase):
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # verify with get
-        response = self.client.get(self.matchups_url)
+        response = self.client.get(f'{self.matchups_url}{self.user.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['event'], self.event.id)
         self.assertEqual(response.data[0]['user_a'], self.user.id)
@@ -92,7 +92,7 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(self.matchups_url)
         # verify with get
-        response = self.client.get(self.matchups_url)
+        response = self.client.get(f'{self.matchups_url}{self.user.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['event'], self.event.id)
         self.assertEqual(response.data[0]['user_a'], self.user.id)
@@ -117,7 +117,7 @@ class MatchupTests(APITestCase):
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # verify with get
-        response = self.client.get(self.matchups_url)
+        response = self.client.get(f'{self.matchups_url}{self.user.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['event'], self.event.id)

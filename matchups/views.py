@@ -25,8 +25,11 @@ class MatchupView(APIView):
             return Response({'matchup': result_serializer.data, }, status=status_code)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
+        user_id = kwargs.get("user_id")
         matchups = Matchup.objects.all()
+        if user_id:
+            matchups = matchups.filter(user_a_id=user_id) | matchups.filter(user_b_id=user_id)
         serializer = MatchupSerializer(matchups, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
