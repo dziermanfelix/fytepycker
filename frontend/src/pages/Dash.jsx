@@ -2,24 +2,41 @@ import React, { useState } from 'react';
 import { EventsProvider } from '@/contexts/EventsContext';
 import Events from '@/components/Events';
 import Matchups from '@/components/Matchups';
+import { useAuth } from '@/contexts/AuthContext';
 
-const Sidebar = ({ activeView, setActiveView }) => {
+const Sidebar = ({ activeView, setActiveView, isMobile, setIsSidebarOpen }) => {
+  const { user } = useAuth();
+
   const navItems = [
     { id: 'events', label: 'Events', icon: '📅' },
     { id: 'matchups', label: 'Matchups', icon: '🥊' },
   ];
 
+  const handleNavClick = (id) => {
+    setActiveView(id);
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
+  };
+
   return (
-    <div className='w-60 min-h-screen flex-shrink-0'>
-      <div className='bg-white shadow-md border-b border-gray-200'></div>
-      <nav className='mt-6'>
+    <div className='bg-gray-800 text-white w-64 h-full flex-shrink-0 flex flex-col'>
+      <div className='p-4 border-b border-gray-700 flex items-center justify-between'>
+        <h2 className='text-xl font-bold'>Fight Dashboard</h2>
+        {isMobile && (
+          <button onClick={() => setIsSidebarOpen(false)} className='text-gray-400 hover:text-white'>
+            ✕
+          </button>
+        )}
+      </div>
+      <nav className='mt-6 flex-1 overflow-y-auto'>
         <ul>
           {navItems.map((item) => (
-            <li key={item.id} className='mb-2'>
+            <li key={item.id} className='mb-2 px-2'>
               <button
-                onClick={() => setActiveView(item.id)}
-                className={`flex items-center w-full px-4 py-3 hover:bg-gray-300 rounded-md transition-colors ${
-                  activeView === item.id ? 'bg-gray-200' : ''
+                onClick={() => handleNavClick(item.id)}
+                className={`flex items-center w-full px-4 py-3 hover:bg-gray-700 rounded-md transition-colors ${
+                  activeView === item.id ? 'bg-gray-700' : ''
                 }`}
               >
                 <span className='mr-3'>{item.icon}</span>
@@ -29,20 +46,34 @@ const Sidebar = ({ activeView, setActiveView }) => {
           ))}
         </ul>
       </nav>
+      <div className='p-4 border-t border-gray-700'>
+        <div className='flex items-center'>
+          <div className='w-8 h-8 bg-gray-600 rounded-full mr-3'></div>
+          <div>
+            <p className='font-medium'>{user.username}</p>
+            <p className='text-sm text-gray-400'>Pro Plan</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-const Header = ({ activeView }) => {
+const Header = ({ activeView, setIsSidebarOpen }) => {
   const titles = {
     events: 'Events',
     matchups: 'Matchups',
   };
 
   return (
-    <header className='bg-white shadow-sm py-4 px-6 flex justify-between items-center'>
-      <h1 className='text-xl font-semibold'>{titles[activeView] || 'Dash'}</h1>
-      <div className='flex items-center space-x-4'>
+    <header className='bg-white shadow-sm py-4 px-4 sm:px-6 flex justify-between items-center'>
+      <div className='flex items-center'>
+        <button onClick={() => setIsSidebarOpen(true)} className='mr-4 md:hidden text-gray-500 hover:text-gray-700'>
+          ☰
+        </button>
+        <h1 className='text-xl font-semibold'>{titles[activeView] || 'Dashboard'}</h1>
+      </div>
+      <div className='flex items-center space-x-2 sm:space-x-4'>
         <button className='bg-gray-100 hover:bg-gray-200 p-2 rounded-full'>
           <span className='text-gray-500'>🔍</span>
         </button>
@@ -52,6 +83,17 @@ const Header = ({ activeView }) => {
         <div className='w-8 h-8 bg-gray-300 rounded-full'></div>
       </div>
     </header>
+  );
+};
+
+const MobileSidebarOverlay = ({ isSidebarOpen, setIsSidebarOpen, children }) => {
+  if (!isSidebarOpen) return null;
+
+  return (
+    <div className='fixed inset-0 z-40 md:hidden'>
+      <div className='fixed inset-0 bg-black bg-opacity-50' onClick={() => setIsSidebarOpen(false)}></div>
+      <div className='fixed inset-y-0 left-0 z-50 flex max-w-full'>{children}</div>
+    </div>
   );
 };
 
@@ -71,17 +113,32 @@ const DashboardContent = ({ activeView }) => {
 };
 
 const Dash = () => {
-  const [activeView, setActiveView] = useState('events'); // Default view
+  const [activeView, setActiveView] = useState('events');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className='flex h-screen '>
-      <Sidebar activeView={activeView} setActiveView={setActiveView} />
-      <div className='flex-1 flex flex-col overflow-hidden'>
-        <Header activeView={activeView} />
-        <main className='flex-1 overflow-y-auto p-4'>
-          <DashboardContent activeView={activeView} />
-        </main>
+    <div className='h-screen bg-gray-100 flex flex-col'>
+      <div className='flex flex-1 overflow-hidden'>
+        <div className='hidden md:block'>
+          <Sidebar activeView={activeView} setActiveView={setActiveView} isMobile={false} />
+        </div>
+
+        <div className='flex-1 flex flex-col overflow-hidden'>
+          <Header activeView={activeView} setIsSidebarOpen={setIsSidebarOpen} />
+          <main className='flex-1 overflow-y-auto p-4'>
+            <DashboardContent activeView={activeView} />
+          </main>
+        </div>
       </div>
+
+      <MobileSidebarOverlay isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen}>
+        <Sidebar
+          activeView={activeView}
+          setActiveView={setActiveView}
+          isMobile={true}
+          setIsSidebarOpen={setIsSidebarOpen}
+        />
+      </MobileSidebarOverlay>
     </div>
   );
 };

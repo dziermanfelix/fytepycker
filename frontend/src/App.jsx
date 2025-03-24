@@ -1,7 +1,6 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dash from './pages/Dash';
@@ -11,7 +10,6 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<Home />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
           <Route
@@ -22,6 +20,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path='/' element={<Navigate to='/dash' replace />} />
+          <Route path='*' element={<div>Page not found</div>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
