@@ -11,7 +11,7 @@ const EventTabControls = () => {
         }`}
         onClick={() => setActiveEventTab('upcoming')}
       >
-        Upcoming ({upcomingEvents.length})
+        Upcoming
       </button>
       <button
         className={`px-4 py-2 cursor-pointer ${
@@ -19,7 +19,7 @@ const EventTabControls = () => {
         }`}
         onClick={() => setActiveEventTab('past')}
       >
-        Past ({pastEvents.length})
+        Past
       </button>
     </div>
   );

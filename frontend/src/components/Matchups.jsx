@@ -24,7 +24,6 @@ const Matchups = () => {
 
   return (
     <div className='grid gap-4'>
-      <p>matchups</p>
       {data.length > 0 ? (
         data.map((matchup) => (
           <div
