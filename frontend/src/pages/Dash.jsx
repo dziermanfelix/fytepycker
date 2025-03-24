@@ -7,9 +7,6 @@ const Dash = () => {
     <div className='mx-auto'>
       <div className='min-h-screen p-4'>
         <Events />
-        <div className='mt-4'>
-          <Matchups />
-        </div>
       </div>
     </div>
   );

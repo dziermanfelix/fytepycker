@@ -1,9 +1,13 @@
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
-import { useEventsContext } from '@/components/Events';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEvents } from '@/contexts/EventsContext';
 
-const EventCards = ({ events }) => {
-  const { user, setSelectedEvent, activeEventTab, setMatchup } = useEventsContext();
+const EventCards = () => {
+  const { user } = useAuth();
+  const { setSelectedEvent, activeEventTab, setMatchup, upcomingEvents, pastEvents } = useEvents();
+
+  const events = activeEventTab === 'upcoming' ? upcomingEvents : pastEvents;
 
   const handleClick = async (event) => {
     setSelectedEvent(event);

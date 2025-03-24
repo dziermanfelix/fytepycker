@@ -1,13 +1,17 @@
 import Fighter from '@/components/Fighter';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
-import { useEventsContext } from '@/components/Events';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEvents } from '@/contexts/EventsContext';
 
-const FightCard = ({ card, selectable }) => {
-  const { user, matchup } = useEventsContext();
+const FightCard = ({ card }) => {
+  const { user } = useAuth();
+  const { activeEventTab, matchup } = useEvents();
   const [selections, setSelections] = useState({});
+
+  const selectable = activeEventTab === 'upcoming';
 
   const fetchSelections = async ({ queryKey }) => {
     const [, matchup] = queryKey;

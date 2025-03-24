@@ -1,7 +1,7 @@
-import { useEventsContext } from '@/components/Events';
+import { useEvents } from '@/contexts/EventsContext';
 
 const FightTabControls = () => {
-  const { selectedEvent, setSelectedEvent, activeFightTab, setActiveFightTab } = useEventsContext();
+  const { selectedEvent, setSelectedEvent, activeFightTab, setActiveFightTab } = useEvents();
   return (
     <div className='flex border-b mb-6'>
       <button
