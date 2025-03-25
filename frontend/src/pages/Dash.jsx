@@ -20,9 +20,8 @@ const Sidebar = ({ activeView, setActiveView, isMobile, setIsSidebarOpen }) => {
   };
 
   return (
-    <div className='bg-gray-800 text-white w-64 h-full flex-shrink-0 flex flex-col'>
-      <div className='p-4 border-b border-gray-700 flex items-center justify-between'>
-        <h2 className='text-xl font-bold'>Fight Dashboard</h2>
+    <div className='bg-white shadow-sm w-50 h-full flex-shrink-0 flex flex-col'>
+      <div className='mt-12 flex items-center justify-between'>
         {isMobile && (
           <button onClick={() => setIsSidebarOpen(false)} className='text-gray-400 hover:text-white'>
             ✕
@@ -35,8 +34,8 @@ const Sidebar = ({ activeView, setActiveView, isMobile, setIsSidebarOpen }) => {
             <li key={item.id} className='mb-2 px-2'>
               <button
                 onClick={() => handleNavClick(item.id)}
-                className={`flex items-center w-full px-4 py-3 hover:bg-gray-700 rounded-md transition-colors ${
-                  activeView === item.id ? 'bg-gray-700' : ''
+                className={`flex items-center w-full px-4 py-3 hover:bg-gray-400 rounded-md transition-colors ${
+                  activeView === item.id ? 'bg-gray-300' : ''
                 }`}
               >
                 <span className='mr-3'>{item.icon}</span>

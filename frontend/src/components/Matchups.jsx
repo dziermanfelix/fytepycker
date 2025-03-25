@@ -9,7 +9,7 @@ const MatchupsContent = () => {
   function handleClick(matchup) {}
 
   return (
-    <div className='grid gap-4'>
+    <div className='grid gap-4 max-w-5xl mx-auto mt-8'>
       {matchups.length > 0 ? (
         matchups.map((matchup) => (
           <div
@@ -18,7 +18,7 @@ const MatchupsContent = () => {
             onClick={() => handleClick(matchup)}
           >
             <p className='text-gray-600'>{matchup.user_a}</p>
-            <p className='text-gray-700'>{matchup.user_b}</p>
+            <p className='text-gray-600'>{matchup.user_b}</p>
           </div>
         ))
       ) : (
