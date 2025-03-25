@@ -12,7 +12,7 @@ const EventCards = () => {
   const handleClick = async (event) => {
     setSelectedEvent(event);
     if (activeEventTab == 'upcoming') {
-      const { data } = await client.post(API_URLS.MATCHUP, { event: event.id, user_a: user.id, user_b: user.id });
+      const { data } = await client.post(API_URLS.MATCHUPS, { event: event.id, user_a: user.id, user_b: user.id });
       setMatchup(data.matchup.id);
     }
   };

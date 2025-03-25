@@ -1,21 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import client from '@/api/client';
-import { API_URLS } from '@/common/urls';
-import { useContext } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
 
-const Matchups = () => {
-  const { user } = useAuth();
-
-  const fetchMatchups = async () => {
-    const { data } = await client.get(API_URLS.MATCHUP);
-    return data;
-  };
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['matchups'],
-    queryFn: fetchMatchups,
-  });
+const MatchupsContent = () => {
+  const { isLoading, isError, matchups } = useMatchups();
 
   if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
   if (isError) return <p className='text-center text-red-500'>Failed to load matchups.</p>;
@@ -24,8 +10,8 @@ const Matchups = () => {
 
   return (
     <div className='grid gap-4'>
-      {data.length > 0 ? (
-        data.map((matchup) => (
+      {matchups.length > 0 ? (
+        matchups.map((matchup) => (
           <div
             key={matchup.id}
             className='p-4 bg-white shadow-lg rounded-lg border border-gray-200 cursor-pointer'
@@ -42,6 +28,10 @@ const Matchups = () => {
   );
 };
 
-export const useEventsContext = () => useContext(EventsContext);
+const Matchups = () => (
+  <MatchupsProvider>
+    <MatchupsContent />
+  </MatchupsProvider>
+);
 
 export default Matchups;
