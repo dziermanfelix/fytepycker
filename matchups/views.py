@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Q
 from .serializers import MatchupSerializer, SelectionSerializer
 from .models import Matchup, Selection
 
@@ -26,10 +27,16 @@ class MatchupView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):
-        user_id = kwargs.get("user_id")
+        user_a_id = kwargs.get("user_a_id")
+        user_b_id = kwargs.get("user_b_id")
         matchups = Matchup.objects.all()
-        if user_id:
-            matchups = matchups.filter(user_a_id=user_id) | matchups.filter(user_b_id=user_id)
+        if user_a_id and user_b_id:
+            matchups = matchups.filter(
+                (Q(user_a_id=user_a_id) & Q(user_b_id=user_b_id)) |
+                (Q(user_a_id=user_b_id) & Q(user_b_id=user_a_id))
+            )
+        elif user_a_id:
+            matchups = matchups.filter(Q(user_a_id=user_a_id) | Q(user_b_id=user_a_id))
         serializer = MatchupSerializer(matchups, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

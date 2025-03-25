@@ -98,7 +98,7 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['user_a'], self.user.id)
         self.assertEqual(response.data[0]['user_b'], self.user2.id)
 
-    def test_user_matchup(self):
+    def test_user_default_matchup(self):
         data = {
             "event": self.event.id,
             "user_a": self.user.id,
@@ -123,6 +123,60 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['event'], self.event.id)
         self.assertEqual(response.data[0]['user_a'], self.user.id)
         self.assertEqual(response.data[0]['user_b'], self.user.id)
+
+    def test_get_matchup_different_flavors(self):
+        data = {
+            "event": self.event.id,
+            "user_a": self.user.id,
+            "user_b": self.user2.id,
+        }
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # verify with get user 1
+        response = self.client.get(f'{self.matchups_url}{self.user.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['event'], self.event.id)
+        self.assertEqual(response.data[0]['user_a'], self.user.id)
+        self.assertEqual(response.data[0]['user_b'], self.user2.id)
+        # verify with get user 2
+        response = self.client.get(f'{self.matchups_url}{self.user2.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['event'], self.event.id)
+        self.assertEqual(response.data[0]['user_a'], self.user.id)
+        self.assertEqual(response.data[0]['user_b'], self.user2.id)
+        # verify with get user1, user2
+        response = self.client.get(f'{self.matchups_url}{self.user.id}/{self.user2.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['event'], self.event.id)
+        self.assertEqual(response.data[0]['user_a'], self.user.id)
+        self.assertEqual(response.data[0]['user_b'], self.user2.id)
+        # verify with get user2, user1
+        response = self.client.get(f'{self.matchups_url}{self.user2.id}/{self.user.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['event'], self.event.id)
+        self.assertEqual(response.data[0]['user_a'], self.user.id)
+        self.assertEqual(response.data[0]['user_b'], self.user2.id)
+
+    def test_get_matchup_user_not_exists(self):
+        data = {
+            "event": self.event.id,
+            "user_a": self.user.id,
+            "user_b": self.user2.id,
+        }
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # verify with bad user 1
+        response = self.client.get(f'{self.matchups_url}999/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+        # verify with get bad user1, user2
+        response = self.client.get(f'{self.matchups_url}999/{self.user2.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+        # verify with get bad user1, bad user2
+        response = self.client.get(f'{self.matchups_url}{self.user.id}/999/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
 
 
 class SelectionTests(APITestCase):
