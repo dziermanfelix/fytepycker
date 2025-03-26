@@ -6,25 +6,26 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEvents } from '@/contexts/EventsContext';
 
-const FightCard = ({ card }) => {
+const FightCard = ({ card, matchupId: propMatchupId, selectable: propSelectable }) => {
   const { user } = useAuth();
-  const { activeEventTab, matchup } = useEvents();
+  const { activeEventTab, matchupId: contextMatchupId } = useEvents();
   const [selections, setSelections] = useState({});
+  const matchupId = propMatchupId || contextMatchupId;
 
-  const selectable = activeEventTab === 'upcoming';
+  const selectable = propSelectable || activeEventTab === 'upcoming';
 
   const fetchSelections = async ({ queryKey }) => {
-    const [, matchup] = queryKey;
-    if (!matchup) return {};
+    const [, matchupId] = queryKey;
+    if (!matchupId) return {};
     try {
-      const { data } = await client.get(API_URLS.SELECTION, { params: { matchup } });
+      const { data } = await client.get(API_URLS.SELECTION, { params: { matchup: matchupId } });
       const transformedData = data.reduce((acc, selection) => {
         acc[selection.fight] = selection;
         return acc;
       }, {});
       return transformedData;
     } catch (error) {
-      console.error(`Error fetching selections for matchup ${matchup}:`, error);
+      console.error(`Error fetching selections for matchup ${matchupId}:`, error);
       return {};
     }
   };
@@ -34,9 +35,9 @@ const FightCard = ({ card }) => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ['selections', matchup],
+    queryKey: ['selections', matchupId],
     queryFn: fetchSelections,
-    enabled: !!matchup,
+    enabled: !!matchupId,
   });
 
   useEffect(() => {
@@ -59,7 +60,7 @@ const FightCard = ({ card }) => {
     }));
     try {
       const { data } = await client.post(API_URLS.SELECTION, {
-        matchup: matchup,
+        matchup: matchupId,
         fight: fightId,
         user: user.id,
         fighter: fighterName,

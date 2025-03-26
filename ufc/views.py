@@ -13,21 +13,25 @@ from .models import Event, Fight, FightCard
 from datetime import datetime
 import pytz
 from unidecode import unidecode
+from django.shortcuts import get_object_or_404
 
 
 class EventView(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request):
-        now = timezone.now()
+    def get(self, request, *args, **kwargs):
+        event_id = kwargs.get("event_id")
+        if not event_id:
+            now = timezone.now()
+            past_events = Event.objects.prefetch_related('fights').filter(date__lt=now).order_by('-date')
+            upcoming_events = Event.objects.prefetch_related('fights').filter(date__gte=now).order_by('date')
 
-        past_events = Event.objects.prefetch_related('fights').filter(date__lt=now).order_by('-date')
-        upcoming_events = Event.objects.prefetch_related('fights').filter(date__gte=now).order_by('date')
-
-        return Response({
-            'past': EventSerializer(past_events, many=True).data,
-            'upcoming': EventSerializer(upcoming_events, many=True).data
-        })
+            return Response({
+                'past': EventSerializer(past_events, many=True).data,
+                'upcoming': EventSerializer(upcoming_events, many=True).data
+            })
+        event = get_object_or_404(Event.objects.prefetch_related('fights'), id=event_id)
+        return Response({'event': EventSerializer(event).data})
 
 
 class ScraperView(APIView):

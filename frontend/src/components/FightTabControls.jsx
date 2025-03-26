@@ -1,7 +1,7 @@
 import { useEvents } from '@/contexts/EventsContext';
 
 const FightTabControls = () => {
-  const { selectedEvent, setSelectedEvent, activeFightTab, setActiveFightTab } = useEvents();
+  const { selectedEvent, selectEvent, activeFightTab, setActiveFightTab } = useEvents();
   return (
     <div className='flex border-b mb-6'>
       <button
@@ -49,7 +49,7 @@ const FightTabControls = () => {
       <button
         className={`px-4 py-2 cursor-pointer bg-red-500 text-white rounded hover:bg-red-600`}
         onClick={() => {
-          setSelectedEvent(null);
+          selectEvent(null);
           setActiveFightTab('all');
         }}
       >

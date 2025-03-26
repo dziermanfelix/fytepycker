@@ -5,15 +5,15 @@ import { useEvents } from '@/contexts/EventsContext';
 
 const EventCards = () => {
   const { user } = useAuth();
-  const { setSelectedEvent, activeEventTab, setMatchup, upcomingEvents, pastEvents } = useEvents();
+  const { selectEvent, activeEventTab, setMatchupId, upcomingEvents, pastEvents } = useEvents();
 
   const events = activeEventTab === 'upcoming' ? upcomingEvents : pastEvents;
 
   const handleClick = async (event) => {
-    setSelectedEvent(event);
+    selectEvent(event);
     if (activeEventTab == 'upcoming') {
       const { data } = await client.post(API_URLS.MATCHUPS, { event: event.id, user_a: user.id, user_b: user.id });
-      setMatchup(data.matchup.id);
+      setMatchupId(data.matchup.id);
     }
   };
 

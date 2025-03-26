@@ -2,7 +2,7 @@ import FightCard from '@/components/FightCard';
 import { useEvents } from '@/contexts/EventsContext';
 
 const FightCards = () => {
-  const { selectedEvent, activeEventTab, activeFightTab } = useEvents();
+  const { selectedEvent, activeFightTab } = useEvents();
 
   const fightTabs = {
     all: ['main', 'prelim', 'early'],
@@ -11,11 +11,11 @@ const FightCards = () => {
     early: ['early'],
   };
 
-  const fightsToDisplay = fightTabs[activeFightTab] || [];
+  const fights = fightTabs[activeFightTab] || [];
 
   return (
     <div>
-      {fightsToDisplay.map((fightKey) => (
+      {fights.map((fightKey) => (
         <FightCard key={fightKey} card={selectedEvent.fights[fightKey]} />
       ))}
     </div>

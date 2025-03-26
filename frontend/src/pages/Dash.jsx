@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { EventsProvider } from '@/contexts/EventsContext';
+import { EventsProvider, MatchupsProvider } from '@/contexts/EventsContext';
 import Events from '@/components/Events';
 import Matchups from '@/components/Matchups';
 import { useAuth } from '@/contexts/AuthContext';
@@ -105,7 +105,11 @@ const DashboardContent = ({ activeView }) => {
         </EventsProvider>
       );
     case 'matchups':
-      return <Matchups />;
+      return (
+        <MatchupsProvider>
+          <Matchups />
+        </MatchupsProvider>
+      );
     default:
       return <div className='p-6'>Select a view from the sidebar</div>;
   }

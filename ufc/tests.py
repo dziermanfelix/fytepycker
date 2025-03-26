@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from .views import ScraperView
+from .models import Event, Fight
 
 
 User = get_user_model()
@@ -30,6 +31,34 @@ class UfcTests(APITestCase):
 
         self.scraper_view = ScraperView()
         self.events_url = reverse('api:ufc:events')
+        self.addDummyData()
+
+    def addDummyData(self):
+        event = Event.objects.get_or_create(
+            name="UFC 999",
+            url="https://ufc.com/ufc999",
+            date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
+            location="the sun",
+        )
+        self.event = event[0]
+        fight = Fight.objects.update_or_create(
+            event_id=self.event.id,
+            blue_name="paul",
+            red_name="john",
+            defaults={
+                "card": "main",
+                "order": 0,
+                "weight_class": "heavyweight",
+                "blue_img": "https://url.img",
+                "blue_url": "https://url.img",
+                "red_img": "https://url.img",
+                "red_url": "https://url.img",
+                "winner": None,
+                "method": None,
+                "round": None,
+            }
+        )
+        self.fight = fight[0]
 
     def test_parse_event_date(self):
         date_str = "Sun, Feb 23 / 2:00 AM UTC"
@@ -47,8 +76,11 @@ class UfcTests(APITestCase):
         result = self.scraper_view.normalize_name("Jan Blachowicz")
         self.assertEqual(str(result), "Jan Blachowicz")
 
-    def test_get_events_empty(self):
+    def test_get_events(self):
         response = self.client.get(self.events_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['past'], [])
-        self.assertEqual(response.data['upcoming'], [])
+
+    def test_get_event_by_id(self):
+        response = self.client.get(f'{self.events_url}{self.event.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['event']['id'], self.event.id)
