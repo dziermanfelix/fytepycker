@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { EventsProvider, MatchupsProvider } from '@/contexts/EventsContext';
+import { EventsProvider } from '@/contexts/EventsContext';
+import { MatchupsProvider } from '@/contexts/MatchupsContext';
 import Events from '@/components/Events';
 import Matchups from '@/components/Matchups';
 import { useAuth } from '@/contexts/AuthContext';

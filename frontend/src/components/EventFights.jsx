@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEvents } from '@/contexts/EventsContext';
 
-const FightCard = ({ card, matchupId: propMatchupId, selectable: propSelectable }) => {
+const EventFights = ({ card, matchupId: propMatchupId, selectable: propSelectable }) => {
   const { user } = useAuth();
   const { activeEventTab, matchupId: contextMatchupId } = useEvents();
   const [selections, setSelections] = useState({});
@@ -146,4 +146,4 @@ const FightCard = ({ card, matchupId: propMatchupId, selectable: propSelectable 
   }
 };
 
-export default FightCard;
+export default EventFights;

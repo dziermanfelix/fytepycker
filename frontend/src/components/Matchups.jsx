@@ -1,5 +1,5 @@
-import { useMatchups, MatchupsProvider, useEvents } from '@/contexts/EventsContext';
-import FightCard from '@/components/FightCard';
+import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
+import MatchupFights from './MatchupFights';
 
 const MatchupsContent = () => {
   const { isLoading, isError, matchups, selectMatchup, selectedMatchup, clearSelectedMatchup, fights } = useMatchups();
@@ -9,10 +9,6 @@ const MatchupsContent = () => {
 
   const handleClick = async (matchup) => {
     selectMatchup(matchup);
-  };
-
-  const handleClose = () => {
-    clearSelectedMatchup();
   };
 
   return (
@@ -37,7 +33,7 @@ const MatchupsContent = () => {
         <div>
           <button onClick={clearSelectedMatchup}>Close</button>
           {['main', 'prelim', 'early'].map((fightKey) => (
-            <FightCard
+            <MatchupFights
               key={fightKey}
               card={fights.event?.fights?.[fightKey]}
               matchupId={selectedMatchup.id}
