@@ -1,7 +1,7 @@
 import { useEvents } from '@/contexts/EventsContext';
 
 const EventTabControls = () => {
-  const { activeEventTab, setActiveEventTab, upcomingEvents, pastEvents } = useEvents();
+  const { activeEventTab, setActiveEventTab } = useEvents();
 
   return (
     <div className='flex border-b mb-6'>

@@ -5,7 +5,7 @@ import FightTabControls from '@/components/FightTabControls';
 import EventFights from './EventFights';
 
 const EventsContent = () => {
-  const { isLoading, isError, selectedEvent, activeFightTab, fights } = useEvents();
+  const { isLoading, isError, selectedEvent, selectEvent, activeFightTab, setActiveFightTab, fights } = useEvents();
 
   const fightTabs = {
     all: ['main', 'prelim', 'early'],
@@ -30,7 +30,12 @@ const EventsContent = () => {
 
       {selectedEvent && (
         <div>
-          <FightTabControls />
+          <FightTabControls
+            selectItem={selectEvent}
+            fights={fights}
+            activeFightTab={activeFightTab}
+            setActiveFightTab={setActiveFightTab}
+          />
           <div className='mt-2 mb-2 rounded-lg'>
             <div>
               {fightCards.map((fightKey) => (

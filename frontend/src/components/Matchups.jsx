@@ -1,8 +1,28 @@
 import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
-import MatchupFights from './MatchupFights';
+import MatchupFights from '@/components/MatchupFights';
+import FightTabControls from '@/components/FightTabControls';
 
 const MatchupsContent = () => {
-  const { isLoading, isError, matchups, selectMatchup, selectedMatchup, clearSelectedMatchup, fights } = useMatchups();
+  const {
+    isLoading,
+    isError,
+    matchups,
+    selectMatchup,
+    selectedMatchup,
+    clearSelectedMatchup,
+    activeFightTab,
+    setActiveFightTab,
+    fights,
+  } = useMatchups();
+
+  const fightTabs = {
+    all: ['main', 'prelim', 'early'],
+    main: ['main'],
+    prelim: ['prelim'],
+    early: ['early'],
+  };
+
+  const fightCards = fightTabs[activeFightTab] || [];
 
   if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
   if (isError) return <p className='text-center text-red-500'>Failed to load matchups.</p>;
@@ -31,14 +51,14 @@ const MatchupsContent = () => {
 
       {selectedMatchup && (
         <div>
-          <button onClick={clearSelectedMatchup}>Close</button>
-          {['main', 'prelim', 'early'].map((fightKey) => (
-            <MatchupFights
-              key={fightKey}
-              card={fights.event?.fights?.[fightKey]}
-              matchupId={selectedMatchup.id}
-              selectable={true}
-            />
+          <FightTabControls
+            selectItem={selectMatchup}
+            fights={fights}
+            activeFightTab={activeFightTab}
+            setActiveFightTab={setActiveFightTab}
+          />
+          {fightCards.map((fightKey) => (
+            <MatchupFights key={fightKey} card={fights?.[fightKey]} matchupId={selectedMatchup.id} selectable={true} />
           ))}
         </div>
       )}
