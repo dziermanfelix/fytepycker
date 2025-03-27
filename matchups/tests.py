@@ -215,6 +215,42 @@ class SelectionTests(APITestCase):
             }
         )
         self.fight = fight[0]
+        fight2 = Fight.objects.update_or_create(
+            event_id=self.event.id,
+            blue_name="george",
+            red_name="ringo",
+            defaults={
+                "card": "main",
+                "order": 0,
+                "weight_class": "lightweight",
+                "blue_img": "https://url.img",
+                "blue_url": "https://url.img",
+                "red_img": "https://url.img",
+                "red_url": "https://url.img",
+                "winner": None,
+                "method": None,
+                "round": None,
+            }
+        )
+        self.fight2 = fight2[0]
+        fight3 = Fight.objects.update_or_create(
+            event_id=self.event.id,
+            blue_name="tim",
+            red_name="lars",
+            defaults={
+                "card": "main",
+                "order": 0,
+                "weight_class": "bantamweight",
+                "blue_img": "https://url.img",
+                "blue_url": "https://url.img",
+                "red_img": "https://url.img",
+                "red_url": "https://url.img",
+                "winner": None,
+                "method": None,
+                "round": None,
+            }
+        )
+        self.fight3 = fight3[0]
         matchup = Matchup.objects.update_or_create(
             event_id=self.event.id,
             user_a=self.user,
@@ -402,3 +438,39 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['fight'], self.fight.id)
         self.assertEqual(response.data[0]['user'], self.user.id)
         self.assertEqual(response.data[0]['fighter'], self.fight.blue_name)
+
+    def test_two_users_select_different_fighters(self):
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user2.id,
+            "fighter": self.fight.red_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_two_users_select_same_fighter(self):
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.get(self.selection_url, data={"matchup": self.matchup.id})
+        self.assertEqual(response.data[0]['user'], self.user.id)
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user2.id,
+            "fighter": self.fight.blue_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response = self.client.get(self.selection_url, data={"matchup": self.matchup.id})
+        self.assertEqual(response.data[0]['user'], self.user.id)
