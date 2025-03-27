@@ -1,7 +1,8 @@
 import { createContext, useContext, useState } from 'react';
-import { useFights } from '@/hooks/useFights';
 import { API_URLS } from '@/common/urls';
 import useDataFetching from '@/hooks/useDataFetching';
+import { useFights } from '@/hooks/useFights';
+import { useSelections } from '@/hooks/useSelections';
 
 const EventsContext = createContext({});
 
@@ -24,13 +25,20 @@ export const EventsProvider = ({ children }) => {
   const pastEvents = events.past || [];
 
   const {
-    items,
+    items: fightItems,
     isLoading: isLoadingFights,
     isError: isErrorFights,
     refetch: refetchFights,
   } = useFights({ eventId: selectedEvent?.id });
 
-  const fights = items?.event?.fights || [];
+  const {
+    items: selections,
+    isLoading: isLoadingSelections,
+    isError: isErrorSelections,
+    refetch: refetchSelections,
+  } = useSelections({ matchupId });
+
+  const fights = fightItems?.event?.fights || [];
 
   const contextValue = {
     activeEventTab,
@@ -39,20 +47,27 @@ export const EventsProvider = ({ children }) => {
     setActiveFightTab,
     matchupId,
     setMatchupId,
+
     events,
     selectedEvent,
+    selectEvent,
+    clearSelectedEvent,
     isLoading,
     isError,
     refetchEvents,
-    selectEvent,
-    clearSelectedEvent,
+
     upcomingEvents,
     pastEvents,
 
     fights,
-    refetchFights,
     isLoadingFights,
     isErrorFights,
+    refetchFights,
+
+    selections,
+    isLoadingSelections,
+    isErrorSelections,
+    refetchSelections,
   };
 
   return <EventsContext.Provider value={contextValue}>{children}</EventsContext.Provider>;

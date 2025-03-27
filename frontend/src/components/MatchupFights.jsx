@@ -1,48 +1,33 @@
 import Fighter from '@/components/Fighter';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
-import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEvents } from '@/contexts/EventsContext';
+import { useMatchups } from '@/contexts/MatchupsContext';
 
 const MatchupFights = ({ card, matchupId: propMatchupId, selectable: propSelectable }) => {
   const { user } = useAuth();
-  const { activeEventTab, matchupId: contextMatchupId } = useEvents();
+
+  const {
+    activeEventTab,
+    matchupId: contextMatchupId,
+    selections: initialSelections,
+    isLoading,
+    isError,
+  } = useMatchups();
+
   const [selections, setSelections] = useState({});
   const matchupId = propMatchupId || contextMatchupId;
 
   const selectable = propSelectable || activeEventTab === 'upcoming';
 
-  const fetchSelections = async ({ queryKey }) => {
-    const [, matchupId] = queryKey;
-    if (!matchupId) return {};
-    try {
-      const { data } = await client.get(API_URLS.SELECTION, { params: { matchup: matchupId } });
-      const transformedData = data.reduce((acc, selection) => {
-        acc[selection.fight] = selection;
-        return acc;
-      }, {});
-      return transformedData;
-    } catch (error) {
-      console.error(`Error fetching selections for matchup ${matchupId}:`, error);
-      return {};
-    }
-  };
-
-  const {
-    data: initialSelections = {},
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ['selections', matchupId],
-    queryFn: fetchSelections,
-    enabled: !!matchupId,
-  });
-
   useEffect(() => {
     if (Object.keys(initialSelections).length > 0) {
-      setSelections(initialSelections);
+      const transformedData = initialSelections.reduce((acc, selection) => {
+        acc[selection.fight] = { fighter: selection.fighter, user: selection.user };
+        return acc;
+      }, {});
+      setSelections(transformedData);
     }
   }, [initialSelections]);
 

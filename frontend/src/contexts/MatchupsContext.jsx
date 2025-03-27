@@ -1,7 +1,8 @@
 import { createContext, useContext } from 'react';
-import { useFights } from '@/hooks/useFights';
-import useDataFetching from '@/hooks/useDataFetching';
 import { API_URLS } from '@/common/urls';
+import useDataFetching from '@/hooks/useDataFetching';
+import { useFights } from '@/hooks/useFights';
+import { useSelections } from '@/hooks/useSelections';
 
 const MatchupsContext = createContext();
 
@@ -23,19 +24,31 @@ export const MatchupsProvider = ({ children }) => {
     refetch: refetchFights,
   } = useFights({ matchup: selectedMatchup });
 
+  const {
+    items: selections,
+    isLoading: isLoadingSelections,
+    isError: isErrorSelections,
+    refetch: refetchSelections,
+  } = useSelections({ matchup: selectedMatchup });
+
   const contextValue = {
     matchups,
     selectedMatchup,
+    selectMatchup,
+    clearSelectedMatchup,
     isLoading,
     isError,
     refetchMatchups,
-    selectMatchup,
-    clearSelectedMatchup,
 
     fights,
-    refetchFights,
     isLoadingFights,
     isErrorFights,
+    refetchFights,
+
+    selections,
+    isLoadingSelections,
+    isErrorSelections,
+    refetchSelections,
   };
 
   return <MatchupsContext.Provider value={contextValue}>{children}</MatchupsContext.Provider>;

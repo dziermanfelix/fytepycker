@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import client from '@/api/client';
 
-const useDataFetching = (apiEndpoint, enabled = true) => {
+const useDataFetching = (apiEndpoint, enabled = true, params = {}) => {
   const { user, loading: authLoading } = useAuth();
   const [selectedItem, setSelectedItem] = useState(null);
 
@@ -15,9 +15,7 @@ const useDataFetching = (apiEndpoint, enabled = true) => {
   } = useQuery({
     queryKey: [apiEndpoint, user?.id],
     queryFn: async () => {
-      console.log(`useDataFetching endpoint = ${apiEndpoint}`);
-      const { data } = await client.get(`${apiEndpoint}`);
-      console.log(`data = ${data}`);
+      const { data } = await client.get(apiEndpoint, { params });
       return data;
     },
     enabled: !!user && !authLoading && enabled,
