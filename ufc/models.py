@@ -3,6 +3,7 @@ from django.db import models
 
 class Event(models.Model):
     name = models.CharField(max_length=255)
+    headline = models.CharField(max_length=255, default='No headline')
     url = models.URLField(blank=True, null=True)
     date = models.DateTimeField()
     location = models.CharField(max_length=255)
@@ -14,7 +15,7 @@ class Event(models.Model):
         ]
 
     def __str__(self):
-        return self.name
+        return f'{self.name}|{self.headline}'
 
 
 class FightCard(models.TextChoices):

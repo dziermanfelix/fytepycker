@@ -58,11 +58,15 @@ class ScraperView(APIView):
         soup = BeautifulSoup(html_content, "html.parser")
         name = soup.find(
             "div", class_="field field--name-node-title field--type-ds field--label-hidden field__item").find("h1").text.strip()
+        headline_div = soup.find("div", class_="c-hero__headline")
+        headline = headline_div.find("span", class_="e-divider__top").get_text(strip=True) + \
+            " " + headline_div.find("span", class_="e-divider__bottom").get_text(strip=True)
         date = self.parse_event_date(soup.find("div", "c-hero__headline-suffix").text.strip())
         location = soup.find(
             "div", class_="field field--name-venue field--type-entity-reference field--label-hidden field__item").text.strip().replace("\n", "")
         event = Event.objects.get_or_create(
             name=name,
+            headline=headline,
             url=url,
             date=date,
             location=location,

@@ -11,7 +11,7 @@ class FightInline(admin.TabularInline):
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'date', 'location', 'scraped_at')
+    list_display = ('name', 'headline', 'date', 'location', 'scraped_at')
     inlines = [FightInline]
 
 
