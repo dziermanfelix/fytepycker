@@ -23,11 +23,21 @@ const MatchupFights = ({ card, matchupId: propMatchupId, selectable: propSelecta
 
   useEffect(() => {
     if (Object.keys(initialSelections).length > 0) {
-      const transformedData = initialSelections.reduce((acc, selection) => {
-        acc[selection.fight] = { fighter: selection.fighter, user: selection.user };
+      const selectionsMap = initialSelections.reduce((acc, selection) => {
+        const fight = selection.fight;
+        const selectionUser = selection.user;
+        const fighter = selection.fighter;
+        if (!acc[fight]) {
+          acc[fight] = { userFighter: null, otherFighter: null };
+        }
+        if (selectionUser === user.id) {
+          acc[fight].userFighter = fighter;
+        } else {
+          acc[fight].otherFighter = fighter;
+        }
         return acc;
       }, {});
-      setSelections(transformedData);
+      setSelections(selectionsMap);
     }
   }, [initialSelections]);
 
@@ -37,12 +47,29 @@ const MatchupFights = ({ card, matchupId: propMatchupId, selectable: propSelecta
       return;
     }
 
-    let localFighterName = fighterName;
-    if (selections[fightId]?.fighter === fighterName) localFighterName = ''; // undo
-    setSelections((prevSelections) => ({
-      ...prevSelections,
-      [fightId]: { fighter: localFighterName, user: user.id },
-    }));
+    const prevSelections = selections;
+    const cur = prevSelections[fightId] || { userFighter: null, otherFighter: null };
+    const userFighter = cur.userFighter;
+    const otherFighter = cur.otherFighter;
+
+    if (fighterName === userFighter) {
+      setSelections({
+        ...prevSelections,
+        [fightId]: { ...cur, userFighter: null },
+      });
+      await postSelection(fightId, fighterName);
+    } else if (fighterName === otherFighter) {
+      return;
+    } else {
+      setSelections({
+        ...prevSelections,
+        [fightId]: { ...cur, userFighter: fighterName },
+      });
+      await postSelection(fightId, fighterName);
+    }
+  };
+
+  const postSelection = async (fightId, fighterName) => {
     try {
       const { data } = await client.post(API_URLS.SELECTION, {
         matchup: matchupId,
@@ -51,7 +78,6 @@ const MatchupFights = ({ card, matchupId: propMatchupId, selectable: propSelecta
         fighter: fighterName,
       });
     } catch (error) {
-      console.error('Error saving selection:', error);
       setSelections((prevSelections) => {
         return { ...prevSelections };
       });
@@ -62,15 +88,9 @@ const MatchupFights = ({ card, matchupId: propMatchupId, selectable: propSelecta
   if (isError) return <p>Error loading selections.</p>;
 
   const determineColor = (fight, fighterName) => {
-    let color = 'bg-gray-200';
-    if (selections[fight.id]?.fighter == fighterName) {
-      if (selections[fight.id]?.user === user.id) {
-        color = 'bg-red-500';
-      } else {
-        color = 'bg-blue-500';
-      }
-    }
-    return color;
+    if (selections[fight.id]?.userFighter === fighterName) return 'bg-red-500';
+    if (selections[fight.id]?.otherFighter === fighterName) return 'bg-blue-500';
+    return 'bg-gray-200';
   };
 
   const FighterButton = ({ fight, color }) => {
