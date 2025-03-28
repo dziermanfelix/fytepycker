@@ -264,7 +264,7 @@ class SelectionTests(APITestCase):
         )
         self.defaultmatchup = defaultMatchup[0]
 
-    def test_create_selection(self):
+    def test_create_selection_from_matchup(self):
         data = {
             "matchup": self.matchup.id,
             "fight": self.fight.id,
@@ -274,7 +274,17 @@ class SelectionTests(APITestCase):
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_create_selection_matchup_not_exist(self):
+    def test_create_selection_from_event(self):
+        data = {
+            "event": self.event.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_selection_from_matchup_matchup_not_exist(self):
         data = {
             "matchup": 9999,
             "fight": self.fight.id,
@@ -284,7 +294,7 @@ class SelectionTests(APITestCase):
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_selection_fight_not_exist(self):
+    def test_create_selection_from_matchup_fight_not_exist(self):
         data = {
             "matchup": self.event.id,
             "fight": 9999,
@@ -294,7 +304,7 @@ class SelectionTests(APITestCase):
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_selection_user_not_exist(self):
+    def test_create_selection_from_matchup_user_not_exist(self):
         data = {
             "matchup": self.event.id,
             "fight": self.fight.id,
@@ -304,7 +314,7 @@ class SelectionTests(APITestCase):
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_selection_invalid_user(self):
+    def test_create_selection_from_matchup_invalid_user(self):
         other_user = get_user_model().objects.create_user(username='otheruser', email='otheruser@gmail.com', password='otherpass1234')
         data = {
             "matchup": self.event.id,
@@ -315,7 +325,7 @@ class SelectionTests(APITestCase):
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_selection_invalid_fight(self):
+    def test_create_selection_from_matchup_invalid_fight(self):
         other_event = Event.objects.get_or_create(
             name="UFC 1000",
             url="https://ufc.com/ufc1000",
@@ -350,7 +360,7 @@ class SelectionTests(APITestCase):
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_selection_invalid_fighter(self):
+    def test_create_selection_from_matchup_invalid_fighter(self):
         data = {
             "matchup": self.event.id,
             "fight": self.fight.id,
@@ -359,6 +369,28 @@ class SelectionTests(APITestCase):
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_selection_from_event_event_not_exist(self):
+        data = {
+            "event": 9999,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.data['error'], "Matchup not found for the given event and user")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_selection_from_event_user_not_exist(self):
+        data = {
+            "event": self.event.id,
+            "fight": self.fight.id,
+            "user": 9999,
+            "fighter": self.fight.blue_name
+        }
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.data['error'], "Matchup not found for the given event and user")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_selection_change(self):
         data = {
