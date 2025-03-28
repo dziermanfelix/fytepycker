@@ -3,17 +3,8 @@ import MatchupFights from '@/components/MatchupFights';
 import FightTabControls from '@/components/FightTabControls';
 
 const MatchupsContent = () => {
-  const {
-    isLoading,
-    isError,
-    matchups,
-    selectMatchup,
-    selectedMatchup,
-    activeFightTab,
-    setActiveFightTab,
-    fights,
-    user,
-  } = useMatchups();
+  const { isLoading, isError, matchups, selectMatchup, selectedMatchup, activeFightTab, setActiveFightTab, fights } =
+    useMatchups();
 
   const fightTabs = {
     all: ['main', 'prelim', 'early'],
@@ -28,7 +19,7 @@ const MatchupsContent = () => {
 
   const fightCards = fightTabs[activeFightTab] || [];
 
-  const filteredMatchups = matchups.filter((matchup) => !(matchup.user_a === user.id && matchup.user_b === user.id));
+  const filteredMatchups = matchups.filter((matchup) => !(matchup.user_a === matchup.user_b));
 
   if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
   if (isError) return <p className='text-center text-red-500'>Failed to load matchups.</p>;
