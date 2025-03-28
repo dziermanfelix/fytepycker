@@ -1,19 +1,13 @@
 import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
 import MatchupFights from '@/components/MatchupFights';
 import FightTabControls from '@/components/FightTabControls';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MatchupsContent = () => {
-  const {
-    isLoading,
-    isError,
-    matchups,
-    selectMatchup,
-    selectedMatchup,
-    clearSelectedMatchup,
-    activeFightTab,
-    setActiveFightTab,
-    fights,
-  } = useMatchups();
+  const { user } = useAuth();
+
+  const { isLoading, isError, matchups, selectMatchup, selectedMatchup, activeFightTab, setActiveFightTab, fights } =
+    useMatchups();
 
   const fightTabs = {
     all: ['main', 'prelim', 'early'],
@@ -22,20 +16,22 @@ const MatchupsContent = () => {
     early: ['early'],
   };
 
-  const fightCards = fightTabs[activeFightTab] || [];
-
-  if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
-  if (isError) return <p className='text-center text-red-500'>Failed to load matchups.</p>;
-
   const handleClick = async (matchup) => {
     selectMatchup(matchup);
   };
 
+  const fightCards = fightTabs[activeFightTab] || [];
+
+  const filteredMatchups = matchups.filter((matchup) => !(matchup.user_a === user.id && matchup.user_b === user.id));
+
+  if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
+  if (isError) return <p className='text-center text-red-500'>Failed to load matchups.</p>;
+
   return (
     <div className='grid gap-4 max-w-5xl mx-auto mt-8'>
       {!selectedMatchup &&
-        (matchups.length > 0 ? (
-          matchups.map((matchup) => (
+        (filteredMatchups.length > 0 ? (
+          filteredMatchups.map((matchup) => (
             <div
               key={matchup.id}
               className='p-4 bg-white shadow-lg rounded-lg border border-gray-200 cursor-pointer'
