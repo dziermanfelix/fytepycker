@@ -257,6 +257,12 @@ class SelectionTests(APITestCase):
             user_b=self.user2,
         )
         self.matchup = matchup[0]
+        defaultMatchup = Matchup.objects.update_or_create(
+            event_id=self.event.id,
+            user_a=self.user,
+            user_b=self.user
+        )
+        self.defaultmatchup = defaultMatchup[0]
 
     def test_create_selection(self):
         data = {
@@ -423,7 +429,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['user'], self.user.id)
         self.assertEqual(response.data[0]['fighter'], '')
 
-    def test_get_selection(self):
+    def test_create_and_get_selection_by_matchup(self):
         data = {
             "matchup": self.matchup.id,
             "fight": self.fight.id,
@@ -435,6 +441,22 @@ class SelectionTests(APITestCase):
         response = self.client.get(self.selection_url, data={"matchup": self.matchup.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['matchup'], self.matchup.id)
+        self.assertEqual(response.data[0]['fight'], self.fight.id)
+        self.assertEqual(response.data[0]['user'], self.user.id)
+        self.assertEqual(response.data[0]['fighter'], self.fight.blue_name)
+
+    def test_create_and_get_selection_by_event_and_user(self):
+        data = {
+            "event": self.event.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.get(self.selection_url, data={"event": self.event.id, "user": self.user.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['matchup'], self.defaultmatchup.id)
         self.assertEqual(response.data[0]['fight'], self.fight.id)
         self.assertEqual(response.data[0]['user'], self.user.id)
         self.assertEqual(response.data[0]['fighter'], self.fight.blue_name)

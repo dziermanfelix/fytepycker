@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { API_URLS } from '@/common/urls';
 import useDataFetching from '@/hooks/useDataFetching';
 import { useFights } from '@/hooks/useFights';
@@ -7,9 +8,9 @@ import { useSelections } from '@/hooks/useSelections';
 const EventsContext = createContext({});
 
 export const EventsProvider = ({ children }) => {
+  const { user } = useAuth();
   const [activeEventTab, setActiveEventTab] = useState('upcoming');
   const [activeFightTab, setActiveFightTab] = useState('all');
-  const [matchupId, setMatchupId] = useState(null);
 
   const {
     items: events,
@@ -36,7 +37,7 @@ export const EventsProvider = ({ children }) => {
     isLoading: isLoadingSelections,
     isError: isErrorSelections,
     refetch: refetchSelections,
-  } = useSelections({ matchupId });
+  } = useSelections({ eventId: selectedEvent?.id, userId: user?.id });
 
   const fights = fightItems?.event?.fights || [];
 
@@ -45,8 +46,8 @@ export const EventsProvider = ({ children }) => {
     setActiveEventTab,
     activeFightTab,
     setActiveFightTab,
-    matchupId,
-    setMatchupId,
+
+    user,
 
     events,
     selectedEvent,

@@ -1,13 +1,19 @@
 import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
 import MatchupFights from '@/components/MatchupFights';
 import FightTabControls from '@/components/FightTabControls';
-import { useAuth } from '@/contexts/AuthContext';
 
 const MatchupsContent = () => {
-  const { user } = useAuth();
-
-  const { isLoading, isError, matchups, selectMatchup, selectedMatchup, activeFightTab, setActiveFightTab, fights } =
-    useMatchups();
+  const {
+    isLoading,
+    isError,
+    matchups,
+    selectMatchup,
+    selectedMatchup,
+    activeFightTab,
+    setActiveFightTab,
+    fights,
+    user,
+  } = useMatchups();
 
   const fightTabs = {
     all: ['main', 'prelim', 'early'],
@@ -54,7 +60,7 @@ const MatchupsContent = () => {
             setActiveFightTab={setActiveFightTab}
           />
           {fightCards.map((fightKey) => (
-            <MatchupFights key={fightKey} card={fights?.[fightKey]} matchupId={selectedMatchup.id} selectable={true} />
+            <MatchupFights key={fightKey} card={fights?.[fightKey]} selectable={true} />
           ))}
         </div>
       )}

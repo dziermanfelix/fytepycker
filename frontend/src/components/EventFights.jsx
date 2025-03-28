@@ -2,20 +2,11 @@ import Fighter from '@/components/Fighter';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { useEvents } from '@/contexts/EventsContext';
 
-const EventFights = ({ card, matchupId: propMatchupId, selectable: propSelectable }) => {
-  const { user } = useAuth();
-  const {
-    activeEventTab,
-    matchupId: contextMatchupId,
-    selections: initialSelections,
-    isLoading,
-    isError,
-  } = useEvents();
+const EventFights = ({ card, selectable: propSelectable }) => {
+  const { activeEventTab, selections: initialSelections, selectedEvent, isLoading, isError, user } = useEvents();
   const [selections, setSelections] = useState({});
-  const matchupId = propMatchupId || contextMatchupId;
 
   const selectable = propSelectable || activeEventTab === 'upcoming';
 
@@ -43,7 +34,7 @@ const EventFights = ({ card, matchupId: propMatchupId, selectable: propSelectabl
     }));
     try {
       const { data } = await client.post(API_URLS.SELECTION, {
-        matchup: matchupId,
+        event: selectedEvent?.id,
         fight: fightId,
         user: user.id,
         fighter: fighterName,

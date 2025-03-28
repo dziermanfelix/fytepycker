@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { API_URLS } from '@/common/urls';
 import useDataFetching from '@/hooks/useDataFetching';
 import { useFights } from '@/hooks/useFights';
@@ -7,6 +8,7 @@ import { useSelections } from '@/hooks/useSelections';
 const MatchupsContext = createContext();
 
 export const MatchupsProvider = ({ children }) => {
+  const { user } = useAuth();
   const [activeFightTab, setActiveFightTab] = useState('all');
 
   const {
@@ -38,6 +40,8 @@ export const MatchupsProvider = ({ children }) => {
   const contextValue = {
     activeFightTab,
     setActiveFightTab,
+
+    user,
 
     matchups,
     selectedMatchup,

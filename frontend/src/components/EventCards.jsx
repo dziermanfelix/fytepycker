@@ -1,11 +1,9 @@
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
-import { useAuth } from '@/contexts/AuthContext';
 import { useEvents } from '@/contexts/EventsContext';
 
 const EventCards = () => {
-  const { user } = useAuth();
-  const { selectEvent, activeEventTab, setMatchupId, upcomingEvents, pastEvents } = useEvents();
+  const { selectEvent, activeEventTab, upcomingEvents, pastEvents, user } = useEvents();
 
   const events = activeEventTab === 'upcoming' ? upcomingEvents : pastEvents;
 
@@ -13,7 +11,6 @@ const EventCards = () => {
     selectEvent(event);
     if (activeEventTab == 'upcoming') {
       const { data } = await client.post(API_URLS.MATCHUPS, { event: event.id, user_a: user.id, user_b: user.id });
-      setMatchupId(data.matchup.id);
     }
   };
 

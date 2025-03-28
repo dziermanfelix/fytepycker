@@ -2,23 +2,13 @@ import Fighter from '@/components/Fighter';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { useMatchups } from '@/contexts/MatchupsContext';
 
-const MatchupFights = ({ card, matchupId: propMatchupId, selectable: propSelectable }) => {
-  const { user } = useAuth();
-
-  const {
-    activeEventTab,
-    matchupId: contextMatchupId,
-    selections: initialSelections,
-    isLoading,
-    isError,
-  } = useMatchups();
-
+const MatchupFights = ({ card, selectable: propSelectable }) => {
+  const { user, activeEventTab, selectedMatchup, selections: initialSelections, isLoading, isError } = useMatchups();
   const [selections, setSelections] = useState({});
-  const matchupId = propMatchupId || contextMatchupId;
 
+  const matchupId = selectedMatchup?.id;
   const selectable = propSelectable || activeEventTab === 'upcoming';
 
   useEffect(() => {

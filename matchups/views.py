@@ -43,6 +43,14 @@ class MatchupView(APIView):
 
 class SelectionView(APIView):
     def post(self, request):
+        event_id = request.data.get('event')
+        user_id = request.data.get('user')
+        if event_id and user_id:
+            try:
+                matchup = Matchup.objects.get(event_id=event_id, user_a_id=user_id, user_b_id=user_id)
+                request.data['matchup'] = matchup.id
+            except Matchup.DoesNotExist:
+                return Response({'error': 'Matchup not found for the given event and user'}, status=status.HTTP_404_NOT_FOUND)
         serializer = SelectionSerializer(data=request.data)
         if serializer.is_valid():
             validated_data = serializer.validated_data
@@ -66,6 +74,12 @@ class SelectionView(APIView):
 
     def get(self, request):
         matchup = request.query_params.get('matchup')
-        selections = Selection.objects.filter(matchup=matchup)
+        event = request.query_params.get('event')
+        user = request.query_params.get('user')
+        if matchup:
+            selections = Selection.objects.filter(matchup=matchup)
+        elif event and user:
+            matchup = Matchup.objects.get(event_id=event, user_a=user, user_b=user)
+            selections = Selection.objects.filter(matchup=matchup)
         serializer = SelectionSerializer(selections, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
