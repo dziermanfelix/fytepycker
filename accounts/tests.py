@@ -9,14 +9,35 @@ User = get_user_model()
 
 class AuthenticationTests(APITestCase):
     def setUp(self):
-        self.test_user = User.objects.create_user(
+        self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
             password='testpass123'
         )
+
+        refresh = RefreshToken.for_user(self.user)
+        self.refresh_token = str(refresh)
+        self.access_token = str(refresh.access_token)
+
         self.register_url = reverse('api:accounts:register')
         self.login_url = reverse('api:accounts:login')
         self.user_url = reverse('api:accounts:user')
+        self.token_refresh_url = reverse('api:accounts:token_refresh')
+
+    def test_token_refresh(self):
+        """Test the /token/refresh/ endpoint."""
+        data = {'refresh': self.refresh_token}
+        response = self.client.post(self.token_refresh_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', response.data)
+        self.assertNotEqual(response.data['access'], self.access_token)
+
+    def test_token_refresh_invalid_refresh_token(self):
+        """Test the /token/refresh/ endpoint with an invalid refresh token."""
+        data = {'refresh': 'invalid-refresh-token'}
+        response = self.client.post(self.token_refresh_url, data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(str(response.data['detail']), 'Token is invalid or expired')
 
     def test_user_registration(self):
         """Test user registration with valid data"""
@@ -170,13 +191,13 @@ class AuthenticationTests(APITestCase):
 
     def test_get_user_authenticated(self):
         """Test getting user when authenticated"""
-        refresh = RefreshToken.for_user(self.test_user)
+        refresh = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
         response = self.client.get(self.user_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['username'], self.test_user.username)
-        self.assertEqual(response.data['email'], self.test_user.email)
+        self.assertEqual(response.data['username'], self.user.username)
+        self.assertEqual(response.data['email'], self.user.email)
 
     def test_get_user_unauthenticated(self):
         """Test getting user user when not authenticated"""
@@ -185,7 +206,7 @@ class AuthenticationTests(APITestCase):
 
     def test_update_user(self):
         """Test updating user"""
-        refresh = RefreshToken.for_user(self.test_user)
+        refresh = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
         data = {
@@ -197,5 +218,5 @@ class AuthenticationTests(APITestCase):
         self.assertEqual(response.data['email'], data['email'])
 
         # verify db
-        self.test_user.refresh_from_db()
-        self.assertEqual(self.test_user.email, data['email'])
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, data['email'])

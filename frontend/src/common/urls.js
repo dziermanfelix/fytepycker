@@ -6,6 +6,7 @@ export const FRONTEND_URLS = {
 };
 
 export const API_URLS = {
+  REFRESH_TOKEN: 'auth/token/refresh/',
   REGISTER: '/auth/register/',
   LOGIN: '/auth/login/',
   LOGOUT: '/auth/logout/',
