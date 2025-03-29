@@ -35,8 +35,8 @@ const Sidebar = ({ activeView, setActiveView, isMobile, setIsSidebarOpen }) => {
             <li key={item.id} className='mb-2 px-2'>
               <button
                 onClick={() => handleNavClick(item.id)}
-                className={`flex items-center w-full px-4 py-3 hover:bg-gray-400 rounded-md transition-colors ${
-                  activeView === item.id ? 'bg-gray-300' : ''
+                className={`flex items-center w-full px-4 py-3 hover:bg-gray-100 rounded-md transition-colors ${
+                  activeView === item.id ? 'bg-gray-200' : ''
                 }`}
               >
                 <span className='mr-3'>{item.icon}</span>
@@ -74,10 +74,10 @@ const Header = ({ activeView, setIsSidebarOpen }) => {
         <h1 className='text-xl font-semibold'>{titles[activeView] || 'Dashboard'}</h1>
       </div>
       <div className='flex items-center space-x-2 sm:space-x-4'>
-        <button className='bg-gray-100 hover:bg-gray-200 p-2 rounded-full'>
+        <button className='bg-gray-100 hover:bg-gray-100 p-2 rounded-full'>
           <span className='text-gray-500'>🔍</span>
         </button>
-        <button className='bg-gray-100 hover:bg-gray-200 p-2 rounded-full'>
+        <button className='bg-gray-100 hover:bg-gray-100 p-2 rounded-full'>
           <span className='text-gray-500'>🔔</span>
         </button>
         <div className='w-8 h-8 bg-gray-300 rounded-full'></div>

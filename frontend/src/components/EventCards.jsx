@@ -7,29 +7,36 @@ const EventCards = () => {
 
   const events = activeEventTab === 'upcoming' ? upcomingEvents : pastEvents;
 
-  const handleClick = async (event) => {
+  const openEvent = async (e, event) => {
+    if (e.target.tagName === 'A') {
+      e.stopPropagation();
+      return;
+    }
     selectEvent(event);
     if (activeEventTab == 'upcoming') {
-      const { data } = await client.post(API_URLS.MATCHUPS, { event: event.id, user_a: user.id, user_b: user.id });
+      const { data } = await client.post(API_URLS.MATCHUPS, { event: event?.id, user_a: user?.id, user_b: user?.id });
     }
   };
 
   return (
-    <div className='grid gap-4'>
+    <div className='grid gap-2'>
       {events.length > 0 ? (
         events.map((event) => (
           <div
-            key={event.id}
-            className='p-4 bg-white shadow-lg rounded-lg border border-gray-200 cursor-pointer'
-            onClick={() => handleClick(event)}
+            key={event?.id}
+            className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
+            onClick={(e) => openEvent(e, event)}
           >
-            {event.url && (
-              <a href={event.url} target='_blank' rel='noopener noreferrer' className='underline'>
-                {event.name}
-              </a>
+            {event?.url && (
+              <div className='flex items-center space-x-2'>
+                <a href={event?.url} target='_blank' rel='noopener noreferrer' className='underline'>
+                  {event?.name} | {event?.headline}
+                </a>
+              </div>
             )}
-            <p className='text-gray-600'>{new Date(event.date).toLocaleString()}</p>
-            <p className='text-gray-700'>{event.location}</p>
+
+            <p className='text-gray-600'>{new Date(event?.date).toLocaleString()}</p>
+            <p className='text-gray-700'>{event?.location}</p>
           </div>
         ))
       ) : (

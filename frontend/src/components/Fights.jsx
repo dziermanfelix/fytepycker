@@ -72,12 +72,12 @@ const Fights = ({ postSelection, selectable, activeFightTab, initialSelections, 
     return (
       <button
         className={`${selectable && 'cursor-pointer'} ${
-          fight.winner === name && fight.method && fight.round && 'border-2 border-green-500'
+          fight?.winner === name && fight?.method && fight?.round && 'border-2 border-green-600'
         } p-2 rounded transition-colors duration-300 ${determineColor(fight, name)}`}
         onClick={
           selectable
             ? (e) => {
-                fighterClicked(e, fight.id, name);
+                fighterClicked(e, fight?.id, name);
               }
             : null
         }
@@ -94,14 +94,14 @@ const Fights = ({ postSelection, selectable, activeFightTab, initialSelections, 
           <div key={cardType}>
             <ul className='space-y-4'>
               {fights[cardType]?.map((fight) => (
-                <li key={fight.id} className='p-4 bg-white shadow rounded border'>
+                <li key={fight?.id} className='p-4 bg-white shadow rounded border'>
                   <div className='flex items-center justify-between w-full'>
                     <FighterButton fight={fight} color='red' />
                     <div className='flex flex-col text-center'>
-                      <p className='text-gray-600 mb-4'>{fight.weight_class}</p>
+                      <p className='text-gray-600 mb-4'>{fight?.weight_class}</p>
                       {fight.winner && fight.method && fight.round && (
                         <p className='text-green-600 font-bold'>
-                          Winner: {fight.winner} ({fight.method})
+                          Round {fight?.round} | {fight?.method}
                         </p>
                       )}
                     </div>

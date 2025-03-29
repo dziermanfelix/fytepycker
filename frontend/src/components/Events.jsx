@@ -11,7 +11,7 @@ const EventsContent = () => {
   if (isError) return <p className='text-center text-red-500'>Failed to load events.</p>;
 
   return (
-    <div className='max-w-5xl mx-auto mt-8'>
+    <div className='max-w-5xl mx-auto mt-2'>
       {!selectedEvent && (
         <div>
           <EventTabControls />
