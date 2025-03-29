@@ -6,20 +6,11 @@ const MatchupsContent = () => {
   const { isLoading, isError, matchups, selectMatchup, selectedMatchup, activeFightTab, setActiveFightTab, fights } =
     useMatchups();
 
-  const fightTabs = {
-    all: ['main', 'prelim', 'early'],
-    main: ['main'],
-    prelim: ['prelim'],
-    early: ['early'],
-  };
+  const filteredMatchups = matchups.filter((matchup) => !(matchup.user_a === matchup.user_b));
 
   const handleClick = async (matchup) => {
     selectMatchup(matchup);
   };
-
-  const fightCards = fightTabs[activeFightTab] || [];
-
-  const filteredMatchups = matchups.filter((matchup) => !(matchup.user_a === matchup.user_b));
 
   if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
   if (isError) return <p className='text-center text-red-500'>Failed to load matchups.</p>;
@@ -50,9 +41,7 @@ const MatchupsContent = () => {
             activeFightTab={activeFightTab}
             setActiveFightTab={setActiveFightTab}
           />
-          {fightCards.map((fightKey) => (
-            <MatchupFights key={fightKey} card={fights?.[fightKey]} selectable={true} />
-          ))}
+          <MatchupFights selectable={true} />
         </div>
       )}
     </div>

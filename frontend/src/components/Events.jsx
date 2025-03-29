@@ -7,15 +7,6 @@ import EventFights from './EventFights';
 const EventsContent = () => {
   const { isLoading, isError, selectedEvent, selectEvent, activeFightTab, setActiveFightTab, fights } = useEvents();
 
-  const fightTabs = {
-    all: ['main', 'prelim', 'early'],
-    main: ['main'],
-    prelim: ['prelim'],
-    early: ['early'],
-  };
-
-  const fightCards = fightTabs[activeFightTab] || [];
-
   if (isLoading) return <p className='text-center text-gray-500'>Loading events...</p>;
   if (isError) return <p className='text-center text-red-500'>Failed to load events.</p>;
 
@@ -38,9 +29,7 @@ const EventsContent = () => {
           />
           <div className='mt-2 mb-2 rounded-lg'>
             <div>
-              {fightCards.map((fightKey) => (
-                <EventFights key={fightKey} card={fights[fightKey]} />
-              ))}
+              <EventFights />
             </div>
           </div>
         </div>
