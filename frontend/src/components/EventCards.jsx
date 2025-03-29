@@ -14,7 +14,7 @@ const EventCards = () => {
     }
     selectEvent(event);
     if (activeEventTab == 'upcoming') {
-      const { data } = await client.post(API_URLS.MATCHUPS, { event: event?.id, user_a: user?.id, user_b: user?.id });
+      const { data } = await client.post(API_URLS.MATCHUPS, { event_id: event?.id, user_a_id: user?.id, user_b_id: user?.id });
     }
   };
 

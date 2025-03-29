@@ -29,7 +29,8 @@ class MatchupView(APIView):
     def get(self, request, *args, **kwargs):
         user_a_id = kwargs.get("user_a_id")
         user_b_id = kwargs.get("user_b_id")
-        matchups = Matchup.objects.all()
+        # matchups = Matchup.objects.all()
+        matchups = Matchup.objects.select_related('event', 'user_a', 'user_b').all()
         if user_a_id and user_b_id:
             matchups = matchups.filter(
                 (Q(user_a_id=user_a_id) & Q(user_b_id=user_b_id)) |

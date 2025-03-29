@@ -11,12 +11,12 @@ class FightInline(admin.TabularInline):
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'headline', 'date', 'location', 'scraped_at')
+    list_display = ('id', 'name', 'headline', 'date', 'location', 'scraped_at')
     inlines = [FightInline]
 
 
 class FightAdmin(admin.ModelAdmin):
-    list_display = ('event', 'card', 'order', 'blue_name', 'red_name', 'winner', 'method', 'round')
+    list_display = ('id', 'event', 'card', 'order', 'blue_name', 'red_name', 'winner', 'method', 'round')
 
 
 admin.site.register(Event, EventAdmin)

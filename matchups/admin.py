@@ -11,12 +11,12 @@ class SelectionInline(admin.TabularInline):
 
 
 class MatchupAdmin(admin.ModelAdmin):
-    list_display = ('event', 'user_a', 'user_b', 'created_at')
+    list_display = ('id', 'event', 'user_a', 'user_b', 'created_at')
     inlines = [SelectionInline]
 
 
 class SelectionAdmin(admin.ModelAdmin):
-    list_display = ('matchup', 'fight', 'user', 'fighter', 'created_at', 'updated_at')
+    list_display = ('id', 'matchup', 'fight', 'user', 'fighter', 'created_at', 'updated_at')
 
 
 admin.site.register(Matchup, MatchupAdmin)

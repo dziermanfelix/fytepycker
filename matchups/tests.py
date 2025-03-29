@@ -55,38 +55,38 @@ class MatchupTests(APITestCase):
 
     def test_create_matchup(self):
         data = {
-            "event": self.event.id,
-            "user_a": self.user.id,
-            "user_b": self.user2.id,
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
         }
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # verify with get
         response = self.client.get(f'{self.matchups_url}{self.user.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['user_a'], self.user.id)
-        self.assertEqual(response.data[0]['user_b'], self.user2.id)
+        self.assertEqual(response.data[0]['event']['id'], self.event.id)
+        self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
+        self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
 
     def test_create_duplicate_matchup(self):
         data = {
-            "event": self.event.id,
-            "user_a": self.user.id,
-            "user_b": self.user2.id,
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
         }
         data2 = {
-            "event": self.event.id,
-            "user_a": self.user2.id,
-            "user_b": self.user.id,
+            "event_id": self.event.id,
+            "user_a_id": self.user2.id,
+            "user_b_id": self.user.id,
         }
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # verify with get
         response = self.client.get(f'{self.matchups_url}{self.user.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['user_a'], self.user.id)
-        self.assertEqual(response.data[0]['user_b'], self.user2.id)
+        self.assertEqual(response.data[0]['event']['id'], self.event.id)
+        self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
+        self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
         # try duplicate (switching users)
         response = self.client.post(self.matchups_url, data=data2, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -94,15 +94,15 @@ class MatchupTests(APITestCase):
         # verify with get
         response = self.client.get(f'{self.matchups_url}{self.user.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['user_a'], self.user.id)
-        self.assertEqual(response.data[0]['user_b'], self.user2.id)
+        self.assertEqual(response.data[0]['event']['id'], self.event.id)
+        self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
+        self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
 
     def test_user_default_matchup(self):
         data = {
-            "event": self.event.id,
-            "user_a": self.user.id,
-            "user_b": self.user.id,
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user.id,
         }
         # first time clicking on event
         response = self.client.post(self.matchups_url, data=data, format="json")
@@ -120,48 +120,48 @@ class MatchupTests(APITestCase):
         response = self.client.get(f'{self.matchups_url}{self.user.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['user_a'], self.user.id)
-        self.assertEqual(response.data[0]['user_b'], self.user.id)
+        self.assertEqual(response.data[0]['event']['id'], self.event.id)
+        self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
+        self.assertEqual(response.data[0]['user_b']['id'], self.user.id)
 
     def test_get_matchup_different_flavors(self):
         data = {
-            "event": self.event.id,
-            "user_a": self.user.id,
-            "user_b": self.user2.id,
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
         }
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # verify with get user 1
         response = self.client.get(f'{self.matchups_url}{self.user.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['user_a'], self.user.id)
-        self.assertEqual(response.data[0]['user_b'], self.user2.id)
+        self.assertEqual(response.data[0]['event']['id'], self.event.id)
+        self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
+        self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
         # verify with get user 2
         response = self.client.get(f'{self.matchups_url}{self.user2.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['user_a'], self.user.id)
-        self.assertEqual(response.data[0]['user_b'], self.user2.id)
+        self.assertEqual(response.data[0]['event']['id'], self.event.id)
+        self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
+        self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
         # verify with get user1, user2
         response = self.client.get(f'{self.matchups_url}{self.user.id}/{self.user2.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['user_a'], self.user.id)
-        self.assertEqual(response.data[0]['user_b'], self.user2.id)
+        self.assertEqual(response.data[0]['event']['id'], self.event.id)
+        self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
+        self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
         # verify with get user2, user1
         response = self.client.get(f'{self.matchups_url}{self.user2.id}/{self.user.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['event'], self.event.id)
-        self.assertEqual(response.data[0]['user_a'], self.user.id)
-        self.assertEqual(response.data[0]['user_b'], self.user2.id)
+        self.assertEqual(response.data[0]['event']['id'], self.event.id)
+        self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
+        self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
 
     def test_get_matchup_user_not_exists(self):
         data = {
-            "event": self.event.id,
-            "user_a": self.user.id,
-            "user_b": self.user2.id,
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
         }
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

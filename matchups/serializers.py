@@ -1,5 +1,9 @@
 from rest_framework import serializers
 from .models import Matchup, Selection
+from ufc.serializers import EventSerializer
+from accounts.serializers import UserSerializer
+from ufc.models import Event
+from accounts.models import User
 
 
 def fighter_uniqueness_validator(attrs):
@@ -30,7 +34,21 @@ class SelectionSerializer(serializers.ModelSerializer):
 
 
 class MatchupSerializer(serializers.ModelSerializer):
+    event = EventSerializer(read_only=True)
+    user_a = UserSerializer(read_only=True)
+    user_b = UserSerializer(read_only=True)
     selections = SelectionSerializer(many=True, read_only=True)
+
+    # Write: Accept only IDs when creating/updating
+    event_id = serializers.PrimaryKeyRelatedField(
+        queryset=Event.objects.all(), source='event', write_only=True
+    )
+    user_a_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), source='user_a', write_only=True
+    )
+    user_b_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), source='user_b', write_only=True
+    )
 
     class Meta:
         model = Matchup

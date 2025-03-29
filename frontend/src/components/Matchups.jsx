@@ -6,7 +6,7 @@ const MatchupsContent = () => {
   const { isLoading, isError, matchups, selectMatchup, selectedMatchup, activeFightTab, setActiveFightTab, fights } =
     useMatchups();
 
-  const filteredMatchups = matchups.filter((matchup) => !(matchup.user_a === matchup.user_b));
+  const filteredMatchups = matchups.filter((matchup) => !(matchup?.user_a?.username === matchup?.user_b?.username));
 
   const handleClick = async (matchup) => {
     selectMatchup(matchup);
@@ -27,7 +27,7 @@ const MatchupsContent = () => {
             >
               <div className='flex items-center space-x-2'>
                 <p className='text-gray-600'>
-                  {matchup.event} | vs. {matchup.user_b}
+                  {matchup?.event?.id ?? 'No event data.'} | vs. {matchup?.user_b?.username ?? 'No user data.'}
                 </p>
               </div>
             </div>
