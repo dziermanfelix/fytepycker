@@ -22,11 +22,11 @@ class EventView(APIView):
     def get(self, request, *args, **kwargs):
         event_id = kwargs.get("event_id")
         if not event_id:
-            now = timezone.now()
+            now = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)  # beginning of day
             past_events = Event.objects.prefetch_related('fights').filter(
-                date__lt=now + timedelta(days=1)).order_by('-date')
+                date__lt=now - timedelta(days=2)).order_by('-date')
             upcoming_events = Event.objects.prefetch_related('fights').filter(
-                date__gte=now - timedelta(days=1)).order_by('date')
+                date__gte=now - timedelta(days=2)).order_by('date')
             return Response({
                 'past': EventSerializer(past_events, many=True).data,
                 'upcoming': EventSerializer(upcoming_events, many=True).data

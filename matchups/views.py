@@ -77,10 +77,12 @@ class SelectionView(APIView):
         matchup = request.query_params.get('matchup')
         event = request.query_params.get('event')
         user = request.query_params.get('user')
+        selections = []
         if matchup:
             selections = Selection.objects.filter(matchup=matchup)
         elif event and user:
-            matchup = get_object_or_404(Matchup, event_id=event, user_a=user, user_b=user)
-            selections = Selection.objects.filter(matchup=matchup)
+            matchup = Matchup.objects.filter(event_id=event, user_a=user, user_b=user).first()
+            if matchup:
+                selections = Selection.objects.filter(matchup=matchup)
         serializer = SelectionSerializer(selections, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
