@@ -50,3 +50,16 @@ class Selection(models.Model):
 
     def __str__(self):
         return f"{self.user.username} selects {self.fighter} for {self.fight} in matchup {self.matchup}"
+
+
+class SelectionResult(models.Model):
+    matchup = models.ForeignKey(Matchup, on_delete=models.CASCADE, related_name="matchup_results")
+    fight = models.ForeignKey(Fight, on_delete=models.CASCADE, related_name="fight_results")
+    winner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="user_results")
+    winnings = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    class Meta:
+        unique_together = ('matchup', 'fight') 
+
+    def __str__(self):
+        return f"Matchup {self.matchup.id} - Fight {self.fight.id} - Winner: {self.winner} - Winnings: {self.winnings}"

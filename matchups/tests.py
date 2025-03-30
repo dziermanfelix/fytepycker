@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from ufc.models import Event, Fight
 from .models import Matchup
 from ufc.views import ScraperView
+from matchups.models import SelectionResult
 
 
 User = get_user_model()
@@ -476,6 +477,11 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['fight'], self.fight.id)
         self.assertEqual(response.data[0]['user'], self.user.id)
         self.assertEqual(response.data[0]['fighter'], self.fight.blue_name)
+        # verify selection result created
+        selection_result = SelectionResult.objects.filter(matchup=self.matchup, fight=self.fight).first()
+        self.assertIsNotNone(selection_result, "SelectionResult should be created when a Selection is made")
+        self.assertEqual(selection_result.matchup, self.matchup)
+        self.assertEqual(selection_result.fight, self.fight)
 
     def test_create_and_get_selection_by_event_and_user(self):
         data = {
@@ -492,6 +498,11 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['fight'], self.fight.id)
         self.assertEqual(response.data[0]['user'], self.user.id)
         self.assertEqual(response.data[0]['fighter'], self.fight.blue_name)
+        # verify selection result created
+        selection_result = SelectionResult.objects.filter(matchup=self.defaultmatchup.id, fight=self.fight).first()
+        self.assertIsNotNone(selection_result, "SelectionResult should be created when a Selection is made")
+        self.assertEqual(selection_result.matchup, self.defaultmatchup)
+        self.assertEqual(selection_result.fight, self.fight)
 
     def test_two_users_select_different_fighters(self):
         response = self.client.post(self.selection_url, data={
@@ -528,3 +539,93 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         response = self.client.get(self.selection_url, data={"matchup": self.matchup.id})
         self.assertEqual(response.data[0]['user'], self.user.id)
+
+    def test_selection_result_updates_for_default_matchup(self):
+        data = {
+            "event": self.event.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }
+        response = self.client.post(self.selection_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.get(self.selection_url, data={"event": self.event.id, "user": self.user.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['matchup'], self.defaultmatchup.id)
+        self.assertEqual(response.data[0]['fight'], self.fight.id)
+        self.assertEqual(response.data[0]['user'], self.user.id)
+        self.assertEqual(response.data[0]['fighter'], self.fight.blue_name)
+        # verify selection result created
+        selection_result = SelectionResult.objects.filter(matchup=self.defaultmatchup.id, fight=self.fight).first()
+        self.assertIsNotNone(selection_result, "SelectionResult should be created when a Selection is made")
+        self.assertEqual(selection_result.matchup, self.defaultmatchup)
+        self.assertEqual(selection_result.fight, self.fight)
+        # update fight winner
+        updated_fight = Fight.objects.update_or_create(
+            event_id=self.event.id,
+            blue_name="paul",
+            red_name="john",
+            defaults={
+                "card": "main",
+                "order": 0,
+                "weight_class": "heavyweight",
+                "blue_img": "https://url.img",
+                "blue_url": "https://url.img",
+                "red_img": "https://url.img",
+                "red_url": "https://url.img",
+                "winner": "paul",
+                "method": "submission",
+                "round": 1,
+            }
+        )
+        self.fight = updated_fight[0]
+        # verify selection result updated
+        selection_result = SelectionResult.objects.filter(matchup=self.defaultmatchup.id, fight=self.fight).first()
+        self.assertIsNotNone(selection_result, "SelectionResult should be created when a Selection is made")
+        self.assertEqual(selection_result.matchup, self.defaultmatchup)
+        self.assertEqual(selection_result.fight, self.fight)
+        self.assertEqual(selection_result.winner, self.user)
+
+    def test_selection_result_updates_after_fight_winner(self):
+        # both users make a selection
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user2.id,
+            "fighter": self.fight.red_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # verify only one SelectionResult exists after two selections are made for same matchup/fight combo
+        selection_results = SelectionResult.objects.filter(matchup=self.matchup, fight=self.fight)
+        self.assertEqual(selection_results.count(), 1, "Only one SelectionResult should exist per matchup-fight")
+        # update fight winner
+        updated_fight = Fight.objects.update_or_create(
+            event_id=self.event.id,
+            blue_name="paul",
+            red_name="john",
+            defaults={
+                "card": "main",
+                "order": 0,
+                "weight_class": "heavyweight",
+                "blue_img": "https://url.img",
+                "blue_url": "https://url.img",
+                "red_img": "https://url.img",
+                "red_url": "https://url.img",
+                "winner": "john",
+                "method": "submission",
+                "round": 1,
+            }
+        )
+        self.fight = updated_fight[0]
+        # verify selection result updated
+        selection_result = SelectionResult.objects.filter(matchup=self.matchup.id, fight=self.fight).first()
+        self.assertEqual(selection_result.matchup, self.matchup)
+        self.assertEqual(selection_result.fight, self.fight)
+        self.assertEqual(selection_result.winner, self.user2)
