@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getFightCards } from '@/utils/fightTabUtils';
 import Fighter from '@/components/Fighter';
 
-const Fights = ({ postSelection, selectable, activeFightTab, initialSelections, fights, user }) => {
+const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user }) => {
   const [selections, setSelections] = useState({});
   const fightCards = getFightCards(activeFightTab);
 
@@ -69,6 +69,7 @@ const Fights = ({ postSelection, selectable, activeFightTab, initialSelections, 
       img = fight.red_img;
       url = fight.red_url;
     }
+    const selectable = !(fight.winner && fight.method && fight.round);
     return (
       <button
         className={`${selectable && 'cursor-pointer'} ${
@@ -87,6 +88,29 @@ const Fights = ({ postSelection, selectable, activeFightTab, initialSelections, 
     );
   };
 
+  const WinnerSection = ({ fight }) => {
+    const userFighter = selections[fight.id]?.userFighter;
+    const winningFighter = fight?.winner;
+    const winnerExists = fight.winner && fight.method && fight.round;
+    let userResultText = 'You Lose.';
+    if (winningFighter === userFighter) {
+      userResultText = 'You Win!';
+    }
+    return (
+      <div className='flex flex-col text-center'>
+        <p className='text-gray-600 mb-4'>{fight?.weight_class}</p>
+        {winnerExists && (
+          <div className='flex flex-col text-center gap-3'>
+            <p className='text-yellow-500 font-bold'>
+              Round {fight?.round} | {fight?.method}
+            </p>
+            <p className='font-bold capitalize'>{userResultText}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (fightCards && fightCards.length > 0) {
     return (
       <div>
@@ -97,14 +121,7 @@ const Fights = ({ postSelection, selectable, activeFightTab, initialSelections, 
                 <li key={fight?.id} className='p-4 bg-white shadow rounded border'>
                   <div className='flex items-center justify-between w-full'>
                     <FighterButton fight={fight} color='red' />
-                    <div className='flex flex-col text-center'>
-                      <p className='text-gray-600 mb-4'>{fight?.weight_class}</p>
-                      {fight.winner && fight.method && fight.round && (
-                        <p className='text-yellow-500 font-bold'>
-                          Round {fight?.round} | {fight?.method}
-                        </p>
-                      )}
-                    </div>
+                    <WinnerSection fight={fight} />
                     <FighterButton fight={fight} color='blue' />
                   </div>
                 </li>

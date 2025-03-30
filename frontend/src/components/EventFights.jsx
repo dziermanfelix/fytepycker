@@ -34,7 +34,6 @@ const EventFights = () => {
   return (
     <Fights
       postSelection={postSelection}
-      selectable={selectable}
       activeFightTab={activeFightTab}
       initialSelections={initialSelections}
       fights={fights}
