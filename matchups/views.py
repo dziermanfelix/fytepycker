@@ -4,6 +4,7 @@ from rest_framework import status
 from django.db.models import Q
 from .serializers import MatchupSerializer, SelectionSerializer
 from .models import Matchup, Selection
+from django.shortcuts import get_object_or_404
 
 
 class MatchupView(APIView):
@@ -29,7 +30,6 @@ class MatchupView(APIView):
     def get(self, request, *args, **kwargs):
         user_a_id = kwargs.get("user_a_id")
         user_b_id = kwargs.get("user_b_id")
-        # matchups = Matchup.objects.all()
         matchups = Matchup.objects.select_related('event', 'user_a', 'user_b').all()
         if user_a_id and user_b_id:
             matchups = matchups.filter(
@@ -80,7 +80,7 @@ class SelectionView(APIView):
         if matchup:
             selections = Selection.objects.filter(matchup=matchup)
         elif event and user:
-            matchup = Matchup.objects.get(event_id=event, user_a=user, user_b=user)
+            matchup = get_object_or_404(Matchup, event_id=event, user_a=user, user_b=user)
             selections = Selection.objects.filter(matchup=matchup)
         serializer = SelectionSerializer(selections, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

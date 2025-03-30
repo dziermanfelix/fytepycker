@@ -12,10 +12,15 @@ const EventCards = () => {
       e.stopPropagation();
       return;
     }
-    selectEvent(event);
+    // create default matchup for upcoming fight
     if (activeEventTab == 'upcoming') {
-      const { data } = await client.post(API_URLS.MATCHUPS, { event_id: event?.id, user_a_id: user?.id, user_b_id: user?.id });
+      const { data } = await client.post(API_URLS.MATCHUPS, {
+        event_id: event?.id,
+        user_a_id: user?.id,
+        user_b_id: user?.id,
+      });
     }
+    selectEvent(event);
   };
 
   return (

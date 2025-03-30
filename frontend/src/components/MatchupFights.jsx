@@ -16,7 +16,7 @@ const MatchupFights = ({ selectable }) => {
 
   const postSelection = async (fightId, fighterName) => {
     try {
-      const { data } = await client.post(API_URLS.SELECTION, {
+      const { data } = await client.post(API_URLS.SELECTIONS, {
         matchup: selectedMatchup?.id,
         fight: fightId,
         user: user.id,

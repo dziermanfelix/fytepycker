@@ -25,10 +25,13 @@ const MatchupsContent = () => {
               className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
               onClick={() => handleClick(matchup)}
             >
-              <div className='flex items-center space-x-2'>
-                <p className='text-gray-600'>
-                  {matchup?.event?.id ?? 'No event data.'} | vs. {matchup?.user_b?.username ?? 'No user data.'}
-                </p>
+              <div>
+                <div className='flex items-center space-x-2'>
+                  <p className='text-gray-600'>
+                    {matchup?.event?.name} | {matchup?.event?.headline}
+                  </p>
+                </div>
+                <p className='capitalize'>versus {matchup?.user_b?.username ?? 'No user data.'}</p>
               </div>
             </div>
           ))

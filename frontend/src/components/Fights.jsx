@@ -72,7 +72,7 @@ const Fights = ({ postSelection, selectable, activeFightTab, initialSelections, 
     return (
       <button
         className={`${selectable && 'cursor-pointer'} ${
-          fight?.winner === name && fight?.method && fight?.round && 'border-2 border-green-600'
+          fight?.winner === name && fight?.method && fight?.round && 'border-6 border-yellow-500'
         } p-2 rounded transition-colors duration-300 ${determineColor(fight, name)}`}
         onClick={
           selectable
@@ -100,7 +100,7 @@ const Fights = ({ postSelection, selectable, activeFightTab, initialSelections, 
                     <div className='flex flex-col text-center'>
                       <p className='text-gray-600 mb-4'>{fight?.weight_class}</p>
                       {fight.winner && fight.method && fight.round && (
-                        <p className='text-green-600 font-bold'>
+                        <p className='text-yellow-500 font-bold'>
                           Round {fight?.round} | {fight?.method}
                         </p>
                       )}

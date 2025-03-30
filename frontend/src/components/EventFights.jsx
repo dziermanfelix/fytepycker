@@ -17,7 +17,7 @@ const EventFights = () => {
 
   const postSelection = async (fightId, fighterName) => {
     try {
-      const { data } = await client.post(API_URLS.SELECTION, {
+      const { data } = await client.post(API_URLS.SELECTIONS, {
         event: selectedEvent?.id,
         fight: fightId,
         user: user.id,

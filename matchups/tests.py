@@ -186,7 +186,7 @@ class SelectionTests(APITestCase):
         refresh = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
-        self.selection_url = reverse('api:matchups:selection')
+        self.selection_url = reverse('api:matchups:selections')
         self.addDummyData()
 
     def addDummyData(self):
