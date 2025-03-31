@@ -9,10 +9,12 @@ class MatchupManager(models.Manager):
         user_a = kwargs.get('user_a')
         user_b = kwargs.get('user_b')
 
+        user_a, user_b = sorted([user_a, user_b], key=lambda u: u.id)
+
         existing = self.filter(
             event=event,
-            user_a__id__in=[user_a.id, user_b.id],
-            user_b__id__in=[user_a.id, user_b.id]
+            user_a=user_a,
+            user_b=user_b
         ).first()
 
         if existing:

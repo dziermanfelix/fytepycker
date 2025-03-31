@@ -4,7 +4,6 @@ from rest_framework import status
 from django.db.models import Q
 from .serializers import MatchupSerializer, SelectionSerializer
 from .models import Matchup, Selection
-from django.shortcuts import get_object_or_404
 
 
 class MatchupView(APIView):

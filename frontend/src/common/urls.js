@@ -14,4 +14,5 @@ export const API_URLS = {
   EVENTS: '/ufc/events/',
   MATCHUPS: '/matchups/',
   SELECTIONS: '/matchups/selections/',
+  USERS: '/auth/users',
 };
