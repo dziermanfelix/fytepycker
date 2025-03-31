@@ -15,7 +15,7 @@ class Event(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.name}|{self.headline}'
+        return f'{{Event|{self.name}|{self.headline}}}'
 
 
 class FightCard(models.TextChoices):
@@ -51,4 +51,4 @@ class Fight(models.Model):
         return [self.blue_name, self.red_name]
 
     def __str__(self):
-        return f'Event({self.event_id}):{self.blue_name} vs. {self.red_name}'
+        return f'{{Fight|{self.event}|{self.blue_name}vs.{self.red_name}}}'

@@ -2,8 +2,7 @@ import { createContext, useContext, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_URLS } from '@/common/urls';
 import useDataFetching from '@/hooks/useDataFetching';
-import { useFights } from '@/hooks/useFights';
-import { useSelections } from '@/hooks/useSelections';
+import { useMatchups } from '@/hooks/useMatchups';
 
 const EventsContext = createContext({});
 
@@ -24,22 +23,18 @@ export const EventsProvider = ({ children }) => {
 
   const upcomingEvents = events.upcoming || [];
   const pastEvents = events.past || [];
+  const fights = selectedEvent?.fights || {};
 
   const {
-    items: fightItems,
-    isLoading: isLoadingFights,
-    isError: isErrorFights,
-    refetch: refetchFights,
-  } = useFights({ eventId: selectedEvent?.id });
+    items: matchups,
+    isLoading: isLoadingMatchups,
+    isError: isErrorMatchups,
+    refetch: refetchMatchups,
+  } = useMatchups({ userAId: user?.id, userBId: user?.id });
 
-  const {
-    items: selections,
-    isLoading: isLoadingSelections,
-    isError: isErrorSelections,
-    refetch: refetchSelections,
-  } = useSelections({ eventId: selectedEvent?.id, userId: user?.id });
-
-  const fights = fightItems?.event?.fights || [];
+  const matchup = matchups.filter((m) => m?.event?.id === selectedEvent?.id)[0] || [];
+  const selections = matchup?.selections?.filter((s) => s.matchup === matchup.id) || [];
+  const selectionResults = matchup?.selection_results?.filter((s) => s.matchup === matchup.id) || [];
 
   const contextValue = {
     activeEventTab,
@@ -57,18 +52,17 @@ export const EventsProvider = ({ children }) => {
     isError,
     refetchEvents,
 
+    matchups,
+    isLoadingMatchups,
+    isErrorMatchups,
+    refetchMatchups,
+
     upcomingEvents,
     pastEvents,
 
     fights,
-    isLoadingFights,
-    isErrorFights,
-    refetchFights,
-
     selections,
-    isLoadingSelections,
-    isErrorSelections,
-    refetchSelections,
+    selectionResults,
   };
 
   return <EventsContext.Provider value={contextValue}>{children}</EventsContext.Provider>;

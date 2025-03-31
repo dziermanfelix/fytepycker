@@ -47,7 +47,7 @@ const MatchupsContent = () => {
             activeFightTab={activeFightTab}
             setActiveFightTab={setActiveFightTab}
           />
-          <MatchupFights selectable={true} />
+          <MatchupFights />
         </div>
       )}
     </div>

@@ -5,7 +5,6 @@ import Fights from '@/components/Fights';
 
 const EventFights = () => {
   const {
-    activeEventTab,
     activeFightTab,
     selections: initialSelections,
     selectedEvent,
@@ -13,6 +12,7 @@ const EventFights = () => {
     isError,
     user,
     fights,
+    selectionResults,
   } = useEvents();
 
   const postSelection = async (fightId, fighterName) => {
@@ -26,8 +26,6 @@ const EventFights = () => {
     } catch (error) {}
   };
 
-  const selectable = activeEventTab === 'upcoming';
-
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading selections.</p>;
 
@@ -35,9 +33,10 @@ const EventFights = () => {
     <Fights
       postSelection={postSelection}
       activeFightTab={activeFightTab}
-      initialSelections={initialSelections}
-      fights={fights}
       user={user}
+      fights={fights}
+      initialSelections={initialSelections}
+      selectionResults={selectionResults}
     />
   );
 };

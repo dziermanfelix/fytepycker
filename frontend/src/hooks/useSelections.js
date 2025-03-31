@@ -1,6 +1,6 @@
+import { useMemo } from 'react';
 import useDataFetching from '@/hooks/useDataFetching';
 import { API_URLS } from '@/common/urls';
-import { useMemo } from 'react';
 
 export const useSelections = ({ matchup, eventId, userId }) => {
   const params = useMemo(() => {

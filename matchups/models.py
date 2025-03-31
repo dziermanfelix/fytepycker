@@ -27,7 +27,7 @@ class Matchup(models.Model):
         return [self.user_a, self.user_b]
 
     def __str__(self):
-        return f"Matchup for {self.event}, {self.user_a.username} vs. {self.user_b.username}"
+        return f"{{Matchup|{self.event}|{self.user_a.username}vs.{self.user_b.username}}}"
 
 
 class Selection(models.Model):

@@ -2,7 +2,6 @@ import { createContext, useContext, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_URLS } from '@/common/urls';
 import useDataFetching from '@/hooks/useDataFetching';
-import { useSelections } from '@/hooks/useSelections';
 
 const MatchupsContext = createContext();
 
@@ -21,13 +20,8 @@ export const MatchupsProvider = ({ children }) => {
   } = useDataFetching(API_URLS.MATCHUPS);
 
   const fights = selectedMatchup?.event?.fights || {};
-
-  const {
-    items: selections,
-    isLoading: isLoadingSelections,
-    isError: isErrorSelections,
-    refetch: refetchSelections,
-  } = useSelections({ matchup: selectedMatchup });
+  const selections = selectedMatchup?.selections?.filter((s) => s.matchup === selectedMatchup.id) || [];
+  const selectionResults = selectedMatchup?.selection_results?.filter((s) => s.matchup === selectedMatchup.id) || [];
 
   const contextValue = {
     activeFightTab,
@@ -44,11 +38,8 @@ export const MatchupsProvider = ({ children }) => {
     refetchMatchups,
 
     fights,
-
     selections,
-    isLoadingSelections,
-    isErrorSelections,
-    refetchSelections,
+    selectionResults,
   };
 
   return <MatchupsContext.Provider value={contextValue}>{children}</MatchupsContext.Provider>;

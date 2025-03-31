@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Matchup, Selection
+from .models import Matchup, Selection, SelectionResult
 
 
 class SelectionInline(admin.TabularInline):
@@ -19,5 +19,10 @@ class SelectionAdmin(admin.ModelAdmin):
     list_display = ('id', 'matchup', 'fight', 'user', 'fighter', 'created_at', 'updated_at')
 
 
+class SelectionResultAdmin(admin.ModelAdmin):
+    list_display = ('id', 'matchup', 'fight', 'winner', 'winnings')
+
+
 admin.site.register(Matchup, MatchupAdmin)
 admin.site.register(Selection, SelectionAdmin)
+admin.site.register(SelectionResult, SelectionResultAdmin)

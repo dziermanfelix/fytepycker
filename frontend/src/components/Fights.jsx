@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getFightCards } from '@/utils/fightTabUtils';
 import Fighter from '@/components/Fighter';
 
-const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user }) => {
+const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user, selectionResults }) => {
   const [selections, setSelections] = useState({});
   const fightCards = getFightCards(activeFightTab);
 
@@ -89,17 +89,16 @@ const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user
   };
 
   const WinnerSection = ({ fight }) => {
-    const userFighter = selections[fight.id]?.userFighter;
-    const winningFighter = fight?.winner;
-    const winnerExists = fight.winner && fight.method && fight.round;
+    const selectionResult = selectionResults.find((item) => item.fight === fight.id);
+    const winningUserId = selectionResult?.winner;
     let userResultText = 'You Lose.';
-    if (winningFighter === userFighter) {
+    if (winningUserId === user?.id) {
       userResultText = 'You Win!';
     }
     return (
       <div className='flex flex-col text-center'>
         <p className='text-gray-600 mb-4'>{fight?.weight_class}</p>
-        {winnerExists && (
+        {winningUserId && (
           <div className='flex flex-col text-center gap-3'>
             <p className='text-yellow-500 font-bold'>
               Round {fight?.round} | {fight?.method}

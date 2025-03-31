@@ -28,8 +28,8 @@ class MatchupView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):
-        user_a_id = kwargs.get("user_a_id")
-        user_b_id = kwargs.get("user_b_id")
+        user_a_id = request.GET.get("user_a_id")
+        user_b_id = request.GET.get("user_b_id")
         matchups = Matchup.objects.select_related('event', 'user_a', 'user_b').all()
         if user_a_id and user_b_id:
             matchups = matchups.filter(

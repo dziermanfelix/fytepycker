@@ -3,7 +3,7 @@ import { API_URLS } from '@/common/urls';
 import { useMatchups } from '@/contexts/MatchupsContext';
 import Fights from '@/components/Fights';
 
-const MatchupFights = ({ selectable }) => {
+const MatchupFights = () => {
   const {
     user,
     selectedMatchup,
@@ -12,6 +12,7 @@ const MatchupFights = ({ selectable }) => {
     isError,
     activeFightTab,
     fights,
+    selectionResults,
   } = useMatchups();
 
   const postSelection = async (fightId, fighterName) => {
@@ -32,9 +33,10 @@ const MatchupFights = ({ selectable }) => {
     <Fights
       postSelection={postSelection}
       activeFightTab={activeFightTab}
-      initialSelections={initialSelections}
-      fights={fights}
       user={user}
+      fights={fights}
+      initialSelections={initialSelections}
+      selectionResults={selectionResults}
     />
   );
 };
