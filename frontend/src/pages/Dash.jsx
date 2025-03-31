@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { EventsProvider } from '@/contexts/EventsContext';
 import { MatchupsProvider } from '@/contexts/MatchupsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import Events from '@/components/Events';
 import Matchups from '@/components/Matchups';
-import { useAuth } from '@/contexts/AuthContext';
 
 const Sidebar = ({ activeView, setActiveView, isMobile, setIsSidebarOpen }) => {
   const { user } = useAuth();
@@ -60,9 +60,40 @@ const Sidebar = ({ activeView, setActiveView, isMobile, setIsSidebarOpen }) => {
 };
 
 const Header = ({ activeView, setIsSidebarOpen }) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const { user, logout } = useAuth();
+
   const titles = {
     events: 'Events',
     matchups: 'Matchups',
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleLogout = () => {
+    setIsDropdownOpen(false);
+    logout();
+  };
+
+  const handleChangePassword = () => {
+    setIsDropdownOpen(false);
+    console.log('Change password clicked');
   };
 
   return (
@@ -74,13 +105,45 @@ const Header = ({ activeView, setIsSidebarOpen }) => {
         <h1 className='text-xl font-semibold'>{titles[activeView] || 'Dashboard'}</h1>
       </div>
       <div className='flex items-center space-x-2 sm:space-x-4'>
-        <button className='bg-gray-100 hover:bg-gray-100 p-2 rounded-full'>
-          <span className='text-gray-500'>🔍</span>
-        </button>
-        <button className='bg-gray-100 hover:bg-gray-100 p-2 rounded-full'>
-          <span className='text-gray-500'>🔔</span>
-        </button>
-        <div className='w-8 h-8 bg-gray-300 rounded-full'></div>
+        <a href='#messages'>
+          <button className='bg-gray-100 hover:bg-gray-200 p-2 rounded-full text-gray-500'>🔔</button>
+        </a>
+        <div className='relative' ref={dropdownRef}>
+          <button
+            onClick={toggleDropdown}
+            className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 focus:outline-none'
+          >
+            <span className='sr-only'>Open user menu</span>
+            <span className='text-xs'>👤</span>
+          </button>
+
+          {isDropdownOpen && (
+            <div className='absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200'>
+              <div className='px-4 py-2 text-sm text-gray-700 border-b border-gray-100'>
+                <p className='font-medium'>{user.username}</p>
+                <p className='text-gray-500 text-xs truncate'>{user.email}</p>
+              </div>
+              <a href='#profile' className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'>
+                Your Profile
+              </a>
+              <a href='#settings' className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'>
+                Settings
+              </a>
+              <button
+                onClick={handleChangePassword}
+                className='block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
+              >
+                Change Password
+              </button>
+              <button
+                onClick={handleLogout}
+                className='block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100'
+              >
+                Log out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

@@ -13,6 +13,7 @@ const MatchupFights = () => {
     activeFightTab,
     fights,
     selectionResults,
+    ws,
   } = useMatchups();
 
   const postSelection = async (fightId, fighterName) => {
@@ -37,6 +38,7 @@ const MatchupFights = () => {
       fights={fights}
       initialSelections={initialSelections}
       selectionResults={selectionResults}
+      ws={ws}
     />
   );
 };

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getFightCards } from '@/utils/fightTabUtils';
 import Fighter from '@/components/Fighter';
 
-const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user, selectionResults }) => {
+const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user, selectionResults, ws }) => {
   const [selections, setSelections] = useState({});
   const fightCards = getFightCards(activeFightTab);
 
@@ -51,6 +51,16 @@ const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user
         [fightId]: { ...cur, userFighter: fighterName },
       });
       await postSelection(fightId, fighterName);
+    }
+
+    // send message to web socket
+    if (ws?.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(
+        JSON.stringify({
+          action: 'wsUpdateSelections',
+          selections: selections,
+        })
+      );
     }
   };
 

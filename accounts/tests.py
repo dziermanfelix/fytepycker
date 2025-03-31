@@ -1,8 +1,9 @@
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
-from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
@@ -19,8 +20,12 @@ class AuthenticationTests(APITestCase):
         self.refresh_token = str(refresh)
         self.access_token = str(refresh.access_token)
 
+        self.authenticated_client = APIClient()
+        self.authenticated_client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
+
         self.register_url = reverse('api:accounts:register')
         self.login_url = reverse('api:accounts:login')
+        self.logout_url = reverse('api:accounts:logout')
         self.user_url = reverse('api:accounts:user')
         self.token_refresh_url = reverse('api:accounts:token_refresh')
         self.users_url = reverse('api:accounts:users')
@@ -58,9 +63,7 @@ class AuthenticationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.post(self.register_url, data4, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        request_client = self.client
-        request_client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
-        response = request_client.get(self.users_url)
+        response = self.authenticated_client.get(self.users_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 5)
 
@@ -240,7 +243,7 @@ class AuthenticationTests(APITestCase):
         self.assertEqual(response.data['email'], self.user.email)
 
     def test_get_user_unauthenticated(self):
-        """Test getting user user when not authenticated"""
+        """Test getting user when not authenticated"""
         response = self.client.get(self.user_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -260,3 +263,34 @@ class AuthenticationTests(APITestCase):
         # verify db
         self.user.refresh_from_db()
         self.assertEqual(self.user.email, data['email'])
+
+    def test_user_logout(self):
+        """Test user login with valid credentials"""
+        data = {
+            'username': 'testuser',
+            'password': 'testpass123'
+        }
+
+        response = self.client.post(self.login_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', response.data)
+        self.assertIn('refresh', response.data)
+        response = self.authenticated_client.post(
+            self.logout_url, {'refresh': response.data['refresh']}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], 'Successfully logged out.')
+
+    def test_user_logout_no_refresh_token(self):
+        """Test user login with valid credentials"""
+        data = {
+            'username': 'testuser',
+            'password': 'testpass123'
+        }
+
+        response = self.client.post(self.login_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', response.data)
+        self.assertIn('refresh', response.data)
+        response = self.authenticated_client.post(self.logout_url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], 'Refresh token is required.')
