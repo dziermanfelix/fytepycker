@@ -1,7 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { API_URLS } from '@/common/urls';
-import useDataFetching from '@/hooks/useDataFetching';
+import { useMatchups as useMatchupsHook } from '@/hooks/useMatchups';
 
 const MatchupsContext = createContext();
 
@@ -17,7 +16,7 @@ export const MatchupsProvider = ({ children }) => {
     isLoading,
     isError,
     refetch: refetchMatchups,
-  } = useDataFetching(API_URLS.MATCHUPS);
+  } = useMatchupsHook({ userAId: user?.id });
 
   const fights = selectedMatchup?.event?.fights || {};
   const selections = selectedMatchup?.selections?.filter((s) => s.matchup === selectedMatchup.id) || [];
