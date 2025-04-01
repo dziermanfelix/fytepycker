@@ -44,7 +44,7 @@ class ScraperView(APIView):
         soup = BeautifulSoup(html_content, "html.parser")
         num_upcoming_events = int(soup.find("div", "althelete-total").text.split()[0])
         all_fight_divs = soup.select(".c-card-event--result")
-        fight_divs = all_fight_divs[:2] + all_fight_divs[num_upcoming_events:num_upcoming_events + 2]
+        fight_divs = all_fight_divs[:1] + all_fight_divs[num_upcoming_events - 1:num_upcoming_events + 1]
         for fight in fight_divs:
             a_tag = fight.find("a")
             if a_tag and "href" in a_tag.attrs:
