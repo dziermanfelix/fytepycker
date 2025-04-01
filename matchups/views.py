@@ -40,6 +40,25 @@ class MatchupView(APIView):
         serializer = MatchupSerializer(matchups, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def delete(self, request):
+        serializer = MatchupSerializer(data=request.data)
+        if serializer.is_valid():
+            validated_data = serializer.validated_data
+            unique_fields = {
+                'event': validated_data['event'],
+                'user_a': validated_data['user_a'],
+                'user_b': validated_data['user_b'],
+            }
+
+            try:
+                matchup = Matchup.objects.get(**unique_fields)
+                matchup.delete()
+                return Response({"message": "Matchup deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+            except Matchup.DoesNotExist:
+                return Response({"error": "Matchup not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SelectionView(APIView):
     def post(self, request):

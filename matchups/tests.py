@@ -199,6 +199,35 @@ class MatchupTests(APITestCase):
         response = self.client.get(self.matchups_url, {'user_a_id': self.user2.id, 'user_b_id': self.user2.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_delete_matchup(self):
+        data = {
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
+        }
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # verify with get
+        response = self.client.get(self.matchups_url, {'user_a_id': self.user.id, 'user_b_id': self.user2.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['event']['id'], self.event.id)
+        self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
+        self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
+        response = self.client.delete(self.matchups_url, data={
+                                      'event_id': self.event.id, 'user_a_id': self.user.id, 'user_b_id': self.user2.id}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.data['message'], 'Matchup deleted successfully.')
+        # confirm db
+        matchup_exists = Matchup.objects.filter(
+            event=self.event.id, user_a=self.user.id, user_b=self.user2.id).exists()
+        self.assertFalse(matchup_exists, "Matchup still exists in the database.")
+
+    def test_delete_matchup_error_matchup_not_found(self):
+        response = self.client.delete(self.matchups_url, data={
+                                      'event_id': self.event.id, 'user_a_id': self.user.id, 'user_b_id': self.user2.id}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['error'], 'Matchup not found.')
+
 
 class SelectionTests(APITestCase):
     def setUp(self):
