@@ -53,7 +53,7 @@ class MatchupView(APIView):
             try:
                 matchup = Matchup.objects.get(**unique_fields)
                 matchup.delete()
-                return Response({"message": "Matchup deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+                return Response({"message": "Matchup deleted successfully."}, status=status.HTTP_200_OK)
             except Matchup.DoesNotExist:
                 return Response({"error": "Matchup not found."}, status=status.HTTP_404_NOT_FOUND)
 

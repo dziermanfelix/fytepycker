@@ -76,7 +76,7 @@ const EventFights = () => {
       setIsModalOpen(false);
       setSelectedOpponent('');
     } catch (error) {
-      setError('Failed to create matchup');
+      setError('Failed to create matchup.');
     } finally {
       setIsSubmitting(false);
     }

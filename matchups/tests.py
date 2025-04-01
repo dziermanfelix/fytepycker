@@ -215,7 +215,7 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
         response = self.client.delete(self.matchups_url, data={
                                       'event_id': self.event.id, 'user_a_id': self.user.id, 'user_b_id': self.user2.id}, format="json")
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'Matchup deleted successfully.')
         # confirm db
         matchup_exists = Matchup.objects.filter(
