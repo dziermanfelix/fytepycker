@@ -1,20 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
+import { Link, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { EventsProvider } from '@/contexts/EventsContext';
 import { MatchupsProvider } from '@/contexts/MatchupsContext';
+import { ResultsProvider } from '@/contexts/ResultsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Events from '@/components/Events';
 import Matchups from '@/components/Matchups';
+import Results from '@/components/Results';
 
-const Sidebar = ({ activeView, setActiveView, isMobile, setIsSidebarOpen }) => {
+const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
   const { user } = useAuth();
 
   const navItems = [
-    { id: 'events', label: 'Events', icon: '📅' },
-    { id: 'matchups', label: 'Matchups', icon: '🥊' },
+    { id: 'events', label: 'Events', path: '/dash/events' },
+    { id: 'matchups', label: 'Matchups', path: '/dash/matchups' },
+    { id: 'results', label: 'Results', path: '/dash/results' },
   ];
 
   const handleNavClick = (id) => {
-    setActiveView(id);
     if (isMobile) {
       setIsSidebarOpen(false);
     }
@@ -33,15 +36,16 @@ const Sidebar = ({ activeView, setActiveView, isMobile, setIsSidebarOpen }) => {
         <ul>
           {navItems.map((item) => (
             <li key={item.id} className='mb-2 px-2'>
-              <button
-                onClick={() => handleNavClick(item.id)}
-                className={`flex items-center w-full px-4 py-3 hover:bg-gray-100 rounded-md transition-colors ${
-                  activeView === item.id ? 'bg-gray-200' : ''
-                }`}
-              >
-                <span className='mr-3'>{item.icon}</span>
-                <span>{item.label}</span>
-              </button>
+              <Link to={item.path}>
+                <button
+                  onClick={() => handleNavClick(item.id)}
+                  className={`flex items-center w-full px-4 py-3 hover:bg-gray-100 rounded-md transition-colors ${
+                    activePath === item.path ? 'bg-gray-200' : ''
+                  }`}
+                >
+                  <span>{item.label}</span>
+                </button>
+              </Link>
             </li>
           ))}
         </ul>
@@ -59,15 +63,15 @@ const Sidebar = ({ activeView, setActiveView, isMobile, setIsSidebarOpen }) => {
   );
 };
 
-const Header = ({ activeView, setIsSidebarOpen }) => {
+const Header = ({ setIsSidebarOpen }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { user, logout } = useAuth();
 
-  const titles = {
-    events: 'Events',
-    matchups: 'Matchups',
-  };
+  const dropdownOptions = [
+    { id: 'profile', label: 'Profile', path: '/dash/profile' },
+    { id: 'settings', label: 'Settings', path: '/dash/settings' },
+  ];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -91,9 +95,8 @@ const Header = ({ activeView, setIsSidebarOpen }) => {
     logout();
   };
 
-  const handleChangePassword = () => {
+  const handleDropdownSelect = () => {
     setIsDropdownOpen(false);
-    console.log('Change password clicked');
   };
 
   return (
@@ -102,12 +105,16 @@ const Header = ({ activeView, setIsSidebarOpen }) => {
         <button onClick={() => setIsSidebarOpen(true)} className='mr-4 md:hidden text-gray-500 hover:text-gray-700'>
           ☰
         </button>
-        <h1 className='text-xl font-semibold'>{titles[activeView] || 'Dashboard'}</h1>
       </div>
       <div className='flex items-center space-x-2 sm:space-x-4'>
-        <a href='#messages'>
-          <button className='bg-gray-100 hover:bg-gray-200 p-2 rounded-full text-gray-500'>🔔</button>
-        </a>
+        <Link to={'/dash/messages'}>
+          <button
+            onClick={() => handleDropdownSelect()}
+            className='bg-gray-100 hover:bg-gray-200 p-2 rounded-full text-gray-500'
+          >
+            🔔
+          </button>
+        </Link>
         <div className='relative' ref={dropdownRef}>
           <button
             onClick={toggleDropdown}
@@ -123,18 +130,16 @@ const Header = ({ activeView, setIsSidebarOpen }) => {
                 <p className='font-medium'>{user.username}</p>
                 <p className='text-gray-500 text-xs truncate'>{user.email}</p>
               </div>
-              <a href='#profile' className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'>
-                Your Profile
-              </a>
-              <a href='#settings' className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'>
-                Settings
-              </a>
-              <button
-                onClick={handleChangePassword}
-                className='block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
-              >
-                Change Password
-              </button>
+              {dropdownOptions.map((item) => (
+                <Link key={item.id} to={item.path}>
+                  <button
+                    onClick={() => handleDropdownSelect()}
+                    className={`block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100`}
+                  >
+                    <span>{item.label}</span>
+                  </button>
+                </Link>
+              ))}
               <button
                 onClick={handleLogout}
                 className='block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100'
@@ -160,51 +165,64 @@ const MobileSidebarOverlay = ({ isSidebarOpen, setIsSidebarOpen, children }) => 
   );
 };
 
-const DashboardContent = ({ activeView }) => {
-  switch (activeView) {
-    case 'events':
-      return (
-        <EventsProvider>
-          <Events />
-        </EventsProvider>
-      );
-    case 'matchups':
-      return (
-        <MatchupsProvider>
-          <Matchups />
-        </MatchupsProvider>
-      );
-    default:
-      return <div className='p-6'>Select a view from the sidebar</div>;
-  }
+const DashboardContent = () => {
+  return (
+    <div className='p-6'>
+      <Routes>
+        <Route
+          path='events'
+          element={
+            <EventsProvider>
+              <Events />
+            </EventsProvider>
+          }
+        />
+        <Route
+          path='matchups'
+          element={
+            <MatchupsProvider>
+              <Matchups />
+            </MatchupsProvider>
+          }
+        />
+        <Route
+          path='results'
+          element={
+            <ResultsProvider>
+              <Results />
+            </ResultsProvider>
+          }
+        />
+        <Route path='settings' element={<div>settings</div>} />
+        <Route path='profile' element={<div>profile</div>} />
+        <Route path='messages' element={<div>messages</div>} />
+        <Route path='*' element={<Navigate to='/dash/events' replace />} />
+      </Routes>
+    </div>
+  );
 };
 
 const Dash = () => {
-  const [activeView, setActiveView] = useState('events');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const location = useLocation();
 
   return (
     <div className='h-screen bg-gray-100 flex flex-col'>
       <div className='flex flex-1 overflow-hidden'>
         <div className='hidden md:block'>
-          <Sidebar activeView={activeView} setActiveView={setActiveView} isMobile={false} />
+          <Sidebar activePath={location.pathname} isMobile={false} />
         </div>
 
         <div className='flex-1 flex flex-col overflow-hidden'>
-          <Header activeView={activeView} setIsSidebarOpen={setIsSidebarOpen} />
+          <Header setIsSidebarOpen={setIsSidebarOpen} />
           <main className='flex-1 overflow-y-auto p-4'>
-            <DashboardContent activeView={activeView} />
+            <DashboardContent />
           </main>
         </div>
       </div>
 
       <MobileSidebarOverlay isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen}>
-        <Sidebar
-          activeView={activeView}
-          setActiveView={setActiveView}
-          isMobile={true}
-          setIsSidebarOpen={setIsSidebarOpen}
-        />
+        <Sidebar isMobile={true} setIsSidebarOpen={setIsSidebarOpen} />
       </MobileSidebarOverlay>
     </div>
   );

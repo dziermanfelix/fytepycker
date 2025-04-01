@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently --raw \"redis-server\" \"PYTHONUNBUFFERED=1 python manage.py runserver\" \"daphne -b 127.0.0.1 -p 8001 core.asgi:application\" \"cd frontend && npm run dev\"",
+    "dev": "concurrently --kill-others --raw \"redis-server\" \"PYTHONUNBUFFERED=1 python manage.py runserver\" \"daphne -b 127.0.0.1 -p 8001 core.asgi:application\" \"cd frontend && npm run dev\"",
     "test": "python manage.py test"
   },
   "repository": {
