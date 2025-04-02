@@ -11,12 +11,14 @@ class Command(BaseCommand):
         url = config('SCRAPE_URL')
         username = config('ADMIN_USERNAME')
         password = config('ADMIN_PASSWORD')
+        actions = ['upcoming', 'past']
 
-        try:
-            response = requests.get(url, auth=HTTPBasicAuth(username, password))
-            if response.status_code == 200:
-                self.stdout.write(self.style.SUCCESS("Scraper ran successfully!"))
-            else:
-                self.stderr.write(self.style.ERROR(f"Failed! Status code: {response.status_code}"))
-        except requests.RequestException as e:
-            self.stderr.write(self.style.ERROR(f"Error: {e}"))
+        for action in actions:
+            try:
+                response = requests.get(f'{url}?action={action}', auth=HTTPBasicAuth(username, password))
+                if response.status_code == 200:
+                    self.stdout.write(self.style.SUCCESS(f"Scraper {action} ran successfully!"))
+                else:
+                    self.stderr.write(self.style.ERROR(f"Failed! ({action}), Status code: {response.status_code}"))
+            except requests.RequestException as e:
+                self.stderr.write(self.style.ERROR(f"Error ({action}): {e}"))

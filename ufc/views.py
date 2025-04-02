@@ -42,10 +42,20 @@ class ScraperView(APIView):
     def get(self, request):
         html_content = self.get_html_content('https://www.ufc.com/events', 200)
         soup = BeautifulSoup(html_content, "html.parser")
-        num_upcoming_events = int(soup.find("div", "althelete-total").text.split()[0])
         all_fight_divs = soup.select(".c-card-event--result")
-        fight_divs = all_fight_divs[:1] + all_fight_divs[num_upcoming_events - 1:num_upcoming_events + 1]
+        action = request.query_params.get('action')
+        fight_divs = list()
+        if action == 'upcoming':
+            fight_divs = all_fight_divs[:1]
+        elif action == 'past':
+            for fight_div in all_fight_divs:
+                date_div = fight_div.find("div", "c-card-event--result__date")
+                main_card_date = date_div.get("data-main-card")
+                if self.parse_event_date(main_card_date) < timezone.now():
+                    fight_divs.append(fight_div)
+                    break
         for fight in fight_divs:
+            print(f'fight = \n{fight}')
             a_tag = fight.find("a")
             if a_tag and "href" in a_tag.attrs:
                 fight_url = "https://www.ufc.com" + a_tag["href"]
@@ -53,6 +63,7 @@ class ScraperView(APIView):
         events = Event.objects.all()
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({}, status=status.HTTP_200_OK)
 
     def scrape_fight_from_url(self, url):
         html_content = self.get_html_content(url, 2000)
@@ -87,9 +98,9 @@ class ScraperView(APIView):
         return html_content
 
     def get_fights_for_card(self, card_listing, event, fight_card):
-        main_card_fights = card_listing.select(".c-listing-fight__content") if card_listing else []
+        card_fights = card_listing.select(".c-listing-fight__content") if card_listing else []
         order = 0
-        for fight in main_card_fights:
+        for fight in card_fights:
             fight_row = fight.find("div", class_="c-listing-fight__content-row")
             details = fight_row.find("div", class_="c-listing-fight__details")
             weight_class = details.find("div", class_="c-listing-fight__class-text").text.strip()
@@ -102,10 +113,12 @@ class ScraperView(APIView):
             blue_url = fight_row.find("div", class_="c-listing-fight__corner-image--blue").find("a")["href"]
             red_corner = fight_row.find("div", class_="c-listing-fight__corner-body--red")
             red_winner = red_corner.find("div", class_="c-listing-fight__outcome--win")
+            blue_corner = fight_row.find("div", class_="c-listing-fight__corner-body--blue")
+            blue_winner = blue_corner.find("div", class_="c-listing-fight__outcome--win")
             red_img_tag = fight_row.select_one(".c-listing-fight__corner--red .layout__region--content img")
             red_img = red_img_tag["src"] if red_img_tag else None
             red_url = fight_row.find("div", class_="c-listing-fight__corner-image--red").find("a")["href"]
-            winner = red_name if red_winner is not None else blue_name
+            winner = red_name if red_winner is not None else blue_name if blue_winner is not None else None
             results = fight_row.find("div", class_="js-listing-fight__results")
             method_element = results.find("div", class_="c-listing-fight__result-text method")
             method = method_element.text.strip() if method_element else None

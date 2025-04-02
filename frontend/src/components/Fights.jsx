@@ -79,7 +79,7 @@ const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user
       img = fight.red_img;
       url = fight.red_url;
     }
-    const selectable = !(fight.winner && fight.method && fight.round);
+    const selectable = !fight.winner;
     return (
       <button
         className={`${selectable && 'cursor-pointer'} ${
@@ -108,12 +108,12 @@ const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user
     return (
       <div className='flex flex-col text-center'>
         <p className='text-gray-600 mb-4'>{fight?.weight_class}</p>
-        {winningUserId && (
+        {fight.winner && (
           <div className='flex flex-col text-center gap-3'>
             <p className='text-yellow-500 font-bold'>
-              Round {fight?.round} | {fight?.method}
+              Round {fight.round} | {fight.method}
             </p>
-            <p className='font-bold capitalize'>{userResultText}</p>
+            {winningUserId && <p className='font-bold capitalize'>{userResultText}</p>}
           </div>
         )}
       </div>
