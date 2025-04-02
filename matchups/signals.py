@@ -1,6 +1,9 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from channels.layers import get_channel_layer
+from matchups.models import Matchup
 from .models import Selection, SelectionResult, Fight
+from asgiref.sync import async_to_sync
 
 
 @receiver(post_save, sender=Selection)
@@ -29,3 +32,18 @@ def update_selection_results(sender, instance, **kwargs):
                 selection_result.winner = None
 
             selection_result.save()
+
+    # broadcast to websocket
+    event = instance.event
+    matchups = Matchup.objects.filter(event=event)
+    message = {
+        'type': 'refetch_matchup',
+    }
+    channel_layer = get_channel_layer()
+    for matchup in matchups:
+        room_group_name = f'matchup_{matchup.id}'
+        print(f'room group name = {room_group_name}')
+        async_to_sync(channel_layer.group_send)(
+            room_group_name,
+            message
+        )

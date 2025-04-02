@@ -33,14 +33,19 @@ export const MatchupsProvider = ({ children }) => {
       return;
     }
 
-    ws.current = new WebSocket(`ws://localhost:8001/ws/selections/${selectedMatchup.id}/`);
+    ws.current = new WebSocket(`ws://localhost:8001/ws/matchups/${selectedMatchup.id}/`);
 
     ws.current.onopen = () => {
       console.log('WebSocket connected for matchup', selectedMatchup.id);
     };
 
     ws.current.onmessage = (event) => {
-      refetchSelections();
+      const data = JSON.parse(event.data);
+      if (data.type === 'refetch_selections') {
+        refetchSelections();
+      } else if (data.type === 'refetch_matchup') {
+        refetchMatchups();
+      }
     };
 
     ws.current.onerror = (error) => {

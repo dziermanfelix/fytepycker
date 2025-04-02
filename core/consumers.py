@@ -20,6 +20,8 @@ class SelectionConsumer(AsyncWebsocketConsumer):
         )
 
     async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message_type = text_data_json.get('type', '')
         data = json.loads(text_data)
         if data.get('action') == 'wsUpdateSelections':
             selections = data.get('selections')
@@ -31,9 +33,20 @@ class SelectionConsumer(AsyncWebsocketConsumer):
                     "sender": self.channel_name,
                 }
             )
+        elif message_type == 'refetch_matchup':
+            await self.send(text_data=json.dumps({
+                'type': 'refetch_matchup',
+                'message': 'Matchup has been updated. Please refresh.',
+            }))
 
     async def broadcast_update(self, event):
         if event["sender"] != self.channel_name:
             await self.send(text_data=json.dumps({
-                "selections": event["selections"]
+                "type": "refetch_selections"
             }))
+
+    async def refetch_matchup(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'refetch_matchup',
+            'message': event.get('message', 'Matchup data has been refreshed'),
+        }))
