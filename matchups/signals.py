@@ -42,7 +42,6 @@ def update_selection_results(sender, instance, **kwargs):
     channel_layer = get_channel_layer()
     for matchup in matchups:
         room_group_name = f'matchup_{matchup.id}'
-        print(f'room group name = {room_group_name}')
         async_to_sync(channel_layer.group_send)(
             room_group_name,
             message

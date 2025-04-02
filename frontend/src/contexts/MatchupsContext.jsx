@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMatchups as useMatchupsHook } from '@/hooks/useMatchups';
 import { useSelections } from '@/hooks/useSelections';
+import client from '@/api/client';
+import { API_URLS } from '@/common/urls';
 
 const MatchupsContext = createContext();
 
@@ -18,6 +20,11 @@ export const MatchupsProvider = ({ children }) => {
     isError,
     refetch: refetchMatchups,
   } = useMatchupsHook({ userAId: user?.id });
+
+  const fetchSelectedMatchup = async () => {
+    const { data } = await client.get(`${API_URLS.MATCHUPS}?id=${selectedMatchup?.id}`);
+    return data;
+  };
 
   const {
     items: selections,
@@ -39,12 +46,14 @@ export const MatchupsProvider = ({ children }) => {
       console.log('WebSocket connected for matchup', selectedMatchup.id);
     };
 
-    ws.current.onmessage = (event) => {
+    ws.current.onmessage = async (event) => {
       const data = JSON.parse(event.data);
       if (data.type === 'refetch_selections') {
         refetchSelections();
       } else if (data.type === 'refetch_matchup') {
-        refetchMatchups();
+        const fetchData = await fetchSelectedMatchup(selectedMatchup.id);
+        const updatedMatchup = fetchData ? fetchData[0] : null;
+        selectMatchup(updatedMatchup);
       }
     };
 

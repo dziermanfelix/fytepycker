@@ -55,7 +55,6 @@ class ScraperView(APIView):
                     fight_divs.append(fight_div)
                     break
         for fight in fight_divs:
-            print(f'fight = \n{fight}')
             a_tag = fight.find("a")
             if a_tag and "href" in a_tag.attrs:
                 fight_url = "https://www.ufc.com" + a_tag["href"]

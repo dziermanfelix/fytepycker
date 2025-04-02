@@ -125,6 +125,21 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
         self.assertEqual(response.data[0]['user_b']['id'], self.user.id)
 
+    def test_get_matchup_by_id(self):
+        data = {
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
+        }
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        matchup_id = response.data['matchup']['id']
+        response = self.client.get(f'{self.matchups_url}', {'id': matchup_id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['event']['id'], self.event.id)
+        self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
+        self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
+
     def test_get_matchup_different_flavors(self):
         data = {
             "event_id": self.event.id,
