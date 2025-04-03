@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 import { useMatchups } from '@/contexts/MatchupsContext';
-import Fights from '@/components/Fights';
+import SelectableFights from '@/components/SelectableFights';
 
 const MatchupFights = () => {
   const {
@@ -65,7 +65,7 @@ const MatchupFights = () => {
 
   return (
     <div className='relative'>
-      <Fights
+      <SelectableFights
         postSelection={postSelection}
         activeFightTab={activeFightTab}
         user={user}

@@ -1,74 +1,22 @@
-import { useState, useEffect } from 'react';
 import { getFightCards } from '@/utils/fightTabUtils';
-import Fighter from '@/components/Fighter';
 
-const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user, selectionResults, ws }) => {
-  const [selections, setSelections] = useState({});
+const Fights = ({ activeFightTab, fights, user, selections, selectionResults, fighterClicked }) => {
   const fightCards = getFightCards(activeFightTab);
-
-  useEffect(() => {
-    if (Object.keys(initialSelections).length > 0) {
-      const selectionsMap = initialSelections.reduce((acc, selection) => {
-        const fight = selection.fight;
-        const selectionUser = selection.user;
-        const fighter = selection.fighter;
-        if (!acc[fight]) {
-          acc[fight] = { userFighter: null, otherFighter: null };
-        }
-        if (selectionUser === user.id) {
-          acc[fight].userFighter = fighter;
-        } else {
-          acc[fight].otherFighter = fighter;
-        }
-        return acc;
-      }, {});
-      setSelections(selectionsMap);
-    }
-  }, [initialSelections]);
-
-  const fighterClicked = async (e, fightId, fighterName) => {
-    if (e.target.tagName === 'A') {
-      e.stopPropagation();
-      return;
-    }
-
-    const prevSelections = selections;
-    const cur = prevSelections[fightId] || { userFighter: null, otherFighter: null };
-    const userFighter = cur.userFighter;
-    const otherFighter = cur.otherFighter;
-
-    if (fighterName === userFighter) {
-      setSelections({
-        ...prevSelections,
-        [fightId]: { ...cur, userFighter: null },
-      });
-      await postSelection(fightId, fighterName);
-    } else if (fighterName === otherFighter) {
-      return;
-    } else {
-      setSelections({
-        ...prevSelections,
-        [fightId]: { ...cur, userFighter: fighterName },
-      });
-      await postSelection(fightId, fighterName);
-    }
-
-    // send message to web socket
-    if (ws?.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(
-        JSON.stringify({
-          action: 'wsUpdateSelections',
-          selections: selections,
-        })
-      );
-    }
-  };
 
   const determineColor = (fight, fighterName) => {
     if (selections[fight.id]?.userFighter === fighterName) return 'bg-red-500';
     if (selections[fight.id]?.otherFighter === fighterName) return 'bg-blue-500';
     return 'bg-gray-200';
   };
+
+  const Fighter = ({ img, name, url }) => (
+    <div className='flex-row items-center text-center justify-between'>
+      <img src={img} alt={name} className='w-50 h-50 object-contain mb-2' />
+      <a href={url} target='_blank' rel='noopener noreferrer' className='underline font-semibold'>
+        {name}
+      </a>
+    </div>
+  );
 
   const FighterButton = ({ fight, color }) => {
     let name = fight.blue_name;
@@ -82,9 +30,9 @@ const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user
     const selectable = !fight.winner;
     return (
       <button
-        className={`${selectable && 'cursor-pointer'} ${
-          fight?.winner === name && fight?.method && fight?.round && 'border-6 border-yellow-500'
-        } p-2 rounded transition-colors duration-300 ${determineColor(fight, name)}`}
+        className={`${
+          fight?.winner === name && 'border-6 border-yellow-500'
+        } p-2 rounded transition-colors duration-300 ${selections && determineColor(fight, name)}`}
         onClick={
           selectable
             ? (e) => {
@@ -99,11 +47,13 @@ const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user
   };
 
   const WinnerSection = ({ fight }) => {
-    const selectionResult = selectionResults.find((item) => item.fight === fight.id);
-    const winningUserId = selectionResult?.winner;
-    let userResultText = 'You Lose.';
-    if (winningUserId === user?.id) {
-      userResultText = 'You Win!';
+    if (user) {
+      const selectionResult = selectionResults.find((item) => item.fight === fight.id);
+      const winningUserId = selectionResult?.winner;
+      let userResultText = 'You Lose.';
+      if (winningUserId === user?.id) {
+        userResultText = 'You Win!';
+      }
     }
     return (
       <div className='flex flex-col text-center'>
@@ -127,7 +77,7 @@ const Fights = ({ postSelection, activeFightTab, initialSelections, fights, user
           <div key={cardType}>
             <ul className='space-y-4'>
               {fights[cardType]?.map((fight) => (
-                <li key={fight?.id} className='p-4 bg-white shadow rounded border'>
+                <li key={fight?.id} className='p-4 bg-white shadow rounded border '>
                   <div className='flex items-center justify-between w-full'>
                     <FighterButton fight={fight} color='red' />
                     <WinnerSection fight={fight} />

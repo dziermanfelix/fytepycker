@@ -1,5 +1,3 @@
-import client from '@/api/client';
-import { API_URLS } from '@/common/urls';
 import { useEvents } from '@/contexts/EventsContext';
 
 const EventCards = () => {
@@ -11,14 +9,6 @@ const EventCards = () => {
     if (e.target.tagName === 'A') {
       e.stopPropagation();
       return;
-    }
-    // create default matchup for upcoming fight
-    if (activeEventTab == 'upcoming') {
-      const { data } = await client.post(API_URLS.MATCHUPS, {
-        event_id: event?.id,
-        user_a_id: user?.id,
-        user_b_id: user?.id,
-      });
     }
     selectEvent(event);
   };
