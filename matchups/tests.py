@@ -801,7 +801,6 @@ class LifetimeTests(APITestCase):
         fight2.save()
         response = self.client.get(self.lifetime_url, {'user_id': self.user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print(response.data)
         self.assertEqual(response.data[0]['opponent'], {'id': self.user2.id, 'username': self.user2.username})
         self.assertEqual(response.data[0]['wins'], 1)
         self.assertEqual(response.data[0]['losses'], 1)

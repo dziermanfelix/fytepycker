@@ -113,9 +113,11 @@ class SelectionView(APIView):
 class LifetimeView(APIView):
     def get(self, request, *args, **kwargs):
         user_id = request.GET.get("user_id")
-        user = User.objects.get(id=user_id)
+
         if not user_id:
             return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.get(id=user_id)
 
         matchups = Matchup.objects.prefetch_related(
             Prefetch("matchup_results", queryset=SelectionResult.objects.only("winner"))
