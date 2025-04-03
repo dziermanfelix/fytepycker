@@ -42,17 +42,6 @@ const EventFights = () => {
     }
   };
 
-  const postSelection = async (fightId, fighterName) => {
-    try {
-      const { data } = await client.post(API_URLS.SELECTIONS, {
-        event: selectedEvent?.id,
-        fight: fightId,
-        user: user.id,
-        fighter: fighterName,
-      });
-    } catch (error) {}
-  };
-
   const createMatchup = () => {
     setIsModalOpen(true);
   };
@@ -88,12 +77,8 @@ const EventFights = () => {
   return (
     <div className='relative'>
       <Fights
-        postSelection={postSelection}
         activeFightTab={activeFightTab}
-        user={user}
         fights={fights}
-        initialSelections={initialSelections}
-        selectionResults={selectionResults}
       />
       <div>
         <button

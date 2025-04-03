@@ -2,12 +2,11 @@ import { useMemo } from 'react';
 import useDataFetching from '@/hooks/useDataFetching';
 import { API_URLS } from '@/common/urls';
 
-export const useSelections = ({ matchup, eventId, userId }) => {
+export const useSelections = ({ matchup }) => {
   const params = useMemo(() => {
-    if (eventId && userId) return { event: eventId, user: userId };
-    if (matchup?.id) return { matchup: matchup.id };
+    if (matchup?.id) return { matchup_id: matchup.id };
     return null;
-  }, [matchup, eventId, userId]);
+  }, [matchup]);
 
   return useDataFetching(API_URLS.SELECTIONS, !!params, params);
 };
