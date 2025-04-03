@@ -2,11 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { EventsProvider } from '@/contexts/EventsContext';
 import { MatchupsProvider } from '@/contexts/MatchupsContext';
-import { ResultsProvider } from '@/contexts/ResultsContext';
+import { LifetimeProvider } from '@/contexts/LifetimeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Events from '@/components/Events';
 import Matchups from '@/components/Matchups';
-import Results from '@/components/Results';
+import Lifetime from '@/components/Lifetime';
 
 const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
   const { user } = useAuth();
@@ -14,10 +14,10 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
   const navItems = [
     { id: 'events', label: 'Events', path: '/dash/events' },
     { id: 'matchups', label: 'Matchups', path: '/dash/matchups' },
-    { id: 'results', label: 'Results', path: '/dash/results' },
+    { id: 'lifetime', label: 'Lifetime', path: '/dash/lifetime' },
   ];
 
-  const handleNavClick = (id) => {
+  const handleNavClick = () => {
     if (isMobile) {
       setIsSidebarOpen(false);
     }
@@ -38,7 +38,7 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
             <li key={item.id} className='mb-2 px-2'>
               <Link to={item.path}>
                 <button
-                  onClick={() => handleNavClick(item.id)}
+                  onClick={() => handleNavClick()}
                   className={`flex items-center w-full px-4 py-3 hover:bg-gray-100 rounded-md transition-colors ${
                     activePath === item.path ? 'bg-gray-200' : ''
                   }`}
@@ -110,7 +110,7 @@ const Header = ({ setIsSidebarOpen }) => {
         <Link to={'/dash/messages'}>
           <button
             onClick={() => handleDropdownSelect()}
-            className='bg-gray-100 hover:bg-gray-200 p-2 rounded-full text-gray-500'
+            className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 focus:outline-none'
           >
             🔔
           </button>
@@ -186,11 +186,11 @@ const DashboardContent = () => {
           }
         />
         <Route
-          path='results'
+          path='lifetime'
           element={
-            <ResultsProvider>
-              <Results />
-            </ResultsProvider>
+            <LifetimeProvider>
+              <Lifetime />
+            </LifetimeProvider>
           }
         />
         <Route path='settings' element={<div>settings</div>} />

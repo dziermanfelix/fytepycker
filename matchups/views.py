@@ -1,9 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Q
-from .serializers import MatchupSerializer, SelectionSerializer
-from .models import Matchup, Selection
+from django.db.models import Count, Q, Prefetch
+from .serializers import MatchupSerializer, SelectionSerializer, LifetimeSerializer
+from .models import Matchup, Selection, SelectionResult
 
 
 class MatchupView(APIView):
@@ -107,3 +107,31 @@ class SelectionView(APIView):
                 selections = Selection.objects.filter(matchup=matchup)
         serializer = SelectionSerializer(selections, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class LifetimeView(APIView):
+    def get(self, request, *args, **kwargs):
+        user_id = request.GET.get("user_id")
+        if not user_id:
+            return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        matchups = Matchup.objects.prefetch_related(
+            Prefetch("matchup_results", queryset=SelectionResult.objects.only("winner"))
+        ).filter(Q(user_a_id=user_id) | Q(user_b_id=user_id))
+
+        user_stats = {}
+
+        for matchup in matchups:
+            opponent_id = matchup.user_b_id if matchup.user_a_id == int(user_id) else matchup.user_a_id
+
+            if opponent_id not in user_stats:
+                user_stats[opponent_id] = {"opponent_id": opponent_id, "wins": 0, "losses": 0}
+
+            for result in matchup.matchup_results.all():
+                if result.winner == int(user_id):
+                    user_stats[opponent_id]["wins"] += 1
+                else:
+                    user_stats[opponent_id]["losses"] += 1
+
+        serialized_data = LifetimeSerializer(user_stats.values(), many=True).data
+        return Response(serialized_data, status=status.HTTP_200_OK)

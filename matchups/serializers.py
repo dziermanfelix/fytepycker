@@ -60,3 +60,19 @@ class MatchupSerializer(serializers.ModelSerializer):
         model = Matchup
         fields = "__all__"
         validators = []
+
+
+class LifetimeSerializer(serializers.Serializer):
+    opponent = serializers.SerializerMethodField()
+    wins = serializers.IntegerField()
+    losses = serializers.IntegerField()
+    win_percentage = serializers.SerializerMethodField()
+
+    def get_opponent(self, obj):
+        from .models import User
+        user = User.objects.filter(id=obj["opponent_id"]).first()
+        return {"id": user.id, "username": user.username} if user else None
+
+    def get_win_percentage(self, obj):
+        total = obj["wins"] + obj["losses"]
+        return round((obj["wins"] / total) * 100, 2) if total > 0 else 0

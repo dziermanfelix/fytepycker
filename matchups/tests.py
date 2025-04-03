@@ -693,3 +693,119 @@ class SelectionTests(APITestCase):
         self.assertEqual(selection_result.matchup, self.matchup)
         self.assertEqual(selection_result.fight, self.fight)
         self.assertEqual(selection_result.winner, self.user2)
+
+
+class LifetimeTests(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username='testuser', email='testuser@gmail.com', password='testpass')
+        self.user2 = get_user_model().objects.create_user(username='testuser2', email='testuser2@gmail.com', password='testpass2')
+        refresh = RefreshToken.for_user(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+
+        self.selection_url = reverse('api:matchups:selections')
+        self.lifetime_url = reverse('api:matchups:lifetime')
+        self.addDummyData()
+
+    def addDummyData(self):
+        event = Event.objects.get_or_create(
+            name="UFC 1969",
+            url="https://ufc.com/ufc-1969",
+            date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
+            location="Abbey Road",
+        )
+        self.event = event[0]
+        fight = Fight.objects.update_or_create(
+            event_id=self.event.id,
+            blue_name="paul",
+            red_name="john",
+            defaults={
+                "card": "main",
+                "order": 0,
+                "weight_class": "heavyweight",
+                "blue_img": "https://url.img",
+                "blue_url": "https://url.img",
+                "red_img": "https://url.img",
+                "red_url": "https://url.img",
+                "winner": None,
+                "method": None,
+                "round": None,
+            }
+        )
+        self.fight = fight[0]
+        fight2 = Fight.objects.update_or_create(
+            event_id=self.event.id,
+            blue_name="george",
+            red_name="ringo",
+            defaults={
+                "card": "main",
+                "order": 0,
+                "weight_class": "lightweight",
+                "blue_img": "https://url.img",
+                "blue_url": "https://url.img",
+                "red_img": "https://url.img",
+                "red_url": "https://url.img",
+                "winner": None,
+                "method": None,
+                "round": None,
+            }
+        )
+        self.fight2 = fight2[0]
+        matchup = Matchup.objects.update_or_create(
+            event_id=self.event.id,
+            user_a=self.user,
+            user_b=self.user2,
+        )
+        self.matchup = matchup[0]
+
+    def test_get_lifetime(self):
+        # user makes selections
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight2.id,
+            "user": self.user.id,
+            "fighter": self.fight2.blue_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # user2 makes selections
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user2.id,
+            "fighter": self.fight.red_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight2.id,
+            "user": self.user2.id,
+            "fighter": self.fight2.red_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # update fights with winner, triggers SelectionResult update
+        fight = Fight.objects.filter(id=self.fight.id).first()
+        fight.winner = "paul"
+        fight.method = "TKO"
+        fight.round = 2
+        fight.save()
+        fight2 = Fight.objects.filter(id=self.fight2.id).first()
+        fight2.winner = "george"
+        fight2.method = "Submission"
+        fight2.round = 1
+        fight2.save()
+        response = self.client.get(self.lifetime_url, {'user_id': self.user.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['opponent'], {'id': self.user2.id, 'username': self.user2.username})
+        self.assertEqual(response.data[0]['wins'], 0)
+        self.assertEqual(response.data[0]['losses'], 2)
+        self.assertEqual(response.data[0]['win_percentage'], 0)
+
+    def test_get_lifetime_error_missing_user_id(self):
+        response = self.client.get(self.lifetime_url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

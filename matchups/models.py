@@ -49,7 +49,7 @@ class Selection(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username} selects {self.fighter} for {self.fight} in matchup {self.matchup}"
+        return f"{{Matchup:{self.matchup}|Fight:{self.fight}|User:{self.user}|Fighter:{self.fighter}}}"
 
 
 class SelectionResult(models.Model):
@@ -59,7 +59,7 @@ class SelectionResult(models.Model):
     winnings = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     class Meta:
-        unique_together = ('matchup', 'fight') 
+        unique_together = ('matchup', 'fight')
 
     def __str__(self):
-        return f"Matchup {self.matchup.id} - Fight {self.fight.id} - Winner: {self.winner} - Winnings: {self.winnings}"
+        return f"{{Matchup:{self.matchup}|Fight:{self.fight}|Winner:{self.winner}|Winnings:{self.winnings}}}"
