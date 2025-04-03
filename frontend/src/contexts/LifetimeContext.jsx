@@ -1,34 +1,27 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMatchups } from '@/hooks/useMatchups';
+import { useLifetime as useLifetimeHook } from '@/hooks/useLifetime';
 
 const LifetimeContext = createContext({});
 
 export const LifetimeProvider = ({ children }) => {
   const { user } = useAuth();
 
-  const {
-    items: matchups,
-    isLoading: isLoadingMatchups,
-    isError: isErrorMatchups,
-    refetch: refetchMatchups,
-  } = useMatchups({ userAId: user?.id });
+  const { items, isLoading, isError, refetch } = useLifetimeHook({ userId: user?.id });
 
-  // const matchup = matchups.filter((m) => m?.event?.id === selectedEvent?.id)[0] || [];
-  // const selections = matchup?.selections?.filter((s) => s.matchup === matchup.id) || [];
-  // const selectionResults = matchup?.selection_results?.filter((s) => s.matchup === matchup.id) || [];
+  const formattedItems = items.map((item) => ({
+    opponent: item.opponent.username,
+    wins: item.wins,
+    losses: item.losses,
+  }));
 
   const contextValue = {
     user,
+    stats: formattedItems,
 
-    matchups,
-    isLoadingMatchups,
-    isErrorMatchups,
-    refetchMatchups,
-
-    // fights,
-    // selections,
-    // selectionResults,
+    isLoading,
+    isError,
+    refetch,
   };
 
   return <LifetimeContext.Provider value={contextValue}>{children}</LifetimeContext.Provider>;

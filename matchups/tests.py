@@ -790,7 +790,7 @@ class LifetimeTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # update fights with winner, triggers SelectionResult update
         fight = Fight.objects.filter(id=self.fight.id).first()
-        fight.winner = "paul"
+        fight.winner = "john"
         fight.method = "TKO"
         fight.round = 2
         fight.save()
@@ -801,10 +801,11 @@ class LifetimeTests(APITestCase):
         fight2.save()
         response = self.client.get(self.lifetime_url, {'user_id': self.user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        print(response.data)
         self.assertEqual(response.data[0]['opponent'], {'id': self.user2.id, 'username': self.user2.username})
-        self.assertEqual(response.data[0]['wins'], 0)
-        self.assertEqual(response.data[0]['losses'], 2)
-        self.assertEqual(response.data[0]['win_percentage'], 0)
+        self.assertEqual(response.data[0]['wins'], 1)
+        self.assertEqual(response.data[0]['losses'], 1)
+        self.assertEqual(response.data[0]['win_percentage'], 50)
 
     def test_get_lifetime_error_missing_user_id(self):
         response = self.client.get(self.lifetime_url)

@@ -27,11 +27,11 @@ const MatchupsContent = () => {
             >
               <div>
                 <div className='flex items-center space-x-2'>
-                  <p className='text-gray-600'>
+                  <p className=''>
                     {matchup?.event?.name} | {matchup?.event?.headline}
                   </p>
                 </div>
-                <p className='capitalize'>versus {matchup?.user_b?.username ?? 'No user data.'}</p>
+                <p className='capitalize text-gray-600'>versus {matchup?.user_b?.username ?? 'No user data.'}</p>
               </div>
             </div>
           ))

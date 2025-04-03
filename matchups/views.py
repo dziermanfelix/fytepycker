@@ -4,6 +4,7 @@ from rest_framework import status
 from django.db.models import Count, Q, Prefetch
 from .serializers import MatchupSerializer, SelectionSerializer, LifetimeSerializer
 from .models import Matchup, Selection, SelectionResult
+from accounts.models import User
 
 
 class MatchupView(APIView):
@@ -112,6 +113,7 @@ class SelectionView(APIView):
 class LifetimeView(APIView):
     def get(self, request, *args, **kwargs):
         user_id = request.GET.get("user_id")
+        user = User.objects.get(id=user_id)
         if not user_id:
             return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -128,7 +130,8 @@ class LifetimeView(APIView):
                 user_stats[opponent_id] = {"opponent_id": opponent_id, "wins": 0, "losses": 0}
 
             for result in matchup.matchup_results.all():
-                if result.winner == int(user_id):
+                winner = result.winner.username if result.winner else None
+                if winner == user.username:
                     user_stats[opponent_id]["wins"] += 1
                 else:
                     user_stats[opponent_id]["losses"] += 1
