@@ -69,6 +69,17 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
         self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
 
+    def test_create_matchup_duplicate(self):
+        data = {
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
+        }
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_get_matchup_by_id(self):
         data = {
             "event_id": self.event.id,

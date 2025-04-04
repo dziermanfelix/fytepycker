@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 
-const CreateMatchupModal = ({ isOpen, onClose, selectedEvent, user }) => {
+const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user }) => {
   const [users, setUsers] = useState([]);
   const [selectedOpponent, setSelectedOpponent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isOpen) {
@@ -38,11 +40,15 @@ const CreateMatchupModal = ({ isOpen, onClose, selectedEvent, user }) => {
     setError('');
 
     try {
-      await client.post(API_URLS.MATCHUPS, {
-        event_id: selectedEvent?.id,
-        user_a_id: user?.id,
+      const res = await client.post(API_URLS.MATCHUPS, {
+        event_id: selectedEvent.id,
+        user_a_id: user.id,
         user_b_id: selectedOpponent,
       });
+
+      if (res.status === 200) {
+        navigate('/dash/matchups');
+      }
 
       setSelectedOpponent('');
       onClose();
@@ -85,7 +91,10 @@ const CreateMatchupModal = ({ isOpen, onClose, selectedEvent, user }) => {
         <div className='flex justify-end mt-6'>
           <button
             className='px-4 py-2 mr-2 bg-gray-300 rounded hover:bg-gray-400 transition duration-200'
-            onClick={() => onClose()}
+            onClick={() => {
+              if (selectEvent) selectEvent(null);
+              onClose();
+            }}
             disabled={isSubmitting}
           >
             Cancel
