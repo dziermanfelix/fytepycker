@@ -1,15 +1,31 @@
+import { useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
 import MatchupFights from '@/components/MatchupFights';
 import FightTabControls from '@/components/FightTabControls';
 
 const MatchupsContent = () => {
-  const { isLoading, isError, matchups, selectMatchup, selectedMatchup, activeFightTab, setActiveFightTab, fights } =
+  const { id } = useParams();
+  const { isLoading, isError, matchups, selectedMatchup, selectMatchup, activeFightTab, setActiveFightTab, fights } =
     useMatchups();
+  const navigate = useNavigate();
 
-  const filteredMatchups = matchups.filter((matchup) => !(matchup?.user_a?.username === matchup?.user_b?.username));
+  useEffect(() => {
+    if (id) {
+      const selected = matchups.find((m) => m.id === parseInt(id));
+      if (selected && selectedMatchup?.id !== parseInt(id)) {
+        selectMatchup(selected);
+      }
+    } else {
+      if (selectedMatchup != null) {
+        selectMatchup(null);
+      }
+    }
+  }, [id, matchups, selectMatchup]);
 
   const handleClick = async (matchup) => {
     selectMatchup(matchup);
+    navigate(`/dash/matchups/${matchup.id}`);
   };
 
   if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
@@ -17,9 +33,9 @@ const MatchupsContent = () => {
 
   return (
     <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
-      {!selectedMatchup &&
-        (filteredMatchups.length > 0 ? (
-          filteredMatchups.map((matchup) => (
+      {!id &&
+        (matchups.length > 0 ? (
+          matchups.map((matchup) => (
             <div
               key={matchup.id}
               className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
@@ -39,13 +55,14 @@ const MatchupsContent = () => {
           <p className='text-center text-gray-500'>No matchups available.</p>
         ))}
 
-      {selectedMatchup && (
+      {id && (
         <div>
           <FightTabControls
             selectItem={selectMatchup}
             fights={fights}
             activeFightTab={activeFightTab}
             setActiveFightTab={setActiveFightTab}
+            basePath='/dash/matchups'
           />
           <MatchupFights />
         </div>

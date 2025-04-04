@@ -96,6 +96,7 @@ const EventsContent = () => {
             fights={fights}
             activeFightTab={activeFightTab}
             setActiveFightTab={setActiveFightTab}
+            basePath='/dash/events'
           />
           <div className='mt-2 mb-2 rounded-lg'>
             <div>

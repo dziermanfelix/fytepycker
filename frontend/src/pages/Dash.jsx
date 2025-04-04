@@ -186,6 +186,14 @@ const DashboardContent = () => {
           }
         />
         <Route
+          path='matchups/:id'
+          element={
+            <MatchupsProvider>
+              <Matchups />
+            </MatchupsProvider>
+          }
+        />
+        <Route
           path='lifetime'
           element={
             <LifetimeProvider>

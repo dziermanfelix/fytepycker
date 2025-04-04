@@ -46,10 +46,7 @@ const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user 
         user_b_id: selectedOpponent,
       });
 
-      if (res.status === 200) {
-        navigate('/dash/matchups');
-      }
-
+      navigate(`/dash/matchups/${res.data.matchup.id}`);
       setSelectedOpponent('');
       onClose();
     } catch (error) {

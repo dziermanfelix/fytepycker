@@ -21,11 +21,6 @@ export const MatchupsProvider = ({ children }) => {
     refetch: refetchMatchups,
   } = useMatchupsHook({ userAId: user?.id });
 
-  const fetchSelectedMatchup = async () => {
-    const { data } = await client.get(`${API_URLS.MATCHUPS}?id=${selectedMatchup?.id}`);
-    return data;
-  };
-
   const {
     items: selections,
     isLoading: isLoadingSelections,
@@ -33,19 +28,21 @@ export const MatchupsProvider = ({ children }) => {
     refetch: refetchSelections,
   } = useSelections({ matchup: selectedMatchup });
 
+  const fetchSelectedMatchup = async () => {
+    const { data } = await client.get(`${API_URLS.MATCHUPS}?id=${selectedMatchup?.id}`);
+    return data;
+  };
+
   const ws = useRef(null);
 
   useEffect(() => {
     if (!selectedMatchup?.id) {
       return;
     }
-
     ws.current = new WebSocket(`ws://localhost:8001/ws/matchups/${selectedMatchup.id}/`);
-
     ws.current.onopen = () => {
       console.log('WebSocket connected for matchup', selectedMatchup.id);
     };
-
     ws.current.onmessage = async (event) => {
       const data = JSON.parse(event.data);
       if (data.type === 'refetch_selections') {
@@ -56,17 +53,14 @@ export const MatchupsProvider = ({ children }) => {
         selectMatchup(updatedMatchup);
       }
     };
-
     ws.current.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
-
     ws.current.onclose = (event) => {
       console.log(`WebSocket disconnected for matchup ${selectedMatchup.id}. Reason: ${event.reason}`);
     };
-
     return () => {
-      if (ws.current) {
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
         ws.current.close();
       }
     };
@@ -91,6 +85,9 @@ export const MatchupsProvider = ({ children }) => {
 
     fights,
     selections,
+    isLoadingSelections,
+    isErrorSelections,
+    refetchSelections,
     selectionResults,
 
     ws,

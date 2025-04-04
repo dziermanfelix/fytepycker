@@ -1,4 +1,8 @@
-const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTab }) => {
+import { useNavigate } from 'react-router-dom';
+
+const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTab, basePath }) => {
+  const navigate = useNavigate();
+
   return (
     <div className='flex border-b mb-2'>
       <button
@@ -44,6 +48,7 @@ const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTa
         onClick={() => {
           selectItem(null);
           setActiveFightTab('all');
+          navigate(basePath);
         }}
       >
         Close
