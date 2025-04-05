@@ -47,11 +47,11 @@ const Fights = ({ activeFightTab, fights, user, selections, selectionResults, fi
   };
 
   const WinnerSection = ({ fight }) => {
-    let winningUserId = undefined;
+    let winningUserId;
+    let userResultText = 'You Lose.';
     if (user && selectionResults) {
       const selectionResult = selectionResults.find((item) => item.fight === fight.id);
-      const winningUserId = selectionResult?.winner;
-      let userResultText = 'You Lose.';
+      winningUserId = selectionResult?.winner;
       if (winningUserId === user?.id) {
         userResultText = 'You Win!';
       }
