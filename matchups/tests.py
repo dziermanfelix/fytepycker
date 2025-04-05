@@ -48,6 +48,24 @@ class MatchupTests(APITestCase):
             }
         )
         self.fight = fight[0]
+        fight2 = Fight.objects.update_or_create(
+            event_id=self.event.id,
+            blue_name="george",
+            red_name="ringo",
+            defaults={
+                "card": "main",
+                "order": 0,
+                "weight_class": "bantamweight",
+                "blue_img": "https://url.img",
+                "blue_url": "https://url.img",
+                "red_img": "https://url.img",
+                "red_url": "https://url.img",
+                "winner": None,
+                "method": None,
+                "round": None,
+            }
+        )
+        self.fight2 = fight2[0]
 
     def test_get_all_matchups_empty(self):
         response = self.client.get(self.matchups_url)
@@ -68,6 +86,7 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['event']['id'], self.event.id)
         self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
         self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
+        self.assertIn(response.data[0]['first_pick'], [self.user.id, self.user2.id])
 
     def test_create_matchup_duplicate(self):
         data = {
@@ -94,6 +113,7 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['event']['id'], self.event.id)
         self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
         self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
+        self.assertIn(response.data[0]['first_pick'], [self.user.id, self.user2.id])
 
     def test_get_matchup_by_user_a_id(self):
         data = {
@@ -108,6 +128,7 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['event']['id'], self.event.id)
         self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
         self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
+        self.assertIn(response.data[0]['first_pick'], [self.user.id, self.user2.id])
 
     def test_get_matchup_by_user_b_id(self):
         data = {
@@ -122,6 +143,7 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['event']['id'], self.event.id)
         self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
         self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
+        self.assertIn(response.data[0]['first_pick'], [self.user.id, self.user2.id])
 
     def test_get_matchup_by_user_ids(self):
         data = {
@@ -136,6 +158,7 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['event']['id'], self.event.id)
         self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
         self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
+        self.assertIn(response.data[0]['first_pick'], [self.user.id, self.user2.id])
 
     def test_get_matchup_by_user_ids_out_of_order(self):
         data = {
@@ -150,6 +173,7 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['event']['id'], self.event.id)
         self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
         self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
+        self.assertIn(response.data[0]['first_pick'], [self.user.id, self.user2.id])
 
     def test_get_matchup_user_not_exists(self):
         data = {
@@ -186,6 +210,7 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['event']['id'], self.event.id)
         self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
         self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
+        self.assertIn(response.data[0]['first_pick'], [self.user.id, self.user2.id])
         response = self.client.delete(self.matchups_url,
                                       data={
                                           'event_id': self.event.id,

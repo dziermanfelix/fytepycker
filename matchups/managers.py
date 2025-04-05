@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+import random as r
 
 
 class MatchupManager(models.Manager):
@@ -24,6 +25,7 @@ class MatchupManager(models.Manager):
 
         kwargs['user_a'] = users[0]
         kwargs['user_b'] = users[1]
+        kwargs['first_pick'] = r.choice(users)
 
         all_kwargs = {**kwargs, **defaults}
 

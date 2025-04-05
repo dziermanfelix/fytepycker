@@ -8,6 +8,7 @@ class Matchup(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="event_matchups")
     user_a = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_a_matchups")
     user_b = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_b_matchups")
+    first_pick = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = MatchupManager()
