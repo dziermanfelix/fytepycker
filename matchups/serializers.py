@@ -2,34 +2,39 @@ from rest_framework import serializers
 from .models import Matchup, Selection, SelectionResult
 from ufc.serializers import EventSerializer
 from accounts.serializers import UserSerializer
-from ufc.models import Event
+from ufc.models import Event, Fight
 from accounts.models import User
 
 
-def fighter_uniqueness_validator(attrs):
-    matchup = attrs.get('matchup')
-    fight = attrs.get('fight')
-    fighter = attrs.get('fighter')
-    user = attrs.get('user')
+class CustomSelectionPostSerializer(serializers.Serializer):
+    matchup = serializers.PrimaryKeyRelatedField(queryset=Matchup.objects.all())
+    fight = serializers.PrimaryKeyRelatedField(queryset=Fight.objects.all())
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    fighter = serializers.CharField()
 
-    if matchup and fight and fighter:
-        existing = Selection.objects.filter(
-            matchup=matchup,
-            fight=fight,
-            fighter=fighter
-        ).first()
+    def validate(self, data):
+        matchup = data.get('matchup')
+        fight = data.get('fight')
+        user = data.get('user')
+        fighter = data.get('fighter')
 
-        if existing and existing.user != user:
-            raise serializers.ValidationError({"fighter": "This fighter has already been selected by another user."})
+        # Check if the selection is already taken by another user for the same fight
+        existing_selection = Selection.objects.filter(matchup=matchup, fight=fight).first()
 
-    return attrs
+        k = 'user_a_selection' if user == matchup.user_b else 'user_b_selection'
+        if existing_selection:
+            existing_fighter = getattr(existing_selection, k, "Attribute not found")
+            if existing_fighter == fighter:
+                raise serializers.ValidationError(f"The fighter {fighter} has already been selected for this fight.")
+
+        return data
 
 
 class SelectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Selection
         fields = "__all__"
-        validators = [fighter_uniqueness_validator]
+        validators = []
 
 
 class SelectionResultSerializer(serializers.ModelSerializer):

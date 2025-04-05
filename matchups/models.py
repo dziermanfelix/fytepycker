@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MaxValueValidator
 from ufc.models import Event, Fight
 from accounts.models import User
 from .managers import MatchupManager, SelectionManager
@@ -34,23 +35,27 @@ class Matchup(models.Model):
 class Selection(models.Model):
     matchup = models.ForeignKey(Matchup, on_delete=models.CASCADE, related_name="matchup_selections")
     fight = models.ForeignKey(Fight, on_delete=models.CASCADE, related_name="fight_selections")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_selections")
-    fighter = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    user_a_selection = models.CharField(max_length=255, null=True, blank=True, default=None)
+    user_b_selection = models.CharField(max_length=255, null=True, blank=True,  default=None)
+    bet = models.IntegerField(default=0, validators=[MaxValueValidator(500)])
+    dibs = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="dib_users")
+    confirmed = models.BooleanField(default=False)
+    winner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="winner_users")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
 
     objects = SelectionManager()
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["matchup", "fight", "user"],
-                name="unique_user_selection_per_fight_per_matchup"
+                fields=["matchup", "fight"],
+                name="unique_selection_per_fight_per_matchup"
             ),
         ]
 
     def __str__(self):
-        return f"{{Matchup:{self.matchup}|Fight:{self.fight}|User:{self.user}|Fighter:{self.fighter}}}"
+        return f"{{Matchup:{self.matchup}|Fight:{self.fight}|UserASelection:{self.user_a_selection}|UserBSelection:{self.user_b_selection}}}"
 
 
 class SelectionResult(models.Model):

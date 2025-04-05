@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Count, Q, Prefetch
-from .serializers import MatchupSerializer, SelectionSerializer, LifetimeSerializer
+from .serializers import MatchupSerializer, CustomSelectionPostSerializer, SelectionSerializer, LifetimeSerializer
 from .models import Matchup, Selection, SelectionResult
 from accounts.models import User
 
@@ -66,25 +66,38 @@ class MatchupView(APIView):
 
 class SelectionView(APIView):
     def post(self, request):
-        serializer = SelectionSerializer(data=request.data)
+        serializer = CustomSelectionPostSerializer(data=request.data)
         if serializer.is_valid():
             validated_data = serializer.validated_data
+
+            matchup = validated_data['matchup']
+            user = validated_data['user']
+            fighter = validated_data['fighter']
+
             unique_fields = {
                 'matchup': validated_data['matchup'],
                 'fight': validated_data['fight'],
-                'user': validated_data['user'],
             }
-            defaults = {k: v for k, v in validated_data.items() if k not in unique_fields}
+
             try:
+                valid_users = Matchup.get_users(matchup)
+                if user not in valid_users:
+                    raise ValueError('Invalid user')
+
+                user_select_string = 'user_a_selection' if user == valid_users[0] else 'user_b_selection'
+                defaults = {user_select_string: fighter}
+
                 selection, created = Selection.objects.get_or_create(
                     **unique_fields,
                     defaults=defaults
-                )
+                ) 
                 result_serializer = SelectionSerializer(selection)
                 status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
                 return Response({'selection': result_serializer.data, }, status=status_code)
-            except Exception as e:
+
+            except (ValueError, Exception) as e:
                 return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):

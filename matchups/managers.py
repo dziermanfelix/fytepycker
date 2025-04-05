@@ -39,40 +39,46 @@ class SelectionManager(models.Manager):
         selection.save(using=self._db)
         return selection
 
-    def get_or_create(self, defaults=None, **kwargs):
-        defaults = defaults or {}
-        try:
-            selection = self.get(**kwargs)
-            # selection undo
-            if selection.fighter == defaults.get('fighter'):
-                selection.fighter = ''
-                selection.save()
-            # selection change
-            else:
-                selection.fighter = defaults.get('fighter')
-                selection.save()
-            return self.get(**kwargs), False
-        except self.model.DoesNotExist:
-            params = {**kwargs, **defaults}
-            return self.create(**params), True
-
     def validate_selection(self, selection):
-        # Check if the user is part of the matchup
-        matchup_users = selection.matchup.get_users()
-        if selection.user not in matchup_users:
-            raise ValidationError(
-                f"User {selection.user.username} is not a participant in this matchup"
-            )
-
-        # Verify that the fight is part of the matchup
+        # verify fight is part of the matchup
         if selection.fight not in selection.matchup.event.fights.all():
             raise ValidationError(
                 f"Fight {selection.fight} is not part of matchup {selection.matchup}"
             )
 
-        # Check if fighter is valid for this fight
-        valid_fighters = selection.fight.get_fighters()
-        if selection.fighter not in valid_fighters:
-            raise ValidationError(
-                f"Fighter '{selection.fighter}' is not valid for the fight {selection.fight}"
-            )
+        # check if selections are valid for this fight
+        selections = [selection.user_a_selection, selection.user_b_selection]
+        valid_selections = selection.fight.get_fighters()
+        for s in selections:
+            if s is not None:
+                if s not in valid_selections:
+                    raise ValidationError(
+                        f"Fighter '{s}' is not a valid selection for the fight {selection.fight}"
+                    )
+
+        # verify winner is valid
+        winner = selection.winner
+        if winner != None:
+            valid_users = selection.matchup.get_users()
+            if winner not in valid_users:
+                raise ValidationError(
+                    f"User {selection.winner.username} is not a participant in this matchup"
+                )
+
+    def get_or_create(self, defaults=None, **kwargs):
+        defaults = defaults or {}
+        try:
+            selection = self.get(**kwargs)
+            k, fighter = next(iter(defaults.items()))
+            # selection undo
+            if fighter == getattr(selection, k, None):
+                setattr(selection, k, None)
+                selection.save()
+            # selection change
+            else:
+                setattr(selection, k, fighter)
+                selection.save()
+            return self.get(**kwargs), False
+        except self.model.DoesNotExist:
+            params = {**kwargs, **defaults}
+            return self.create(**params), True

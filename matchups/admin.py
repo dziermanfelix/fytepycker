@@ -11,12 +11,16 @@ class SelectionInline(admin.TabularInline):
 
 
 class MatchupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'event', 'user_a', 'user_b', 'created_at')
+    def get_list_display(self, request):
+        model_fields = [field.name for field in Selection._meta.get_fields() if field.concrete]
+        return model_fields
     inlines = [SelectionInline]
 
 
 class SelectionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'matchup', 'fight', 'user', 'fighter', 'created_at', 'updated_at')
+    def get_list_display(self, request):
+        model_fields = [field.name for field in Selection._meta.get_fields() if field.concrete]
+        return model_fields
 
 
 class SelectionResultAdmin(admin.ModelAdmin):
