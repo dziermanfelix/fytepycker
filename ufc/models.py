@@ -35,9 +35,9 @@ class Fight(models.Model):
     red_name = models.CharField(max_length=255)
     red_img = models.URLField(blank=True, null=True)
     red_url = models.URLField(blank=True, null=True)
-    winner = models.CharField(max_length=255, null=True)
-    method = models.CharField(max_length=255, null=True)
-    round = models.PositiveIntegerField(null=True)
+    winner = models.CharField(max_length=255, blank=True, null=True)
+    method = models.CharField(max_length=255, blank=True, null=True)
+    round = models.PositiveIntegerField(blank=True, null=True)
 
     class Meta:
         constraints = [

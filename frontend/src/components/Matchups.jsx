@@ -21,7 +21,7 @@ const MatchupsContent = () => {
         selectMatchup(null);
       }
     }
-  }, [id, matchups, selectMatchup]);
+  }, [id, matchups, selectMatchup, selectedMatchup]);
 
   const handleClick = async (matchup) => {
     selectMatchup(matchup);
