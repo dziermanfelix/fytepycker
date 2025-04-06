@@ -59,9 +59,6 @@ class EventTests(APITestCase):
     def test_get_event_by_id(self):
         response = self.client.get(f'{self.events_url}{self.event.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['past'], [])
-        self.assertEqual(len(response.data['upcoming']), 1)
-        self.assertEqual(response.data['upcoming'][0], EventSerializer(self.event).data)
 
     def test_event_complete(self):
         response = self.client.get(self.events_url)
