@@ -73,6 +73,7 @@ class SelectionView(APIView):
             matchup = validated_data['matchup']
             user = validated_data['user']
             fighter = validated_data['fighter']
+            fight = validated_data['fight']
 
             unique_fields = {
                 'matchup': validated_data['matchup'],
@@ -84,18 +85,23 @@ class SelectionView(APIView):
                 if user not in valid_users:
                     raise ValueError('Invalid user')
 
+                valid_fighters = fight.get_fighters()
+                if fighter not in valid_fighters:
+                    return Response({"error": f"Fighter '{fighter}' is not valid for fight {fight.id}"}, status=status.HTTP_400_BAD_REQUEST)
+
                 user_select_string = 'user_a_selection' if user == valid_users[0] else 'user_b_selection'
                 defaults = {user_select_string: fighter}
 
                 selection, created = Selection.objects.get_or_create(
                     **unique_fields,
                     defaults=defaults
-                ) 
+                )
                 result_serializer = SelectionSerializer(selection)
                 status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
                 return Response({'selection': result_serializer.data, }, status=status_code)
 
             except (ValueError, Exception) as e:
+                print(e)
                 return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

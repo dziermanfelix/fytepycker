@@ -3,8 +3,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
+from itertools import cycle
 from ufc.models import Event, Fight
-from .models import Matchup
+from .models import Matchup, Selection
 from ufc.views import ScraperView
 from matchups.models import MatchupResult
 
@@ -80,13 +81,6 @@ class MatchupTests(APITestCase):
         }
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # verify with get
-        response = self.client.get(self.matchups_url, {'user_a_id': self.user.id, 'user_b_id': self.user2.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['event']['id'], self.event.id)
-        self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
-        self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
-        self.assertIn(response.data[0]['first_pick'], [self.user.id, self.user2.id])
 
     def test_create_matchup_duplicate(self):
         data = {
@@ -98,6 +92,39 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_matchup_side_effects(self):
+        data = {
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
+        }
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        matchup = Matchup.objects.filter(event=self.event, user_a=self.user, user_b=self.user2).first()
+
+        # matchup result
+        matchup_result = MatchupResult.objects.filter(matchup=matchup.id).first()
+        self.assertEqual(matchup_result.matchup, matchup)
+        self.assertEqual(matchup_result.winner, None)
+        self.assertEqual(matchup_result.winnings, 0)
+
+        # selections
+        selections = Selection.objects.filter(matchup=matchup.id)
+        for s in selections:
+            self.assertEqual(s.matchup, matchup)
+            self.assertEqual(s.user_a_selection, None)
+            self.assertEqual(s.user_b_selection, None)
+            self.assertEqual(s.bet, 0)
+            self.assertEqual(s.winner, None)
+            self.assertEqual(s.confirmed, False)
+        user_cycle = cycle([matchup.first_pick, matchup.user_b if matchup.first_pick ==
+                           matchup.user_a else matchup.user_a])
+        self.assertEqual(selections[0].fight, self.fight)
+        self.assertEqual(selections[0].dibs, next(user_cycle))
+        self.assertEqual(selections[1].fight, self.fight2)
+        self.assertEqual(selections[1].dibs, next(user_cycle))
 
     def test_get_matchup_by_id(self):
         data = {
@@ -296,6 +323,22 @@ class SelectionTests(APITestCase):
         )
         self.matchup = matchup[0]
 
+    def test_selections_created_from_matchup(self):
+        selections = Selection.objects.filter(matchup=self.matchup.id)
+        for s in selections:
+            self.assertEqual(s.matchup, self.matchup)
+            self.assertEqual(s.user_a_selection, None)
+            self.assertEqual(s.user_b_selection, None)
+            self.assertEqual(s.bet, 0)
+            self.assertEqual(s.winner, None)
+            self.assertEqual(s.confirmed, False)
+        user_cycle = cycle([self.matchup.first_pick, self.matchup.user_b if self.matchup.first_pick ==
+                           self.matchup.user_a else self.matchup.user_a])
+        self.assertEqual(selections[0].fight, self.fight)
+        self.assertEqual(selections[0].dibs, next(user_cycle))
+        self.assertEqual(selections[1].fight, self.fight2)
+        self.assertEqual(selections[1].dibs, next(user_cycle))
+
     def test_create_selection(self):
         data = {
             "matchup": self.matchup.id,
@@ -304,7 +347,7 @@ class SelectionTests(APITestCase):
             "fighter": self.fight.blue_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['selection']['matchup'], self.matchup.id)
         self.assertEqual(response.data['selection']['fight'], self.fight.id)
         self.assertEqual(response.data['selection']['user_a_selection'], self.fight.blue_name)
@@ -408,7 +451,7 @@ class SelectionTests(APITestCase):
             "fighter": self.fight.red_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(self.selection_url, {"matchup_id": self.matchup.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['matchup'], self.matchup.id)
@@ -428,7 +471,7 @@ class SelectionTests(APITestCase):
             "fighter": self.fight.red_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(self.selection_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -440,7 +483,7 @@ class SelectionTests(APITestCase):
             "fighter": self.fight.blue_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(self.selection_url, data={"matchup_id": self.matchup.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['matchup'], self.matchup.id)
@@ -478,7 +521,7 @@ class SelectionTests(APITestCase):
             "fighter": self.fight.blue_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(self.selection_url, data={"matchup_id": self.matchup.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['matchup'], self.matchup.id)
@@ -509,7 +552,7 @@ class SelectionTests(APITestCase):
             "user": self.user.id,
             "fighter": self.fight.blue_name
         }, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.post(self.selection_url, data={
             "matchup": self.matchup.id,
             "fight": self.fight.id,
@@ -525,7 +568,7 @@ class SelectionTests(APITestCase):
             "user": self.user.id,
             "fighter": self.fight.blue_name
         }, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.post(self.selection_url, data={
             "matchup": self.matchup.id,
             "fight": self.fight.id,
@@ -596,19 +639,8 @@ class MatchupResultTests(APITestCase):
         )
         self.matchup = matchup[0]
 
-    def test_matchup_result_created(self):
-        data = {
-            "matchup": self.matchup.id,
-            "fight": self.fight.id,
-            "user": self.user.id,
-            "fighter": self.fight.blue_name
-        }
-        response = self.client.post(self.selection_url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        response = self.client.get(self.selection_url, {"matchup_id": self.matchup.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        matchup_result = MatchupResult.objects.filter(matchup=self.matchup).first()
-        self.assertIsNotNone(matchup_result, "MatchupResult should be created when a Selection is made")
+    def test_matchup_result_created_from_matchup(self):
+        matchup_result = MatchupResult.objects.filter(matchup=self.matchup.id).first()
         self.assertEqual(matchup_result.matchup, self.matchup)
         self.assertEqual(matchup_result.winner, None)
         self.assertEqual(matchup_result.winnings, 0)

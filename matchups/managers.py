@@ -39,6 +39,25 @@ class SelectionManager(models.Manager):
         selection.save(using=self._db)
         return selection
 
+    def get_or_create(self, defaults=None, **kwargs):
+        defaults = defaults or {}
+        try:
+            selection = self.get(**kwargs)
+            self.validate_selection(selection)
+            k, fighter = next(iter(defaults.items()))
+            # selection undo
+            if fighter == getattr(selection, k, None):
+                setattr(selection, k, None)
+                selection.save()
+            # selection change
+            else:
+                setattr(selection, k, fighter)
+                selection.save()
+            return self.get(**kwargs), False
+        except self.model.DoesNotExist:
+            params = {**kwargs, **defaults}
+            return self.create(**params), True
+
     def validate_selection(self, selection):
         # verify fight is part of the matchup
         if selection.fight not in selection.matchup.event.fights.all():
@@ -64,21 +83,3 @@ class SelectionManager(models.Manager):
                 raise ValidationError(
                     f"User {selection.winner.username} is not a participant in this matchup"
                 )
-
-    def get_or_create(self, defaults=None, **kwargs):
-        defaults = defaults or {}
-        try:
-            selection = self.get(**kwargs)
-            k, fighter = next(iter(defaults.items()))
-            # selection undo
-            if fighter == getattr(selection, k, None):
-                setattr(selection, k, None)
-                selection.save()
-            # selection change
-            else:
-                setattr(selection, k, fighter)
-                selection.save()
-            return self.get(**kwargs), False
-        except self.model.DoesNotExist:
-            params = {**kwargs, **defaults}
-            return self.create(**params), True

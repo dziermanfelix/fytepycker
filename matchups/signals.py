@@ -1,9 +1,25 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from channels.layers import get_channel_layer
+from itertools import cycle
 from ufc.models import Fight
 from .models import Matchup, Selection, MatchupResult
 from asgiref.sync import async_to_sync
+
+
+@receiver(post_save, sender=Matchup)
+def create_matchup_related_objects(sender, instance, created, **kwargs):
+    if created:
+        # create selection for each fight
+        user_cycle = cycle([instance.first_pick, instance.user_b if instance.first_pick ==
+                           instance.user_a else instance.user_a])
+        fights = Fight.objects.filter(event=instance.event)
+        for fight in fights:
+            Selection.objects.create(matchup=instance, fight=fight, dibs=next(user_cycle))
+
+        # create matchup result
+        if not MatchupResult.objects.filter(matchup=instance).exists():
+            MatchupResult.objects.create(matchup=instance)
 
 
 @receiver(post_save, sender=Selection)
