@@ -12,3 +12,6 @@ def check_event_completion(sender, instance, **kwargs):
     if all_complete and not event.complete:
         event.complete = True
         event.save(update_fields=["complete"])
+    elif not all_complete and event.complete:
+        event.complete = False
+        event.save(update_fields=["complete"])
