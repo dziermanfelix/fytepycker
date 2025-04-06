@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Matchup, Selection, SelectionResult
+from .models import Matchup, Selection, MatchupResult
 from ufc.serializers import EventSerializer
 from accounts.serializers import UserSerializer
 from ufc.models import Event, Fight
@@ -37,9 +37,9 @@ class SelectionSerializer(serializers.ModelSerializer):
         validators = []
 
 
-class SelectionResultSerializer(serializers.ModelSerializer):
+class MatchupResultSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SelectionResult
+        model = MatchupResult
         fields = "__all__"
 
 
@@ -48,7 +48,6 @@ class MatchupSerializer(serializers.ModelSerializer):
     user_a = UserSerializer(read_only=True)
     user_b = UserSerializer(read_only=True)
     selections = SelectionSerializer(many=True, read_only=True, source='matchup_selections')
-    selection_results = SelectionResultSerializer(many=True, read_only=True, source='matchup_results')
 
     # Write: Accept only IDs when creating/updating
     event_id = serializers.PrimaryKeyRelatedField(

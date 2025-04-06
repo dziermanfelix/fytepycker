@@ -1,37 +1,37 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from channels.layers import get_channel_layer
-from matchups.models import Matchup
-from .models import Selection, SelectionResult, Fight
+from ufc.models import Fight
+from .models import Matchup, Selection, MatchupResult
 from asgiref.sync import async_to_sync
 
 
 @receiver(post_save, sender=Selection)
-def create_selection_result(sender, instance, created, **kwargs):
-    """create selection result when selection is created"""
+def create_matchup_result(sender, instance, created, **kwargs):
+    """create matchup result when selection is created"""
     if created:
-        SelectionResult.objects.get_or_create(
+        MatchupResult.objects.get_or_create(
             matchup=instance.matchup,
-            fight=instance.fight
         )
 
 
 @receiver(post_save, sender=Fight)
-def update_selection_results(sender, instance, **kwargs):
-    """update selection result when fight winner is set"""
-    if instance.winner and instance.method and instance.round:
-        selection_results = SelectionResult.objects.filter(fight=instance)
+def update_selection_on_fight_winner(sender, instance, **kwargs):
+    """update selection when fight winner is set"""
+    if instance.winner:
+        selections = Selection.objects.filter(fight=instance)
 
-        for selection_result in selection_results:
-            selections = Selection.objects.filter(matchup=selection_result.matchup, fight=instance)
-            winning_selection = selections.filter(fight=instance, fighter=instance.winner).first()
+        winning_fighter = instance.winner
 
-            if winning_selection:
-                selection_result.winner = winning_selection.user
+        for selection in selections:
+            if selection.user_a_selection == winning_fighter:
+                selection.winner = selection.matchup.user_a
+            elif selection.user_b_selection == winning_fighter:
+                selection.winner = selection.matchup.user_b
             else:
-                selection_result.winner = None
+                selection.winner = None
 
-            selection_result.save()
+            selection.save()
 
     # broadcast to websocket
     event = instance.event

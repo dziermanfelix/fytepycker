@@ -58,14 +58,15 @@ class Selection(models.Model):
         return f"{{Matchup:{self.matchup}|Fight:{self.fight}|UserASelection:{self.user_a_selection}|UserBSelection:{self.user_b_selection}}}"
 
 
-class SelectionResult(models.Model):
+class MatchupResult(models.Model):
     matchup = models.ForeignKey(Matchup, on_delete=models.CASCADE, related_name="matchup_results")
-    fight = models.ForeignKey(Fight, on_delete=models.CASCADE, related_name="fight_results")
     winner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="user_results")
     winnings = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     class Meta:
-        unique_together = ('matchup', 'fight')
+        constraints = [
+            models.UniqueConstraint(fields=['matchup'], name='unique_matchup_result')
+        ]
 
     def __str__(self):
-        return f"{{Matchup:{self.matchup}|Fight:{self.fight}|Winner:{self.winner}|Winnings:{self.winnings}}}"
+        return f"{{Matchup:{self.matchup}|Winner:{self.winner}|Winngings:{self.winnings}}}"

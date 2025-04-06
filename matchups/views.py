@@ -1,9 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Count, Q, Prefetch
+from django.db.models import Q, Prefetch
 from .serializers import MatchupSerializer, CustomSelectionPostSerializer, SelectionSerializer, LifetimeSerializer
-from .models import Matchup, Selection, SelectionResult
+from .models import Matchup, Selection, MatchupResult
 from accounts.models import User
 
 
@@ -122,7 +122,7 @@ class LifetimeView(APIView):
         user = User.objects.get(id=user_id)
 
         matchups = Matchup.objects.prefetch_related(
-            Prefetch("matchup_results", queryset=SelectionResult.objects.only("winner"))
+            Prefetch("matchup_results", queryset=MatchupResult.objects.only("winner"))
         ).filter(Q(user_a_id=user_id) | Q(user_b_id=user_id))
 
         user_stats = {}
