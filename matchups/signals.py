@@ -62,3 +62,30 @@ def update_selection_on_fight_winner(sender, instance, **kwargs):
             room_group_name,
             message
         )
+
+
+@receiver(post_save, sender=Selection)
+def update_matchup_result_on_winner_change(sender, instance, **kwargs):
+    if not instance.winner:
+        return
+
+    matchup = instance.matchup
+
+    selections = Selection.objects.filter(matchup=matchup)
+    user_wins = {user: 0 for user in matchup.get_users()}
+
+    for sel in selections:
+        if sel.winner:
+            user_wins[sel.winner] += 1
+
+    winning_user = max(user_wins, key=user_wins.get)
+    tied = list(user_wins.values()).count(user_wins[winning_user]) > 1
+
+    defaults = {"winner": winning_user}
+    if tied:
+        defaults = {"winner": None}
+
+    MatchupResult.objects.update_or_create(
+        matchup=matchup,
+        defaults=defaults
+    )

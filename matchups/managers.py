@@ -44,15 +44,21 @@ class SelectionManager(models.Manager):
         try:
             selection = self.get(**kwargs)
             self.validate_selection(selection)
+
             k, fighter = next(iter(defaults.items()))
             # selection undo
             if fighter == getattr(selection, k, None):
                 setattr(selection, k, None)
-                selection.save()
             # selection change
             else:
                 setattr(selection, k, fighter)
-                selection.save()
+
+            if selection.user_a_selection and selection.user_b_selection:
+                selection.confirmed = True
+            else:
+                selection.confirmed = False
+
+            selection.save()
             return self.get(**kwargs), False
         except self.model.DoesNotExist:
             params = {**kwargs, **defaults}

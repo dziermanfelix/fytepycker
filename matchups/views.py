@@ -101,7 +101,6 @@ class SelectionView(APIView):
                 return Response({'selection': result_serializer.data, }, status=status_code)
 
             except (ValueError, Exception) as e:
-                print(e)
                 return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -127,24 +126,25 @@ class LifetimeView(APIView):
 
         user = User.objects.get(id=user_id)
 
-        matchups = Matchup.objects.prefetch_related(
-            Prefetch("matchup_results", queryset=MatchupResult.objects.only("winner"))
-        ).filter(Q(user_a_id=user_id) | Q(user_b_id=user_id))
+        matchup_results = MatchupResult.objects.select_related('matchup').filter(
+            Q(matchup__user_a_id=user_id) | Q(matchup__user_b_id=user_id)
+        )
+
+        count = 0
 
         user_stats = {}
-
-        for matchup in matchups:
-            opponent_id = matchup.user_b_id if matchup.user_a_id == int(user_id) else matchup.user_a_id
+        for mr in matchup_results:
+            count += 1
+            opponent_id = mr.matchup.user_b_id if mr.matchup.user_a_id == int(user_id) else mr.matchup.user_a_id
 
             if opponent_id not in user_stats:
                 user_stats[opponent_id] = {"opponent_id": opponent_id, "wins": 0, "losses": 0}
 
-            for result in matchup.matchup_results.all():
-                winner = result.winner.username if result.winner else None
-                if winner == user.username:
-                    user_stats[opponent_id]["wins"] += 1
-                else:
-                    user_stats[opponent_id]["losses"] += 1
+            winner = mr.winner.username if mr.winner else None
+            if winner == user.username:
+                user_stats[opponent_id]["wins"] += 1
+            else:
+                user_stats[opponent_id]["losses"] += 1
 
         serialized_data = LifetimeSerializer(user_stats.values(), many=True).data
         return Response(serialized_data, status=status.HTTP_200_OK)
