@@ -7,3 +7,4 @@ class MatchupsConfig(AppConfig):
 
     def ready(self):
         import matchups.signals
+        import ufc.signals

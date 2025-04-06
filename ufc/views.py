@@ -10,7 +10,7 @@ from rest_framework import status
 from .serializers import EventSerializer
 from bs4 import BeautifulSoup
 from .models import Event, Fight, FightCard
-from datetime import datetime, timedelta
+from datetime import datetime
 import pytz
 from unidecode import unidecode
 from django.shortcuts import get_object_or_404
@@ -22,11 +22,8 @@ class EventView(APIView):
     def get(self, request, *args, **kwargs):
         event_id = kwargs.get("event_id")
         if not event_id:
-            now = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)  # beginning of day
-            past_events = Event.objects.prefetch_related('fights').filter(
-                date__lt=now - timedelta(days=2)).order_by('-date')
-            upcoming_events = Event.objects.prefetch_related('fights').filter(
-                date__gte=now - timedelta(days=2)).order_by('date')
+            past_events = Event.objects.prefetch_related('fights').filter(complete=True).order_by('-date')
+            upcoming_events = Event.objects.prefetch_related('fights').filter(complete=False).order_by('date')
             return Response({
                 'past': EventSerializer(past_events, many=True).data,
                 'upcoming': EventSerializer(upcoming_events, many=True).data

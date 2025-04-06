@@ -7,6 +7,7 @@ class Event(models.Model):
     url = models.URLField(blank=True, null=True)
     date = models.DateTimeField()
     location = models.CharField(max_length=255)
+    complete = models.BooleanField(blank=True, null=True, default=False)
     scraped_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

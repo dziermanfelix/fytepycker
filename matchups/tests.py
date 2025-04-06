@@ -26,6 +26,7 @@ class MatchupTests(APITestCase):
     def addDummyData(self):
         event = Event.objects.get_or_create(
             name="UFC 999",
+            headline="beatlemania",
             url="https://ufc.com/ufc999",
             date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
             location="the sun",
@@ -275,6 +276,7 @@ class SelectionTests(APITestCase):
     def addDummyData(self):
         event = Event.objects.get_or_create(
             name="UFC 999",
+            headline="beatlemania",
             url="https://ufc.com/ufc999",
             date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
             location="the sun",
@@ -401,6 +403,7 @@ class SelectionTests(APITestCase):
     def test_create_selection_error_invalid_fight(self):
         other_event = Event.objects.get_or_create(
             name="UFC 1000",
+            headline="beatlemania",
             url="https://ufc.com/ufc1000",
             date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
             location="the moon",
@@ -655,6 +658,7 @@ class MatchupResultTests(APITestCase):
     def addDummyData(self):
         event = Event.objects.get_or_create(
             name="UFC 999",
+            headline="beatlemania",
             url="https://ufc.com/ufc999",
             date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
             location="the sun",
@@ -860,6 +864,7 @@ class LifetimeTests(APITestCase):
     def addDummyData(self):
         event = Event.objects.get_or_create(
             name="UFC 1969",
+            headline="beatlemania",
             url="https://ufc.com/ufc-1969",
             date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
             location="Abbey Road",
