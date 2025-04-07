@@ -14,7 +14,6 @@ const MatchupFights = () => {
     isError,
     activeFightTab,
     fights,
-    selectionResults,
     ws,
   } = useMatchups();
 
@@ -66,12 +65,12 @@ const MatchupFights = () => {
   return (
     <div className='relative'>
       <SelectableFights
+        selectedMatchup={selectedMatchup}
         postSelection={postSelection}
         activeFightTab={activeFightTab}
         user={user}
         fights={fights}
         initialSelections={initialSelections}
-        selectionResults={selectionResults}
         ws={ws}
       />
       <div>

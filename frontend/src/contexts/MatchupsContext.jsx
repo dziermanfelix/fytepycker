@@ -68,7 +68,6 @@ export const MatchupsProvider = ({ children }) => {
   }, [selectedMatchup?.id]);
 
   const fights = selectedMatchup?.event?.fights || {};
-  const selectionResults = selectedMatchup?.selection_results?.filter((s) => s.matchup === selectedMatchup.id) || [];
 
   const contextValue = {
     activeFightTab,
@@ -89,7 +88,6 @@ export const MatchupsProvider = ({ children }) => {
     isLoadingSelections,
     isErrorSelections,
     refetchSelections,
-    selectionResults,
 
     ws,
   };

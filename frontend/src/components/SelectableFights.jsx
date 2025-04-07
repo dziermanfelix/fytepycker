@@ -2,27 +2,29 @@ import { useState, useEffect } from 'react';
 import { getFightCards } from '@/utils/fightTabUtils';
 import Fights from '@/components/Fights';
 
-const SelectableFights = ({ postSelection, activeFightTab, initialSelections, fights, user, selectionResults, ws }) => {
+const SelectableFights = ({ selectedMatchup, postSelection, activeFightTab, initialSelections, fights, user, ws }) => {
   const [selections, setSelections] = useState({});
   const fightCards = getFightCards(activeFightTab);
 
   useEffect(() => {
     if (Object.keys(initialSelections).length > 0) {
-      const selectionsMap = initialSelections.reduce((acc, selection) => {
-        const fight = selection.fight;
-        const selectionUser = selection.user;
-        const fighter = selection.fighter;
-        if (!acc[fight]) {
-          acc[fight] = { userFighter: null, otherFighter: null };
-        }
-        if (selectionUser === user.id) {
-          acc[fight].userFighter = fighter;
-        } else {
-          acc[fight].otherFighter = fighter;
-        }
-        return acc;
-      }, {});
-      setSelections(selectionsMap);
+      if (selectedMatchup) {
+        const selectionsMap = initialSelections.reduce((acc, selection) => {
+          const fight = selection.fight;
+          if (!acc[fight]) {
+            acc[fight] = { ...selection };
+          }
+          if (selectedMatchup.user_a.id === user.id) {
+            acc[fight].userFighter = selection.user_a_selection;
+            acc[fight].otherFighter = selection.user_b_selection;
+          } else {
+            acc[fight].userFighter = selection.user_b_selection;
+            acc[fight].otherFighter = selection.user_a_selection;
+          }
+          return acc;
+        }, {});
+        setSelections(selectionsMap);
+      }
     }
   }, [initialSelections]);
 
@@ -71,7 +73,6 @@ const SelectableFights = ({ postSelection, activeFightTab, initialSelections, fi
           fights={fights}
           user={user}
           selections={selections}
-          selectionResults={selectionResults}
           fighterClicked={fighterClicked}
         />
       </div>

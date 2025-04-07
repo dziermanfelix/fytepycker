@@ -1,13 +1,7 @@
 import { getFightCards } from '@/utils/fightTabUtils';
 
-const Fights = ({ activeFightTab, fights, user, selections, selectionResults, fighterClicked }) => {
+const Fights = ({ activeFightTab, fights, user, selections, fighterClicked }) => {
   const fightCards = getFightCards(activeFightTab);
-
-  const determineColor = (fight, fighterName) => {
-    if (selections[fight.id]?.userFighter === fighterName) return 'bg-red-500';
-    if (selections[fight.id]?.otherFighter === fighterName) return 'bg-blue-500';
-    return 'bg-gray-200';
-  };
 
   const Fighter = ({ img, name, url }) => (
     <div className='flex-row items-center text-center justify-between'>
@@ -46,15 +40,19 @@ const Fights = ({ activeFightTab, fights, user, selections, selectionResults, fi
     );
   };
 
+  const determineColor = (fight, fighterName) => {
+    if (selections[fight.id]?.userFighter === fighterName) return 'bg-red-500';
+    if (selections[fight.id]?.otherFighter === fighterName) return 'bg-blue-500';
+    return 'bg-gray-200';
+  };
+
   const WinnerSection = ({ fight }) => {
-    let winningUserId;
-    let userResultText = 'You Lose.';
-    if (user && selectionResults) {
-      const selectionResult = selectionResults.find((item) => item.fight === fight.id);
-      winningUserId = selectionResult?.winner;
-      if (winningUserId === user?.id) {
-        userResultText = 'You Win!';
-      }
+    let userResultText;
+    if (user && selections) {
+      const selection = selections[fight.id];
+      if (!selection) return null;
+      if (selection.winner === user.id) userResultText = 'You Win!';
+      else userResultText = 'You Lose!';
     }
     return (
       <div className='flex flex-col text-center'>
@@ -64,7 +62,7 @@ const Fights = ({ activeFightTab, fights, user, selections, selectionResults, fi
             <p className='text-yellow-500 font-bold'>
               Round {fight.round} | {fight.method}
             </p>
-            {winningUserId && <p className='font-bold capitalize'>{userResultText}</p>}
+            {userResultText && <p className='font-bold capitalize'>{userResultText}</p>}
           </div>
         )}
       </div>
