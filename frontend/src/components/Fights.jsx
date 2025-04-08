@@ -65,6 +65,34 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     return 'bg-gray-200';
   };
 
+  const SelectionStatusSection = ({ fight }) => {
+    let selectionStatusText;
+    if (user && selections) {
+      const selection = selections[fight.id];
+      if (!selection) return null;
+      if (selection?.ready) {
+        if (selection?.dibs == user?.id && !selection?.userSelection) {
+          selectionStatusText = 'Select a Fighter!';
+        } else if (selection?.dibs != user?.id && !selection?.userSelection && selection?.otherSelection) {
+          selectionStatusText = 'Confirm Your Selection...';
+        } else {
+          selectionStatusText = 'Waiting For Opponent...';
+        }
+      } else {
+        selectionStatusText = 'Selections Confirmed.';
+      }
+    }
+    return (
+      <div className='flex flex-col text-center'>
+        {selectionStatusText && (
+          <div className='flex flex-col text-center gap-3'>
+            <p className='font-bold capitalize'>{selectionStatusText}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const WinnerSection = ({ fight }) => {
     let userResultText;
     if (user && selections) {
@@ -108,7 +136,10 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
                 >
                   <div className='flex items-center justify-between w-full'>
                     <FighterButton fight={fight} selection={selections?.[fight.id]} color='red' />
-                    <WinnerSection fight={fight} />
+                    <div className='flex flex-col justify-between'>
+                      <SelectionStatusSection fight={fight} />
+                      <WinnerSection fight={fight} />
+                    </div>
                     <FighterButton fight={fight} selection={selections?.[fight.id]} color='blue' />
                   </div>
                 </li>
