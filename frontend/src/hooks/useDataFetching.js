@@ -13,7 +13,7 @@ const useDataFetching = (apiEndpoint, enabled = true, params = {}) => {
     isError,
     refetch,
   } = useQuery({
-    queryKey: [apiEndpoint, user?.id],
+    queryKey: [apiEndpoint, user?.id, params],
     queryFn: async () => {
       const { data } = await client.get(apiEndpoint, { params });
       return data;

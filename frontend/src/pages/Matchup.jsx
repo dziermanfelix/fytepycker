@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
 import MatchupFights from '@/components/MatchupFights';
 import FightTabControls from '@/components/FightTabControls';
 
-const MatchupsContent = () => {
+const MatchupContent = () => {
   const { id } = useParams();
   const { isLoading, isError, matchups, selectedMatchup, selectMatchup, activeFightTab, setActiveFightTab, fights } =
     useMatchups();
@@ -71,10 +71,11 @@ const MatchupsContent = () => {
   );
 };
 
-const Matchups = () => (
+const Matchup = () => (
   <MatchupsProvider>
-    <MatchupsContent />
+    <MatchupContent />
+    <Outlet />
   </MatchupsProvider>
 );
 
-export default Matchups;
+export default Matchup;

@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Outlet, Link, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { EventsProvider } from '@/contexts/EventsContext';
 import { MatchupsProvider } from '@/contexts/MatchupsContext';
 import { LifetimeProvider } from '@/contexts/LifetimeContext';
 import { useAuth } from '@/contexts/AuthContext';
-import Events from '@/components/Events';
-import Matchups from '@/components/Matchups';
-import Lifetime from '@/components/Lifetime';
+import Events from '@/pages/Events';
+import Matchups from '@/pages/Matchups';
+import Lifetime from '@/pages/Lifetime';
 
 const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
   const { user } = useAuth();
@@ -169,43 +169,11 @@ const DashboardContent = () => {
   return (
     <div className='p-6'>
       <Routes>
-        <Route
-          path='events'
-          element={
-            <EventsProvider>
-              <Events />
-            </EventsProvider>
-          }
-        />
-        <Route
-          path='matchups'
-          element={
-            <MatchupsProvider>
-              <Matchups />
-            </MatchupsProvider>
-          }
-        />
-        <Route
-          path='matchups/:id'
-          element={
-            <MatchupsProvider>
-              <Matchups />
-            </MatchupsProvider>
-          }
-        />
-        <Route
-          path='lifetime'
-          element={
-            <LifetimeProvider>
-              <Lifetime />
-            </LifetimeProvider>
-          }
-        />
         <Route path='settings' element={<div>settings</div>} />
         <Route path='profile' element={<div>profile</div>} />
         <Route path='messages' element={<div>messages</div>} />
-        <Route path='*' element={<Navigate to='/dash/events' replace />} />
       </Routes>
+      <Outlet />
     </div>
   );
 };

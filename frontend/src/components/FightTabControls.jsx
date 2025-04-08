@@ -46,7 +46,6 @@ const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTa
       <button
         className={`px-4 py-2 cursor-pointer rounded-sm hover:text-red-500`}
         onClick={() => {
-          selectItem(null);
           setActiveFightTab('all');
           navigate(basePath);
         }}

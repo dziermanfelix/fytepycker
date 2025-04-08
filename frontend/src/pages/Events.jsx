@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useEvents, EventsProvider } from '@/contexts/EventsContext';
 import EventTabControls from '@/components/EventTabControls';
 import FightTabControls from '@/components/FightTabControls';
-import EventFights from './EventFights';
-import CreateMatchupModal from './CreateMatchupModal';
+import EventFights from '../components/EventFights';
+import CreateMatchupModal from '../components/CreateMatchupModal';
 
 const EventsContent = () => {
   const {
