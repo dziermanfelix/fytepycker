@@ -1,6 +1,18 @@
+import { useRef, useEffect } from 'react';
 import { getFightCards } from '@/utils/fightTabUtils';
 
-const Fights = ({ activeFightTab, fights, user, selections, fighterClicked }) => {
+const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, readyFight }) => {
+  const fightRefs = useRef({});
+
+  useEffect(() => {
+    if (readyFight && fightRefs.current[readyFight]) {
+      fightRefs.current[readyFight].scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [readyFight]);
+
   const fightCards = getFightCards(activeFightTab);
 
   const Fighter = ({ img, name, url }) => (
@@ -12,7 +24,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked }) =>
     </div>
   );
 
-  const FighterButton = ({ fight, color }) => {
+  const FighterButton = ({ fight, selection, color }) => {
     let name = fight.blue_name;
     let img = fight.blue_img;
     let url = fight.blue_url;
@@ -21,12 +33,19 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked }) =>
       img = fight.red_img;
       url = fight.red_url;
     }
-    const selectable = !fight.winner;
+    const selectable =
+      !fight.winner &&
+      selection?.ready &&
+      (selection?.dibs === user?.id || selection?.otherSelection) &&
+      selection?.otherSelection !== name &&
+      !selection?.confirmed;
     return (
       <button
         className={`${
           fight?.winner === name && 'border-6 border-yellow-500'
-        } p-2 rounded transition-colors duration-300 ${selections && determineColor(fight, name)}`}
+        } p-2 rounded transition-colors duration-300 ${selectable && 'cursor-pointer'} ${
+          selections && determineColor(fight, name)
+        }`}
         onClick={
           selectable
             ? (e) => {
@@ -41,8 +60,8 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked }) =>
   };
 
   const determineColor = (fight, fighterName) => {
-    if (selections[fight.id]?.userFighter === fighterName) return 'bg-red-500';
-    if (selections[fight.id]?.otherFighter === fighterName) return 'bg-blue-500';
+    if (selections[fight.id]?.userSelection === fighterName) return 'bg-red-500';
+    if (selections[fight.id]?.otherSelection === fighterName) return 'bg-blue-500';
     return 'bg-gray-200';
   };
 
@@ -76,11 +95,21 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked }) =>
           <div key={cardType}>
             <ul className='space-y-4'>
               {fights[cardType]?.map((fight) => (
-                <li key={fight?.id} className='p-4 bg-white shadow rounded border '>
+                <li
+                  key={fight?.id}
+                  ref={(el) => (fightRefs.current[fight.id] = el)}
+                  className={`p-4 bg-white shadow rounded border-2 ${
+                    selections
+                      ? selections?.[fight.id]?.['dibs'] === user.id
+                        ? 'border-red-500'
+                        : 'border-blue-500'
+                      : 'border-white'
+                  }`}
+                >
                   <div className='flex items-center justify-between w-full'>
-                    <FighterButton fight={fight} color='red' />
+                    <FighterButton fight={fight} selection={selections?.[fight.id]} color='red' />
                     <WinnerSection fight={fight} />
-                    <FighterButton fight={fight} color='blue' />
+                    <FighterButton fight={fight} selection={selections?.[fight.id]} color='blue' />
                   </div>
                 </li>
               ))}

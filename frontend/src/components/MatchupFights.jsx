@@ -10,6 +10,7 @@ const MatchupFights = () => {
     user,
     selectedMatchup,
     selections: initialSelections,
+    refetchSelections,
     isLoading,
     isError,
     activeFightTab,
@@ -71,6 +72,7 @@ const MatchupFights = () => {
         user={user}
         fights={fights}
         initialSelections={initialSelections}
+        refetchSelections={refetchSelections}
         ws={ws}
       />
       <div>

@@ -13,7 +13,7 @@ def create_matchup_related_objects(sender, instance, created, **kwargs):
         # create selection for each fight
         user_cycle = cycle([instance.first_pick, instance.user_b if instance.first_pick ==
                            instance.user_a else instance.user_a])
-        fights = Fight.objects.filter(event=instance.event)
+        fights = Fight.objects.filter(event=instance.event).order_by('id')
         for fight in fights:
             Selection.objects.create(matchup=instance, fight=fight, dibs=next(user_cycle))
 

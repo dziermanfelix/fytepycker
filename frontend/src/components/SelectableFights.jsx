@@ -2,25 +2,47 @@ import { useState, useEffect } from 'react';
 import { getFightCards } from '@/utils/fightTabUtils';
 import Fights from '@/components/Fights';
 
-const SelectableFights = ({ selectedMatchup, postSelection, activeFightTab, initialSelections, fights, user, ws }) => {
+const SelectableFights = ({
+  selectedMatchup,
+  postSelection,
+  activeFightTab,
+  initialSelections,
+  refetchSelections,
+  fights,
+  user,
+  ws,
+}) => {
   const [selections, setSelections] = useState({});
   const fightCards = getFightCards(activeFightTab);
+  const [readyFight, setReadyFight] = useState(null);
 
   useEffect(() => {
     if (Object.keys(initialSelections).length > 0) {
       if (selectedMatchup) {
+        const unconfirmedFights = initialSelections.filter((fight) => !fight.confirmed).sort((a, b) => b.id - a.id);
+        const readyFight = unconfirmedFights.length > 0 ? unconfirmedFights[0].fight : null;
+        setReadyFight(readyFight);
         const selectionsMap = initialSelections.reduce((acc, selection) => {
           const fight = selection.fight;
+
           if (!acc[fight]) {
             acc[fight] = { ...selection };
           }
-          if (selectedMatchup.user_a.id === user.id) {
-            acc[fight].userFighter = selection.user_a_selection;
-            acc[fight].otherFighter = selection.user_b_selection;
+
+          if (fight === readyFight) {
+            acc[fight].ready = true;
           } else {
-            acc[fight].userFighter = selection.user_b_selection;
-            acc[fight].otherFighter = selection.user_a_selection;
+            acc[fight].ready = false;
           }
+
+          if (selectedMatchup.user_a.id === user.id) {
+            acc[fight].userSelection = selection.user_a_selection;
+            acc[fight].otherSelection = selection.user_b_selection;
+          } else {
+            acc[fight].userSelection = selection.user_b_selection;
+            acc[fight].otherSelection = selection.user_a_selection;
+          }
+
           return acc;
         }, {});
         setSelections(selectionsMap);
@@ -35,24 +57,25 @@ const SelectableFights = ({ selectedMatchup, postSelection, activeFightTab, init
     }
 
     const prevSelections = selections;
-    const cur = prevSelections[fightId] || { userFighter: null, otherFighter: null };
-    const userFighter = cur.userFighter;
-    const otherFighter = cur.otherFighter;
+    const cur = prevSelections[fightId] || { userSelection: null, otherSelection: null };
+    const userSelection = cur.userSelection;
+    const otherSelection = cur.otherSelection;
 
-    if (fighterName === userFighter) {
+    if (fighterName === userSelection) {
       setSelections({
         ...prevSelections,
-        [fightId]: { ...cur, userFighter: null },
+        [fightId]: { ...cur, userSelection: null },
       });
       await postSelection(fightId, fighterName);
-    } else if (fighterName === otherFighter) {
+    } else if (fighterName === otherSelection) {
       return;
     } else {
       setSelections({
         ...prevSelections,
-        [fightId]: { ...cur, userFighter: fighterName },
+        [fightId]: { ...cur, userSelection: fighterName },
       });
       await postSelection(fightId, fighterName);
+      refetchSelections();
     }
 
     if (ws?.current && ws.current.readyState === WebSocket.OPEN) {
@@ -74,6 +97,7 @@ const SelectableFights = ({ selectedMatchup, postSelection, activeFightTab, init
           user={user}
           selections={selections}
           fighterClicked={fighterClicked}
+          readyFight={readyFight}
         />
       </div>
     );

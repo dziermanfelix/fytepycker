@@ -48,6 +48,7 @@ const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTa
         onClick={() => {
           setActiveFightTab('all');
           navigate(basePath);
+          if (selectItem) selectItem(null);
         }}
       >
         Close
