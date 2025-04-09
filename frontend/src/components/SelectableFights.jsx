@@ -15,6 +15,7 @@ const SelectableFights = ({
   const [selections, setSelections] = useState({});
   const fightCards = getFightCards(activeFightTab);
   const [readyFight, setReadyFight] = useState(null);
+  const [isSelectionProcessing, setIsSelectionProcessing] = useState(false);
 
   useEffect(() => {
     if (Object.keys(initialSelections).length > 0) {
@@ -51,40 +52,28 @@ const SelectableFights = ({
   }, [initialSelections]);
 
   const fighterClicked = async (e, fightId, fighterName) => {
+    if (isSelectionProcessing) return;
+
     if (e.target.tagName === 'A') {
       e.stopPropagation();
       return;
     }
 
-    const prevSelections = selections;
-    const cur = prevSelections[fightId] || { userSelection: null, otherSelection: null };
-    const userSelection = cur.userSelection;
-    const otherSelection = cur.otherSelection;
-
-    if (fighterName === userSelection) {
-      setSelections({
-        ...prevSelections,
-        [fightId]: { ...cur, userSelection: null },
-      });
-      await postSelection(fightId, fighterName);
-    } else if (fighterName === otherSelection) {
-      return;
-    } else {
-      setSelections({
-        ...prevSelections,
-        [fightId]: { ...cur, userSelection: fighterName },
-      });
+    setIsSelectionProcessing(true);
+    try {
       await postSelection(fightId, fighterName);
       refetchSelections();
-    }
 
-    if (ws?.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(
-        JSON.stringify({
-          action: 'wsUpdateSelections',
-          selections: selections,
-        })
-      );
+      if (ws?.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.send(
+          JSON.stringify({
+            action: 'wsUpdateSelections',
+            selections: selections,
+          })
+        );
+      }
+    } finally {
+      setIsSelectionProcessing(false);
     }
   };
 
