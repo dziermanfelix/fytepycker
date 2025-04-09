@@ -122,28 +122,28 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
         {fightCards.map((cardType) => (
           <div key={cardType}>
             <ul className='space-y-4'>
-              {fights[cardType]?.map((fight) => (
-                <li
-                  key={fight?.id}
-                  ref={(el) => (fightRefs.current[fight.id] = el)}
-                  className={`p-4 bg-white shadow rounded border-2 ${
-                    selections
-                      ? selections?.[fight.id]?.['dibs'] === user.id
-                        ? 'border-red-500'
-                        : 'border-blue-500'
-                      : 'border-white'
-                  }`}
-                >
-                  <div className='flex items-center justify-between w-full'>
-                    <FighterButton fight={fight} selection={selections?.[fight.id]} color='red' />
-                    <div className='flex flex-col justify-between'>
-                      <SelectionStatusSection fight={fight} />
-                      <WinnerSection fight={fight} />
+              {fights[cardType]?.map((fight) => {
+                const userDibs = selections?.[fight.id]?.['dibs'] === user.id;
+                const confirmed = selections?.[fight.id]?.['confirmed'];
+                return (
+                  <li
+                    key={fight?.id}
+                    ref={(el) => (fightRefs.current[fight.id] = el)}
+                    className={`p-4 bg-white shadow rounded border-2 ${
+                      confirmed ? 'border-white' : userDibs ? 'border-red-500' : 'border-blue-500'
+                    }`}
+                  >
+                    <div className='flex items-center justify-between w-full'>
+                      <FighterButton fight={fight} selection={selections?.[fight.id]} color='red' />
+                      <div className='flex flex-col justify-between'>
+                        <SelectionStatusSection fight={fight} />
+                        <WinnerSection fight={fight} />
+                      </div>
+                      <FighterButton fight={fight} selection={selections?.[fight.id]} color='blue' />
                     </div>
-                    <FighterButton fight={fight} selection={selections?.[fight.id]} color='blue' />
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}
