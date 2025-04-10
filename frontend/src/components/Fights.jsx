@@ -70,16 +70,18 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     if (user && selections) {
       const selection = selections[fight.id];
       if (!selection) return null;
-      if (selection?.ready) {
-        if (selection?.dibs == user?.id && !selection?.userSelection) {
+      if (selection.confirmed) {
+        selectionStatusText = 'Selections Confirmed.';
+      } else if (selection.ready) {
+        if (selection.dibs == user?.id && !selection.userSelection) {
           selectionStatusText = 'Select a Fighter!';
-        } else if (selection?.dibs != user?.id && !selection?.userSelection && selection?.otherSelection) {
+        } else if (selection.dibs != user?.id && !selection.userSelection && selection.otherSelection) {
           selectionStatusText = 'Confirm Your Selection...';
         } else {
           selectionStatusText = 'Waiting For Opponent...';
         }
       } else {
-        selectionStatusText = 'Selections Confirmed.';
+        selectionStatusText = '';
       }
     }
     return (
