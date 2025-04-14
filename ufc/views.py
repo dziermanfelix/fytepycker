@@ -1,5 +1,4 @@
 from django.utils import timezone
-from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.views import APIView
@@ -59,10 +58,9 @@ class ScraperView(APIView):
         events = Event.objects.all()
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({}, status=status.HTTP_200_OK)
 
     def scrape_fight_from_url(self, url):
-        html_content = self.get_html_content(url, 2000)
+        html_content = self.get_html_content(url, 3000)
         soup = BeautifulSoup(html_content, "html.parser")
         name = soup.find(
             "div", class_="field field--name-node-title field--type-ds field--label-hidden field__item").find("h1").text.strip()

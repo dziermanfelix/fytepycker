@@ -65,11 +65,19 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     return 'bg-gray-200';
   };
 
+  const InfoSection = ({ fight }) => {
+    return (
+      <div className='flex flex-col text-center'>
+        <p className='text-gray-600 mb-4'>{fight?.weight_class}</p>
+      </div>
+    );
+  };
+
   const SelectionStatusSection = ({ fight }) => {
     let selectionStatusText;
     if (user && selections) {
       const selection = selections[fight.id];
-      if (!selection) return null;
+      if (!selection || fight.winner) return null;
       if (selection.confirmed) {
         selectionStatusText = 'Selections Confirmed.';
       } else if (selection.ready) {
@@ -105,7 +113,6 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     }
     return (
       <div className='flex flex-col text-center'>
-        <p className='text-gray-600 mb-4'>{fight?.weight_class}</p>
         {fight.winner && (
           <div className='flex flex-col text-center gap-3'>
             <p className='text-yellow-500 font-bold'>
@@ -127,17 +134,22 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
               {fights[cardType]?.map((fight) => {
                 const userDibs = selections?.[fight?.id]?.['dibs'] === user?.id;
                 const confirmed = selections?.[fight?.id]?.['confirmed'];
+                let borderColor = 'border-white';
+                if (selections && !confirmed && userDibs) {
+                  borderColor = 'border-red-500';
+                } else if (selections && !confirmed && !userDibs) {
+                  borderColor = 'border-blue-500';
+                }
                 return (
                   <li
                     key={fight?.id}
                     ref={(el) => (fightRefs.current[fight?.id] = el)}
-                    className={`p-4 bg-white shadow rounded border-2 ${
-                      confirmed ? 'border-white' : userDibs ? 'border-red-500' : 'border-blue-500'
-                    }`}
+                    className={`p-4 bg-white shadow rounded border-2 ${borderColor}`}
                   >
                     <div className='flex items-center justify-between w-full'>
                       <FighterButton fight={fight} selection={selections?.[fight?.id]} color='red' />
                       <div className='flex flex-col justify-between'>
+                        <InfoSection fight={fight} />
                         <SelectionStatusSection fight={fight} />
                         <WinnerSection fight={fight} />
                       </div>
