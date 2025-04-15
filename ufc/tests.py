@@ -3,9 +3,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
-from .views import ScraperView
 from .models import Event, Fight
 from .serializers import EventSerializer
+from .scraper import Scraper
 
 
 User = get_user_model()
@@ -17,7 +17,7 @@ class EventTests(APITestCase):
         refresh = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
-        self.scraper_view = ScraperView()
+        self.scraper = Scraper()
         self.events_url = reverse('api:ufc:events')
         self.addDummyData()
 
@@ -26,7 +26,7 @@ class EventTests(APITestCase):
             name="UFC 999",
             headline="Beatle Showdown",
             url="https://ufc.com/ufc999",
-            date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
+            date=self.scraper.parse_event_date("Sat, Mar 15 / 11:00 PM UTC"),
             location="the sun",
         )
         self.event = event[0]
@@ -84,20 +84,20 @@ class EventTests(APITestCase):
 
 class ScraperTests(APITestCase):
     def setUp(self):
-        self.scraper_view = ScraperView()
+        self.scraper = Scraper()
 
     def test_parse_event_date(self):
         date_str = "Sun, Feb 23 / 2:00 AM UTC"
-        result = self.scraper_view.parse_event_date(date_str)
+        result = self.scraper.parse_event_date(date_str)
         self.assertEqual(str(result), "2025-02-23 02:00:00+00:00")
 
         date_str = "Sat, Mar 15 / 11:00 PM UTC"
-        result = self.scraper_view.parse_event_date(date_str)
+        result = self.scraper.parse_event_date(date_str)
         self.assertEqual(str(result), "2025-03-15 23:00:00+00:00")
 
     def test_normalize_name(self):
-        result = self.scraper_view.normalize_name("Jan Błachowicz")
+        result = self.scraper.normalize_name("Jan Błachowicz")
         self.assertEqual(str(result), "Jan Blachowicz")
 
-        result = self.scraper_view.normalize_name("Jan Blachowicz")
+        result = self.scraper.normalize_name("Jan Blachowicz")
         self.assertEqual(str(result), "Jan Blachowicz")

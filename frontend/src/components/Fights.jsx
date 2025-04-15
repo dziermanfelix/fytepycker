@@ -108,8 +108,8 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     if (user && selections) {
       const selection = selections[fight.id];
       if (!selection) return null;
-      if (selection.winner === user.id) userResultText = 'You Win!';
-      else userResultText = 'You Lose!';
+      if (selection.winner && selection.winner === user.id) userResultText = 'You Win!';
+      else if (selection.winner && selection.winner !== user.id) userResultText = 'You Lose!';
     }
     return (
       <div className='flex flex-col text-center'>
@@ -129,7 +129,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     return (
       <div>
         {fightCards.map((cardType) => (
-          <div key={cardType}>
+          <div key={cardType} className='mb-4'>
             <ul className='space-y-4'>
               {fights[cardType]?.map((fight) => {
                 const userDibs = selections?.[fight?.id]?.['dibs'] === user?.id;

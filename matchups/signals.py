@@ -32,8 +32,24 @@ def create_matchup_result(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=Fight)
-def update_selection_on_fight_winner(sender, instance, **kwargs):
-    """update selection when fight winner is set"""
+def update_selection_on_fight_update(sender, instance, **kwargs):
+    """update selection when fight is updated"""
+
+    # add selection if this is a new fight to the matchup (usually means a fight got updated)
+    existing_matchups = Matchup.objects.filter(event=instance.event)
+    if existing_matchups:
+        for matchup in existing_matchups:
+            existing_selection = Selection.objects.filter(matchup=matchup, fight=instance.id).exists()
+            if not existing_selection:
+                order = instance.order
+                adjacent_fight = Fight.objects.filter(event=instance.event, order=order - 1).first()
+                if not adjacent_fight:
+                    adjacent_fight = Fight.objects.filter(event=instance.event, order=order + 1).first()
+                adjacent_selection = Selection.objects.filter(matchup=matchup, fight=adjacent_fight).first()
+                next_dibs = matchup.user_a if adjacent_selection.dibs == matchup.user_b else matchup.user_b
+                Selection.objects.create(matchup=matchup, fight=instance, dibs=next_dibs)
+
+    # update selection winner
     if instance.winner:
         selections = Selection.objects.filter(fight=instance)
 
@@ -51,12 +67,12 @@ def update_selection_on_fight_winner(sender, instance, **kwargs):
 
     # broadcast to websocket
     event = instance.event
-    matchups = Matchup.objects.filter(event=event)
+    existing_matchups = Matchup.objects.filter(event=event)
     message = {
         'type': 'refetch_matchup',
     }
     channel_layer = get_channel_layer()
-    for matchup in matchups:
+    for matchup in existing_matchups:
         room_group_name = f'matchup_{matchup.id}'
         async_to_sync(channel_layer.group_send)(
             room_group_name,

@@ -35,12 +35,7 @@ const MatchupContent = () => {
     findMatchup();
 
     return () => clearTimeout(timeoutRef.current);
-  }, [id, matchups, isLoading, selectMatchup, navigate]);
-
-  const handleClick = async (matchup) => {
-    selectMatchup(matchup);
-    navigate(`/dash/matchups/${matchup.id}`);
-  };
+  }, [id, isLoading, navigate]);
 
   if (checkingMatchup) return <p className='text-center text-gray-500'>{`Looking for matchup ${id}...`}</p>;
   if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;

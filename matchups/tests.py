@@ -6,8 +6,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from itertools import cycle
 from ufc.models import Event, Fight
 from .models import Matchup, Selection
-from ufc.views import ScraperView
 from matchups.models import MatchupResult
+from ufc.scraper import Scraper
 
 
 User = get_user_model()
@@ -19,6 +19,7 @@ class MatchupTests(APITestCase):
         self.user2 = get_user_model().objects.create_user(username='testuser2', email='testuser2@gmail.com', password='testpass2')
         refresh = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+        self.scraper = Scraper()
 
         self.matchups_url = reverse('api:matchups:matchups')
         self.addDummyData()
@@ -28,7 +29,7 @@ class MatchupTests(APITestCase):
             name="UFC 999",
             headline="beatlemania",
             url="https://ufc.com/ufc999",
-            date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
+            date=self.scraper.parse_event_date("Sat, Mar 15 / 11:00 PM UTC"),
             location="the sun",
         )
         self.event = event[0]
@@ -269,6 +270,7 @@ class SelectionTests(APITestCase):
         self.user2 = get_user_model().objects.create_user(username='testuser2', email='testuser2@gmail.com', password='testpass2')
         refresh = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+        self.scraper = Scraper()
 
         self.selection_url = reverse('api:matchups:selections')
         self.addDummyData()
@@ -278,7 +280,7 @@ class SelectionTests(APITestCase):
             name="UFC 999",
             headline="beatlemania",
             url="https://ufc.com/ufc999",
-            date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
+            date=self.scraper.parse_event_date("Sat, Mar 15 / 11:00 PM UTC"),
             location="the sun",
         )
         self.event = event[0]
@@ -306,7 +308,7 @@ class SelectionTests(APITestCase):
             red_name="ringo",
             defaults={
                 "card": "main",
-                "order": 0,
+                "order": 1,
                 "weight_class": "lightweight",
                 "blue_img": "https://url.img",
                 "blue_url": "https://url.img",
@@ -405,7 +407,7 @@ class SelectionTests(APITestCase):
             name="UFC 1000",
             headline="beatlemania",
             url="https://ufc.com/ufc1000",
-            date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
+            date=self.scraper.parse_event_date("Sat, Mar 15 / 11:00 PM UTC"),
             location="the moon",
         )
         other_event = other_event[0]
@@ -644,6 +646,53 @@ class SelectionTests(APITestCase):
         selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight.id).first()
         self.assertEqual(selection.winner, self.user2)
 
+    def test_selection_updates_from_fight_change(self):
+        # simulate what the scraper does, it will add the new fight before deleting the old
+        newFight1 = Fight.objects.update_or_create(
+            event_id=self.event.id,
+            blue_name="paul",
+            red_name="ozzy",
+            defaults={
+                "card": "main",
+                "order": 0,
+                "weight_class": "heavyweight",
+                "blue_img": "https://url.img",
+                "blue_url": "https://url.img",
+                "red_img": "https://url.img",
+                "red_url": "https://url.img",
+                "winner": None,
+                "method": None,
+                "round": None,
+            }
+        )
+        newFight1 = newFight1[0]
+        
+        # delete existing fight1
+        fight1 = Fight.objects.filter(id=self.fight.id).first()
+        fight1.delete()
+
+        # verify selection gets added for new fight
+        selections = Selection.objects.filter(matchup=self.matchup)
+        first_selection_dibs = selections[0].dibs
+
+        self.assertEqual(selections[0].matchup, self.matchup)
+        self.assertEqual(selections[0].fight, self.fight2)
+        self.assertEqual(selections[0].user_a_selection, None)
+        self.assertEqual(selections[0].user_b_selection, None)
+        self.assertEqual(selections[0].bet, 0)
+        self.assertEqual(selections[0].winner, None)
+        self.assertEqual(selections[0].dibs, first_selection_dibs)
+        self.assertEqual(selections[0].confirmed, False)
+
+        self.assertEqual(selections[1].matchup, self.matchup)
+        self.assertEqual(selections[1].fight, newFight1)
+        self.assertEqual(selections[1].user_a_selection, None)
+        self.assertEqual(selections[1].user_b_selection, None)
+        self.assertEqual(selections[1].bet, 0)
+        self.assertEqual(selections[1].winner, None)
+        self.assertEqual(selections[1].dibs, self.user if first_selection_dibs == self.user2 else self.user2)
+        self.assertEqual(selections[1].confirmed, False)
+
 
 class MatchupResultTests(APITestCase):
     def setUp(self):
@@ -651,6 +700,7 @@ class MatchupResultTests(APITestCase):
         self.user2 = get_user_model().objects.create_user(username='testuser2', email='testuser2@gmail.com', password='testpass2')
         refresh = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+        self.scraper = Scraper()
 
         self.selection_url = reverse('api:matchups:selections')
         self.addDummyData()
@@ -660,7 +710,7 @@ class MatchupResultTests(APITestCase):
             name="UFC 999",
             headline="beatlemania",
             url="https://ufc.com/ufc999",
-            date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
+            date=self.scraper.parse_event_date("Sat, Mar 15 / 11:00 PM UTC"),
             location="the sun",
         )
         self.event = event[0]
@@ -859,6 +909,7 @@ class LifetimeTests(APITestCase):
 
         self.selection_url = reverse('api:matchups:selections')
         self.lifetime_url = reverse('api:matchups:lifetime')
+        self.scraper = Scraper()
         self.addDummyData()
 
     def addDummyData(self):
@@ -866,7 +917,7 @@ class LifetimeTests(APITestCase):
             name="UFC 1969",
             headline="beatlemania",
             url="https://ufc.com/ufc-1969",
-            date=ScraperView.parse_event_date(ScraperView, "Sat, Mar 15 / 11:00 PM UTC"),
+            date=self.scraper.parse_event_date("Sat, Mar 15 / 11:00 PM UTC"),
             location="Abbey Road",
         )
         self.event = event[0]

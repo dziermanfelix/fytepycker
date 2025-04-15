@@ -14,11 +14,13 @@ const MatchupsContent = () => {
   if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
   if (isError) return <p className='text-center text-red-500'>Failed to load matchups.</p>;
 
+  const currentMatchups = matchups.filter((matchup) => !matchup.event.complete);
+
   return (
     <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
       {!id &&
-        (matchups.length > 0 ? (
-          matchups.map((matchup) => (
+        (currentMatchups.length > 0 ? (
+          currentMatchups.map((matchup) => (
             <div
               key={matchup.id}
               className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
