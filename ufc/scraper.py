@@ -60,17 +60,9 @@ class Scraper:
         self.get_fights_for_card(soup.find("div", class_="fight-card-prelims"), event[0], FightCard.PRELIM)
         self.get_fights_for_card(soup.find("div", class_="fight-card-prelims-early"), event[0], FightCard.EARLY_PRELIM)
 
-    def get_html_content(self, url, timeout):
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(url)
-            page.wait_for_timeout(timeout)
-            html_content = page.content()
-            browser.close()
-        return html_content
-
     def get_fights_for_card(self, card_listing, event, fight_card):
+        existing_fights = list(Fight.objects.filter(event=event, card=fight_card))
+        newly_scraped_fights = []
         card_fights = card_listing.select(".c-listing-fight__content") if card_listing else []
         order = 0
         for fight in card_fights:
@@ -115,6 +107,25 @@ class Scraper:
                 }
             )
             order += 1
+            newly_scraped_fights.append(fight[0])
+        # clean up fights that have changed or been canceled
+        if existing_fights:
+            newly_scraped_keys = set((f.blue_name, f.red_name) for f in newly_scraped_fights)
+            for fight in existing_fights:
+                key = (fight.blue_name, fight.red_name)
+                if key not in newly_scraped_keys:
+                    print(f"[delete] Fight no longer found: {fight}")
+                    fight.delete()
+
+    def get_html_content(self, url, timeout):
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(url)
+            page.wait_for_timeout(timeout)
+            html_content = page.content()
+            browser.close()
+        return html_content
 
     def is_today_in_eastern(self, event_dt_utc):
         eastern = pytz.timezone('US/Eastern')
