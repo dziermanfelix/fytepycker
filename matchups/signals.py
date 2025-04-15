@@ -15,7 +15,8 @@ def create_matchup_related_objects(sender, instance, created, **kwargs):
                            instance.user_a else instance.user_a])
         fights = Fight.objects.filter(event=instance.event).order_by('id')
         for fight in fights:
-            Selection.objects.create(matchup=instance, fight=fight, dibs=next(user_cycle))
+            Selection.objects.create(matchup=instance, fight=fight, dibs=next(user_cycle),
+                                     bet=determine_default_bet(fight))
 
         # create matchup result
         if not MatchupResult.objects.filter(matchup=instance).exists():
@@ -47,7 +48,8 @@ def update_selection_on_fight_update(sender, instance, **kwargs):
                     adjacent_fight = Fight.objects.filter(event=instance.event, order=order + 1).first()
                 adjacent_selection = Selection.objects.filter(matchup=matchup, fight=adjacent_fight).first()
                 next_dibs = matchup.user_a if adjacent_selection.dibs == matchup.user_b else matchup.user_b
-                Selection.objects.create(matchup=matchup, fight=instance, dibs=next_dibs)
+                Selection.objects.create(matchup=matchup, fight=instance, dibs=next_dibs,
+                                         bet=determine_default_bet(instance))
 
     # update selection winner
     if instance.winner:
@@ -105,3 +107,12 @@ def update_matchup_result_on_winner_change(sender, instance, **kwargs):
         matchup=matchup,
         defaults=defaults
     )
+
+
+def determine_default_bet(fight):
+    default_bet = 30
+    if 'title' in fight.weight_class:
+        default_bet = 100
+    elif fight.card == 'Main Card' and fight.order == 0:
+        default_bet = 50
+    return default_bet

@@ -38,7 +38,7 @@ class MatchupTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "main",
+                "card": "Main Card",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -56,8 +56,8 @@ class MatchupTests(APITestCase):
             blue_name="george",
             red_name="ringo",
             defaults={
-                "card": "main",
-                "order": 0,
+                "card": "Main Card",
+                "order": 1,
                 "weight_class": "bantamweight",
                 "blue_img": "https://url.img",
                 "blue_url": "https://url.img",
@@ -118,15 +118,16 @@ class MatchupTests(APITestCase):
             self.assertEqual(s.matchup, matchup)
             self.assertEqual(s.user_a_selection, None)
             self.assertEqual(s.user_b_selection, None)
-            self.assertEqual(s.bet, 0)
             self.assertEqual(s.winner, None)
             self.assertEqual(s.confirmed, False)
         user_cycle = cycle([matchup.first_pick, matchup.user_b if matchup.first_pick ==
                            matchup.user_a else matchup.user_a])
         self.assertEqual(selections[0].fight, self.fight)
         self.assertEqual(selections[0].dibs, next(user_cycle))
+        self.assertEqual(selections[0].bet, 50)
         self.assertEqual(selections[1].fight, self.fight2)
         self.assertEqual(selections[1].dibs, next(user_cycle))
+        self.assertEqual(selections[1].bet, 30)
 
     def test_get_matchup_by_id(self):
         data = {
@@ -289,7 +290,7 @@ class SelectionTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "main",
+                "card": "Main Card",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -307,7 +308,7 @@ class SelectionTests(APITestCase):
             blue_name="george",
             red_name="ringo",
             defaults={
-                "card": "main",
+                "card": "Main Card",
                 "order": 1,
                 "weight_class": "lightweight",
                 "blue_img": "https://url.img",
@@ -333,15 +334,16 @@ class SelectionTests(APITestCase):
             self.assertEqual(s.matchup, self.matchup)
             self.assertEqual(s.user_a_selection, None)
             self.assertEqual(s.user_b_selection, None)
-            self.assertEqual(s.bet, 0)
             self.assertEqual(s.winner, None)
             self.assertEqual(s.confirmed, False)
         user_cycle = cycle([self.matchup.first_pick, self.matchup.user_b if self.matchup.first_pick ==
                            self.matchup.user_a else self.matchup.user_a])
         self.assertEqual(selections[0].fight, self.fight)
         self.assertEqual(selections[0].dibs, next(user_cycle))
+        self.assertEqual(selections[0].bet, 50)
         self.assertEqual(selections[1].fight, self.fight2)
         self.assertEqual(selections[1].dibs, next(user_cycle))
+        self.assertEqual(selections[1].bet, 30)
 
     def test_create_selection(self):
         data = {
@@ -356,7 +358,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data['selection']['fight'], self.fight.id)
         self.assertEqual(response.data['selection']['user_a_selection'], self.fight.blue_name)
         self.assertEqual(response.data['selection']['user_b_selection'], None)
-        self.assertEqual(response.data['selection']['bet'], 0)
+        self.assertEqual(response.data['selection']['bet'], 50)
         self.assertEqual(response.data['selection']['winner'], None)
         self.assertEqual(response.data['selection']['dibs'], None)
         self.assertEqual(response.data['selection']['confirmed'], False)
@@ -416,8 +418,8 @@ class SelectionTests(APITestCase):
             blue_name="ringo",
             red_name="george",
             defaults={
-                "card": "main",
-                "order": 0,
+                "card": "Main Card",
+                "order": 3,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
                 "blue_url": "https://url.img",
@@ -463,7 +465,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['fight'], self.fight.id)
         self.assertEqual(response.data[0]['user_a_selection'], self.fight.red_name)
         self.assertEqual(response.data[0]['user_b_selection'], None)
-        self.assertEqual(response.data[0]['bet'], 0)
+        self.assertEqual(response.data[0]['bet'], 50)
         self.assertEqual(response.data[0]['winner'], None)
         self.assertEqual(response.data[0]['dibs'], None)
         self.assertEqual(response.data[0]['confirmed'], False)
@@ -495,7 +497,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['fight'], self.fight.id)
         self.assertEqual(response.data[0]['user_a_selection'], self.fight.blue_name)
         self.assertEqual(response.data[0]['user_b_selection'], None)
-        self.assertEqual(response.data[0]['bet'], 0)
+        self.assertEqual(response.data[0]['bet'], 50)
         self.assertEqual(response.data[0]['winner'], None)
         self.assertEqual(response.data[0]['dibs'], None)
         self.assertEqual(response.data[0]['confirmed'], False)
@@ -513,7 +515,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['fight'], self.fight.id)
         self.assertEqual(response.data[0]['user_a_selection'], self.fight.red_name)
         self.assertEqual(response.data[0]['user_b_selection'], None)
-        self.assertEqual(response.data[0]['bet'], 0)
+        self.assertEqual(response.data[0]['bet'], 50)
         self.assertEqual(response.data[0]['winner'], None)
         self.assertEqual(response.data[0]['dibs'], None)
         self.assertEqual(response.data[0]['confirmed'], False)
@@ -533,7 +535,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['fight'], self.fight.id)
         self.assertEqual(response.data[0]['user_a_selection'], self.fight.blue_name)
         self.assertEqual(response.data[0]['user_b_selection'], None)
-        self.assertEqual(response.data[0]['bet'], 0)
+        self.assertEqual(response.data[0]['bet'], 50)
         self.assertEqual(response.data[0]['winner'], None)
         self.assertEqual(response.data[0]['dibs'], None)
         self.assertEqual(response.data[0]['confirmed'], False)
@@ -545,7 +547,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['fight'], self.fight.id)
         self.assertEqual(response.data[0]['user_a_selection'], None)
         self.assertEqual(response.data[0]['user_b_selection'], None)
-        self.assertEqual(response.data[0]['bet'], 0)
+        self.assertEqual(response.data[0]['bet'], 50)
         self.assertEqual(response.data[0]['winner'], None)
         self.assertEqual(response.data[0]['dibs'], None)
         self.assertEqual(response.data[0]['confirmed'], False)
@@ -630,7 +632,7 @@ class SelectionTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "main",
+                "card": "Main Card",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -653,7 +655,7 @@ class SelectionTests(APITestCase):
             blue_name="paul",
             red_name="ozzy",
             defaults={
-                "card": "main",
+                "card": "Main Card",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -666,7 +668,7 @@ class SelectionTests(APITestCase):
             }
         )
         newFight1 = newFight1[0]
-        
+
         # delete existing fight1
         fight1 = Fight.objects.filter(id=self.fight.id).first()
         fight1.delete()
@@ -675,20 +677,22 @@ class SelectionTests(APITestCase):
         selections = Selection.objects.filter(matchup=self.matchup)
         first_selection_dibs = selections[0].dibs
 
+        # original fight2
         self.assertEqual(selections[0].matchup, self.matchup)
         self.assertEqual(selections[0].fight, self.fight2)
         self.assertEqual(selections[0].user_a_selection, None)
         self.assertEqual(selections[0].user_b_selection, None)
-        self.assertEqual(selections[0].bet, 0)
+        self.assertEqual(selections[0].bet, 30)
         self.assertEqual(selections[0].winner, None)
         self.assertEqual(selections[0].dibs, first_selection_dibs)
         self.assertEqual(selections[0].confirmed, False)
 
+        # new fight1
         self.assertEqual(selections[1].matchup, self.matchup)
         self.assertEqual(selections[1].fight, newFight1)
         self.assertEqual(selections[1].user_a_selection, None)
         self.assertEqual(selections[1].user_b_selection, None)
-        self.assertEqual(selections[1].bet, 0)
+        self.assertEqual(selections[1].bet, 50)
         self.assertEqual(selections[1].winner, None)
         self.assertEqual(selections[1].dibs, self.user if first_selection_dibs == self.user2 else self.user2)
         self.assertEqual(selections[1].confirmed, False)
@@ -719,7 +723,7 @@ class MatchupResultTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "main",
+                "card": "Main Card",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -737,8 +741,8 @@ class MatchupResultTests(APITestCase):
             blue_name="george",
             red_name="ringo",
             defaults={
-                "card": "main",
-                "order": 0,
+                "card": "Main Card",
+                "order": 1,
                 "weight_class": "lightweight",
                 "blue_img": "https://url.img",
                 "blue_url": "https://url.img",
@@ -793,7 +797,7 @@ class MatchupResultTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "main",
+                "card": "Main Card",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -862,7 +866,7 @@ class MatchupResultTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "main",
+                "card": "Main Card",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -881,8 +885,8 @@ class MatchupResultTests(APITestCase):
             blue_name="george",
             red_name="ringo",
             defaults={
-                "card": "main",
-                "order": 0,
+                "card": "Main Card",
+                "order": 1,
                 "weight_class": "lightweight",
                 "blue_img": "https://url.img",
                 "blue_url": "https://url.img",
@@ -926,7 +930,7 @@ class LifetimeTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "main",
+                "card": "Main Card",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -944,8 +948,8 @@ class LifetimeTests(APITestCase):
             blue_name="george",
             red_name="ringo",
             defaults={
-                "card": "main",
-                "order": 0,
+                "card": "Main Card",
+                "order": 1,
                 "weight_class": "lightweight",
                 "blue_img": "https://url.img",
                 "blue_url": "https://url.img",

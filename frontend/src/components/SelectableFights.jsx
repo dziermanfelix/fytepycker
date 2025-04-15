@@ -29,7 +29,7 @@ const SelectableFights = ({
             if (early) fight = early.filter((f) => f.id === selection.fight)[0];
             if (!fight && prelim) fight = prelim.filter((f) => f.id === selection.fight)[0];
             if (!fight && main) fight = main.filter((f) => f.id === selection.fight)[0];
-            return !fight.winner && !selection.confirmed;
+            return !fight?.winner && !selection.confirmed;
           })
           .sort((a, b) => b.id - a.id);
         const readyFight = unconfirmed.length > 0 ? unconfirmed[0].fight : null;
