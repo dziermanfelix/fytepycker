@@ -1,3 +1,4 @@
+from celery.schedules import crontab
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
@@ -25,6 +26,7 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'channels',
+    'django_celery_beat',
 
     'api',
     'accounts',
@@ -125,3 +127,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = DEBUG
+
+# celery
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+
+CELERY_BEAT_SCHEDULE = {
+    'midnight-scrape': {
+        'task': 'events.tasks.midnight_scrape',
+        'schedule': crontab(minute=0, hour=0),  # midnight UTC
+    },
+}
