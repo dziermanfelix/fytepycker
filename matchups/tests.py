@@ -345,6 +345,29 @@ class SelectionTests(APITestCase):
         self.assertEqual(selections[1].dibs, next(user_cycle))
         self.assertEqual(selections[1].bet, 30)
 
+    def test_default_bets(self):
+        Fight.objects.update_or_create(
+            event_id=self.event.id,
+            blue_name="mick jagger",
+            red_name="keith richards",
+            defaults={
+                "card": "Main Card",
+                "order": 1,
+                "weight_class": "bantamweight title bout",
+                "blue_img": "https://url.img",
+                "blue_url": "https://url.img",
+                "red_img": "https://url.img",
+                "red_url": "https://url.img",
+                "winner": None,
+                "method": None,
+                "round": None,
+            }
+        )
+        selections = Selection.objects.filter(matchup=self.matchup.id)
+        self.assertEqual(selections[0].bet, 50)
+        self.assertEqual(selections[1].bet, 30)
+        self.assertEqual(selections[2].bet, 100)
+
     def test_create_selection(self):
         data = {
             "matchup": self.matchup.id,
