@@ -110,8 +110,8 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     if (user && selections) {
       const selection = selections[fight.id];
       if (!selection) return null;
-      if (selection.winner && selection.winner === user.id) userResultText = 'You Win!';
-      else if (selection.winner && selection.winner !== user.id) userResultText = 'You Lose!';
+      if (selection.winner && selection.winner === user.id) userResultText = `You Win ${selection.bet}`;
+      else if (selection.winner && selection.winner !== user.id) userResultText = `You lose ${selection.bet}`;
     }
     return (
       <div className='flex flex-col text-center'>
@@ -120,7 +120,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
             <p className='text-yellow-500 font-bold'>
               Round {fight.round} | {fight.method}
             </p>
-            {userResultText && <p className='font-bold capitalize'>{userResultText}</p>}
+            {userResultText && <p className='font-bold capitalize text-lg'>{userResultText}</p>}
           </div>
         )}
       </div>

@@ -51,6 +51,7 @@ export const MatchupsProvider = ({ children }) => {
         const fetchData = await fetchSelectedMatchup(selectedMatchup.id);
         const updatedMatchup = fetchData ? fetchData[0] : null;
         selectMatchup(updatedMatchup);
+        refetchSelections();
       }
     };
     ws.current.onerror = (error) => {
