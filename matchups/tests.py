@@ -38,7 +38,7 @@ class MatchupTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -56,7 +56,7 @@ class MatchupTests(APITestCase):
             blue_name="george",
             red_name="ringo",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 1,
                 "weight_class": "bantamweight",
                 "blue_img": "https://url.img",
@@ -290,7 +290,7 @@ class SelectionTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -308,7 +308,7 @@ class SelectionTests(APITestCase):
             blue_name="george",
             red_name="ringo",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 1,
                 "weight_class": "lightweight",
                 "blue_img": "https://url.img",
@@ -351,7 +351,7 @@ class SelectionTests(APITestCase):
             blue_name="mick jagger",
             red_name="keith richards",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 1,
                 "weight_class": "bantamweight title bout",
                 "blue_img": "https://url.img",
@@ -441,7 +441,7 @@ class SelectionTests(APITestCase):
             blue_name="ringo",
             red_name="george",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 3,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -655,7 +655,7 @@ class SelectionTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -678,7 +678,7 @@ class SelectionTests(APITestCase):
             blue_name="paul",
             red_name="ozzy",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -746,7 +746,7 @@ class MatchupResultTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -764,7 +764,7 @@ class MatchupResultTests(APITestCase):
             blue_name="george",
             red_name="ringo",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 1,
                 "weight_class": "lightweight",
                 "blue_img": "https://url.img",
@@ -820,7 +820,7 @@ class MatchupResultTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -889,7 +889,7 @@ class MatchupResultTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -908,7 +908,7 @@ class MatchupResultTests(APITestCase):
             blue_name="george",
             red_name="ringo",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 1,
                 "weight_class": "lightweight",
                 "blue_img": "https://url.img",
@@ -953,7 +953,7 @@ class LifetimeTests(APITestCase):
             blue_name="paul",
             red_name="john",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 0,
                 "weight_class": "heavyweight",
                 "blue_img": "https://url.img",
@@ -971,7 +971,7 @@ class LifetimeTests(APITestCase):
             blue_name="george",
             red_name="ringo",
             defaults={
-                "card": "Main Card",
+                "card": "main",
                 "order": 1,
                 "weight_class": "lightweight",
                 "blue_img": "https://url.img",

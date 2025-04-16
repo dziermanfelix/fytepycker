@@ -20,9 +20,9 @@ class Event(models.Model):
 
 
 class FightCard(models.TextChoices):
-    MAIN = "main", "Main Card"
-    PRELIM = "prelim", "Prelims"
-    EARLY_PRELIM = "early", "Early Prelims"
+    MAIN = "main", "main"
+    PRELIM = "prelim", "prelim"
+    EARLY_PRELIM = "early", "early"
 
 
 class Fight(models.Model):

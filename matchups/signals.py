@@ -113,6 +113,6 @@ def determine_default_bet(fight):
     default_bet = 30
     if 'title' in fight.weight_class:
         default_bet = 100
-    elif fight.card == 'Main Card' and fight.order == 0:
+    elif fight.card == 'main' and fight.order == 0:
         default_bet = 50
     return default_bet

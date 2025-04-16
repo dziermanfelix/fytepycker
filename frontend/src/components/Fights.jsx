@@ -74,9 +74,10 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
   };
 
   const SelectionStatusSection = ({ fight }) => {
+    let selection;
     let selectionStatusText;
     if (user && selections) {
-      const selection = selections[fight.id];
+      selection = selections[fight.id];
       if (!selection || fight.winner) return null;
       if (selection.confirmed) {
         selectionStatusText = 'Selections Confirmed.';
@@ -96,6 +97,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
       <div className='flex flex-col text-center'>
         {selectionStatusText && (
           <div className='flex flex-col text-center gap-3'>
+            <p className='text-lg'>{selection.bet}</p>
             <p className='font-bold capitalize'>{selectionStatusText}</p>
           </div>
         )}
