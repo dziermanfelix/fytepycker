@@ -6,18 +6,26 @@ const LifetimeContext = createContext({});
 
 export const LifetimeProvider = ({ children }) => {
   const { user } = useAuth();
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [activeUserTab, setActiveUserTab] = useState(null);
 
   const { items, isLoading, isError, refetch } = useLifetimeHook({ userId: user?.id });
 
-  const formattedItems = items.map((item) => ({
-    opponent: item.opponent.username,
-    wins: item.wins,
-    losses: item.losses,
-  }));
+  // const formattedItems = items.map((item) => ({
+  //   opponent: item.opponent.username,
+  //   wins: item.wins,
+  //   losses: item.losses,
+  // }));
 
   const contextValue = {
     user,
-    stats: formattedItems,
+    // stats: formattedItems,
+    items,
+    selectedUser,
+    setSelectedUser,
+
+    activeUserTab,
+    setActiveUserTab,
 
     isLoading,
     isError,

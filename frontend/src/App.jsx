@@ -50,16 +50,24 @@ function App() {
               path='matchups/:id'
               element={
                 <MatchupsProvider>
-                  <Matchup />
+                  <Matchup basePath='/dash/matchups/' />
                 </MatchupsProvider>
               }
             />
             <Route
-              path='lifetime'
+              path='lifetime/*'
               element={
                 <LifetimeProvider>
                   <Lifetime />
                 </LifetimeProvider>
+              }
+            />
+            <Route
+              path='lifetime/matchups/:id'
+              element={
+                <MatchupsProvider>
+                  <Matchup basePath='/dash/lifetime' />
+                </MatchupsProvider>
               }
             />
             <Route path='messages' element={<Messages />} />

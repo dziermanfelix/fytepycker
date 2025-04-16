@@ -1,17 +1,81 @@
+import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useLifetime, LifetimeProvider } from '@/contexts/LifetimeContext';
+import LifetimeTabControls from '../components/LifetimeTabControls';
 
 const LifetimeContent = () => {
-  const { stats, isLoading, isError } = useLifetime();
+  const navigate = useNavigate();
+  const { stats, isLoading, isError, items, selectedUser, setSelectedUser } = useLifetime();
+
+  const handleUserClick = async (user) => {
+    setSelectedUser(user);
+  };
+
+  const handleMatchupClick = async (matchup) => {
+    navigate(`/dash/lifetime/matchups/${matchup.id}`);
+  };
 
   if (isLoading) return <p className='text-center text-gray-500'>Loading lifetime...</p>;
   if (isError) return <p className='text-center text-red-500'>Failed to load lifetime.</p>;
 
+  const filteredMatchups = items.flatMap((item) => (item.user.id === selectedUser?.id ? item.matchups : []));
+
+  return (
+    <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
+      {!selectedUser &&
+        (items.length > 0 ? (
+          items.map((item) => (
+            <div
+              key={item.user.id}
+              className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
+              onClick={() => handleUserClick(item.user)}
+            >
+              <div>
+                <div className='flex items-center space-x-2'>
+                  <div>
+                    <p className='capitalize'>{item.user.username}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className='text-center text-gray-500'>No Lifetime.</p>
+        ))}
+      {selectedUser && (
+        <div>
+          <LifetimeTabControls setSelectedUser={setSelectedUser} />
+          <div className='mb-5 mx-auto mt-2'> stats here... </div>
+          <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
+            {filteredMatchups.length > 0 ? (
+              filteredMatchups.map((matchup) => (
+                <div
+                  key={matchup.id}
+                  className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
+                  onClick={() => handleMatchupClick(matchup)}
+                >
+                  <div>
+                    <div className='flex items-center space-x-2'>
+                      <p className=''>
+                        {matchup?.event?.name} | {matchup?.event?.headline}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className='text-center text-gray-500'>You have no matchups to display. You are a loser.</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className='p-4 rounded-lg'>
       <h2 className='text-xl font-bold mb-4'>Lifetime Head-to-Head</h2>
-
-      {/* Table View */}
+      // table
       <table className='w-full text-left border-collapse border border-gray-700'>
         <thead>
           <tr className='bg-gray-300'>
@@ -35,8 +99,7 @@ const LifetimeContent = () => {
           })}
         </tbody>
       </table>
-
-      {/* Bar Chart */}
+      // bar chart
       <div className='mt-6'>
         <ResponsiveContainer width='100%' height={300}>
           <BarChart data={stats}>

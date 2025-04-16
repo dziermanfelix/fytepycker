@@ -67,6 +67,11 @@ class MatchupSerializer(serializers.ModelSerializer):
 
 
 class LifetimeSerializer(serializers.Serializer):
+    user = UserSerializer(read_only=True)
+    matchups = MatchupSerializer(many=True, read_only=True)
+
+
+class LifetimeStatsSerializer(serializers.Serializer):
     opponent = serializers.SerializerMethodField()
     wins = serializers.IntegerField()
     losses = serializers.IntegerField()

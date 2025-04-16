@@ -4,7 +4,7 @@ import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
 import MatchupFights from '@/components/MatchupFights';
 import FightTabControls from '@/components/FightTabControls';
 
-const MatchupContent = () => {
+const MatchupContent = ({ basePath }) => {
   const { id } = useParams();
   const { isLoading, isError, matchups, selectMatchup, refetchMatchups, activeFightTab, setActiveFightTab, fights } =
     useMatchups();
@@ -35,7 +35,7 @@ const MatchupContent = () => {
     findMatchup();
 
     return () => clearTimeout(timeoutRef.current);
-  }, [id, isLoading, navigate]);
+  }, [id, isLoading, navigate, matchups]);
 
   if (checkingMatchup) return <p className='text-center text-gray-500'>{`Looking for matchup ${id}...`}</p>;
   if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
@@ -48,7 +48,7 @@ const MatchupContent = () => {
           fights={fights}
           activeFightTab={activeFightTab}
           setActiveFightTab={setActiveFightTab}
-          basePath='/dash/matchups'
+          basePath={basePath}
         />
         <MatchupFights />
       </div>
@@ -56,9 +56,9 @@ const MatchupContent = () => {
   );
 };
 
-const Matchup = () => (
+const Matchup = ({ basePath }) => (
   <MatchupsProvider>
-    <MatchupContent />
+    <MatchupContent basePath={basePath} />
     <Outlet />
   </MatchupsProvider>
 );

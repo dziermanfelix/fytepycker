@@ -1036,10 +1036,8 @@ class LifetimeTests(APITestCase):
 
         response = self.client.get(self.lifetime_url, {'user_id': self.user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['opponent'], {'id': self.user2.id, 'username': self.user2.username})
-        self.assertEqual(response.data[0]['wins'], 1)
-        self.assertEqual(response.data[0]['losses'], 0)
-        self.assertEqual(response.data[0]['win_percentage'], 100)
+        self.assertEqual(response.data[0]['user']['id'], self.user2.id)
+        self.assertEqual(response.data[0]['matchups'][0]['id'], self.matchup.id)
 
     def test_get_lifetime_error_missing_user_id(self):
         response = self.client.get(self.lifetime_url)

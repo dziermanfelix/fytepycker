@@ -124,27 +124,50 @@ class LifetimeView(APIView):
         if not user_id:
             return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.get(id=user_id)
+        all_users = User.objects.exclude(id=user_id)
 
-        matchup_results = MatchupResult.objects.select_related('matchup').filter(
-            Q(matchup__user_a_id=user_id) | Q(matchup__user_b_id=user_id)
+        matchups = Matchup.objects.filter(
+            (Q(user_a_id=user_id) & Q(user_b__in=all_users)) |
+            (Q(user_b_id=user_id) & Q(user_a__in=all_users))
         )
 
-        count = 0
+        user_map = {user.id: {"user": user, "matchups": []} for user in all_users}
+        for m in matchups:
+            opponent = m.user_b if str(m.user_a.id) == user_id else m.user_a
+            if opponent.id in user_map:
+                user_map[opponent.id]["matchups"].append(m)
 
-        user_stats = {}
-        for mr in matchup_results:
-            count += 1
-            opponent_id = mr.matchup.user_b_id if mr.matchup.user_a_id == int(user_id) else mr.matchup.user_a_id
-
-            if opponent_id not in user_stats:
-                user_stats[opponent_id] = {"opponent_id": opponent_id, "wins": 0, "losses": 0}
-
-            winner = mr.winner.username if mr.winner else None
-            if winner == user.username:
-                user_stats[opponent_id]["wins"] += 1
-            else:
-                user_stats[opponent_id]["losses"] += 1
-
-        serialized_data = LifetimeSerializer(user_stats.values(), many=True).data
+        lifetime_data = list(user_map.values())
+        serialized_data = LifetimeSerializer(lifetime_data, many=True).data
         return Response(serialized_data, status=status.HTTP_200_OK)
+
+    # def get(self, request, *args, **kwargs):
+    #     user_id = request.GET.get("user_id")
+
+        # if not user_id:
+        #     return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    #     user = User.objects.get(id=user_id)
+
+    #     matchup_results = MatchupResult.objects.select_related('matchup').filter(
+    #         Q(matchup__user_a_id=user_id) | Q(matchup__user_b_id=user_id)
+    #     )
+
+    #     count = 0
+
+    #     user_stats = {}
+    #     for mr in matchup_results:
+    #         count += 1
+    #         opponent_id = mr.matchup.user_b_id if mr.matchup.user_a_id == int(user_id) else mr.matchup.user_a_id
+
+    #         if opponent_id not in user_stats:
+    #             user_stats[opponent_id] = {"opponent_id": opponent_id, "wins": 0, "losses": 0}
+
+    #         winner = mr.winner.username if mr.winner else None
+    #         if winner == user.username:
+    #             user_stats[opponent_id]["wins"] += 1
+    #         else:
+    #             user_stats[opponent_id]["losses"] += 1
+
+        # serialized_data = LifetimeSerializer(user_stats.values(), many=True).data
+        # return Response(serialized_data, status=status.HTTP_200_OK)

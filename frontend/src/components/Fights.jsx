@@ -117,7 +117,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
       <div className='flex flex-col text-center'>
         {fight.winner && (
           <div className='flex flex-col text-center gap-3'>
-            <p className='text-yellow-500 font-bold'>
+            <p className='text-yellow-500 font-bold capitalize'>
               Round {fight.round} | {fight.method}
             </p>
             {userResultText && <p className='font-bold capitalize text-lg'>{userResultText}</p>}

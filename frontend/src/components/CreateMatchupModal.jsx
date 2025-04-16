@@ -1,34 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUsers } from '@/hooks/useUsers';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 
 const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user }) => {
-  const [users, setUsers] = useState([]);
-  const [selectedOpponent, setSelectedOpponent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { users, selectedOpponent, setSelectedOpponent, fetchUsers } = useUsers(user.id);
 
   useEffect(() => {
     if (isOpen) {
-      fetchUsers();
+      try {
+        fetchUsers();
+      } catch (error) {
+        setError('Failed to load users.');
+      }
     }
   }, [isOpen]);
-
-  const fetchUsers = async () => {
-    try {
-      const { data } = await client.get(API_URLS.USERS);
-      const filteredUsers = data.filter((u) => u.id !== user.id);
-      setUsers(filteredUsers);
-      if (filteredUsers.length > 0) {
-        setSelectedOpponent(filteredUsers[0].id);
-      }
-    } catch (error) {
-      setError('Failed to load users');
-      console.error('Error fetching users:', error);
-    }
-  };
 
   const handleSubmitMatchup = async () => {
     if (!selectedOpponent) {
