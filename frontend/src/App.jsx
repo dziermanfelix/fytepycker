@@ -11,6 +11,9 @@ import Events from '@/pages/Events';
 import Matchups from '@/pages/Matchups';
 import Matchup from '@/pages/Matchup';
 import Lifetime from '@/pages/Lifetime';
+import Messages from '@/pages/Messages';
+import Settings from '@/pages/Settings';
+import Profile from '@/pages/Profile';
 
 function App() {
   return (
@@ -59,6 +62,9 @@ function App() {
                 </LifetimeProvider>
               }
             />
+            <Route path='messages' element={<Messages />} />
+            <Route path='settings' element={<Settings />} />
+            <Route path='profile' element={<Profile />} />
             <Route path='*' element={<Navigate to='/dash/events' replace />} />
           </Route>
           <Route path='/' element={<Navigate to='/dash/events' replace />} />
