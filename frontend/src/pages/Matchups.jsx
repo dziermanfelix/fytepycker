@@ -1,5 +1,6 @@
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
+import { getWinningsTextColor } from '@/utils/winningsDisplayUtils';
 
 const MatchupsContent = () => {
   const { id } = useParams();
@@ -31,9 +32,9 @@ const MatchupsContent = () => {
                 <div>
                   <div className='flex items-center justify-between space-x-2 w-full'>
                     <p className='ml-2 capitalize'>
-                      {otherUser} | {matchup?.event?.name} | {matchup?.event?.headline}
+                      {matchup?.event?.name} | {matchup?.event?.headline} | {otherUser}
                     </p>
-                    <p className='mr-4'>{matchup.winnings}</p>
+                    <p className={`mr-4 ${getWinningsTextColor(matchup.winnings)}`}>{matchup.winnings}</p>
                   </div>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import client from '../api/client';
-import { API_URLS } from '../common/urls';
+import client from '@/api/client';
+import { API_URLS } from '@/common/urls';
 
 const AuthContext = createContext(null);
 

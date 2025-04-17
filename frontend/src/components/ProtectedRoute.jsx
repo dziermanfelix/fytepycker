@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { FRONTEND_URLS } from '../common/urls';
+import { useAuth } from '@/contexts/AuthContext';
+import { FRONTEND_URLS } from '@/common/urls';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading, initialized } = useAuth();

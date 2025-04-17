@@ -50,7 +50,7 @@ function App() {
               path='matchups/:id'
               element={
                 <MatchupsProvider>
-                  <Matchup basePath='/dash/matchups/' />
+                  <Matchup basePath='/dash/matchups/' deletable />
                 </MatchupsProvider>
               }
             />

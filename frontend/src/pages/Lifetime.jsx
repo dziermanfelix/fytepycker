@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useLifetime, LifetimeProvider } from '@/contexts/LifetimeContext';
-import LifetimeTabControls from '../components/LifetimeTabControls';
+import LifetimeTabControls from '@/components/LifetimeTabControls';
+import { getWinningsTextColor, getWinningsBackgroundColor } from '@/utils/winningsDisplayUtils';
 
 const LifetimeContent = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const LifetimeContent = () => {
   if (isError) return <p className='text-center text-red-500'>Failed to load lifetime.</p>;
 
   const filteredMatchups = items.flatMap((item) => (item.user.id === selectedUser?.id ? item.matchups : []));
+  const totalWinnings = filteredMatchups.reduce((sum, item) => sum + item.winnings, 0);
 
   return (
     <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
@@ -35,7 +37,7 @@ const LifetimeContent = () => {
               >
                 <div className='flex items-center justify-between space-x-2 w-full'>
                   <p className='ml-2 capitalize'>{item.user.username}</p>
-                  <p className='mr-4'>{item.winnings}</p>
+                  <p className={`mr-4 ${getWinningsTextColor(item.winnings)}`}>{item.winnings}</p>
                 </div>
               </div>
             ))
@@ -48,7 +50,14 @@ const LifetimeContent = () => {
         <div>
           <LifetimeTabControls setSelectedUser={setSelectedUser} />
           <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
-            <div className='mb-2 text-center text-lg capitalize'>Stats Vs. {selectedUser.username}</div>
+            <div
+              className={`flex justify-between p-1 rounded text-center text-lg capitalize ${getWinningsBackgroundColor(
+                totalWinnings
+              )}`}
+            >
+              <p className='ml-2'>Stats Vs. {selectedUser.username}</p>
+              <p className='mr-2 text-right'>Winnings: {totalWinnings}</p>
+            </div>
             {filteredMatchups.length > 0 ? (
               filteredMatchups.map((matchup) => (
                 <div
@@ -61,7 +70,7 @@ const LifetimeContent = () => {
                       <p className='ml-2'>
                         {matchup?.event?.name} | {matchup?.event?.headline}
                       </p>
-                      <p className='mr-4'>{matchup.winnings}</p>
+                      <p className={`mr-4 ${getWinningsTextColor(matchup.winnings)}`}>{matchup.winnings}</p>
                     </div>
                   </div>
                 </div>

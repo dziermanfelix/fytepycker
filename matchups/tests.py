@@ -721,6 +721,7 @@ class LifetimeTests(APITestCase):
         refresh = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
+        self.matchups_url = reverse('api:matchups:matchups')
         self.selection_url = reverse('api:matchups:selections')
         self.lifetime_url = reverse('api:matchups:lifetime')
         self.scraper = Scraper()
@@ -821,10 +822,133 @@ class LifetimeTests(APITestCase):
         fight2.round = 1
         fight2.save()
 
+        # verify matchup results updated
+        response = self.client.get(self.matchups_url, {'user_a_id': self.user.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['bets'], 80)
+        self.assertEqual(response.data[0]['winnings'], 80)
+
+        # verify lifetime
         response = self.client.get(self.lifetime_url, {'user_id': self.user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['user']['id'], self.user2.id)
         self.assertEqual(response.data[0]['matchups'][0]['id'], self.matchup.id)
+        self.assertEqual(response.data[0]['matchups'][0]['bets'], 80)
+        self.assertEqual(response.data[0]['matchups'][0]['winnings'], 80)
+
+    def test_get_lifetime2(self):
+        # user makes selections
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight2.id,
+            "user": self.user.id,
+            "fighter": self.fight2.blue_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # user2 makes selections
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user2.id,
+            "fighter": self.fight.red_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight2.id,
+            "user": self.user2.id,
+            "fighter": self.fight2.red_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        fight = Fight.objects.filter(id=self.fight.id).first()
+        fight.winner = "john"
+        fight.method = "TKO"
+        fight.round = 2
+        fight.save()
+        fight2 = Fight.objects.filter(id=self.fight2.id).first()
+        fight2.winner = "ringo"
+        fight2.method = "Submission"
+        fight2.round = 1
+        fight2.save()
+
+        # verify matchup results updated
+        response = self.client.get(self.matchups_url, {'user_a_id': self.user.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['bets'], 80)
+        self.assertEqual(response.data[0]['winnings'], -80)
+
+        # verify lifetime
+        response = self.client.get(self.lifetime_url, {'user_id': self.user.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['user']['id'], self.user2.id)
+        self.assertEqual(response.data[0]['matchups'][0]['id'], self.matchup.id)
+        self.assertEqual(response.data[0]['matchups'][0]['bets'], 80)
+        self.assertEqual(response.data[0]['matchups'][0]['winnings'], -80)
+
+    def test_get_lifetime3(self):
+        # user makes selections
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user.id,
+            "fighter": self.fight.blue_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight2.id,
+            "user": self.user.id,
+            "fighter": self.fight2.blue_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # user2 makes selections
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight.id,
+            "user": self.user2.id,
+            "fighter": self.fight.red_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(self.selection_url, data={
+            "matchup": self.matchup.id,
+            "fight": self.fight2.id,
+            "user": self.user2.id,
+            "fighter": self.fight2.red_name
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        fight = Fight.objects.filter(id=self.fight.id).first()
+        fight.winner = "paul"
+        fight.method = "TKO"
+        fight.round = 2
+        fight.save()
+        fight2 = Fight.objects.filter(id=self.fight2.id).first()
+        fight2.winner = "ringo"
+        fight2.method = "Submission"
+        fight2.round = 1
+        fight2.save()
+
+        # verify matchup results updated
+        response = self.client.get(self.matchups_url, {'user_a_id': self.user.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['bets'], 80)
+        self.assertEqual(response.data[0]['winnings'], 20)
+
+        # verify lifetime
+        response = self.client.get(self.lifetime_url, {'user_id': self.user.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['user']['id'], self.user2.id)
+        self.assertEqual(response.data[0]['matchups'][0]['id'], self.matchup.id)
+        self.assertEqual(response.data[0]['matchups'][0]['bets'], 80)
+        self.assertEqual(response.data[0]['matchups'][0]['winnings'], 20)
 
     def test_get_lifetime_error_missing_user_id(self):
         response = self.client.get(self.lifetime_url)

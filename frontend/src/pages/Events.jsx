@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useEvents, EventsProvider } from '@/contexts/EventsContext';
 import EventTabControls from '@/components/EventTabControls';
 import FightTabControls from '@/components/FightTabControls';
-import EventFights from '../components/EventFights';
-import CreateMatchupModal from '../components/CreateMatchupModal';
+import EventFights from '@/components/EventFights';
+import CreateMatchupModal from '@/components/CreateMatchupModal';
 
 const EventsContent = () => {
   const {
@@ -40,13 +40,13 @@ const EventsContent = () => {
     <div className='max-w-5xl mx-auto mt-2'>
       {!selectedEvent && (
         <div>
-          <EventTabControls />
+          {events.length > 0 && <EventTabControls />}
           <div className='grid gap-2'>
             {events.length > 0 ? (
               events.map((event) => (
                 <div
                   key={event?.id}
-                  className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer '
+                  className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
                   onClick={(e) => openEvent(e, event)}
                 >
                   <div className='flex justify-between items-center'>

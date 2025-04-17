@@ -21,6 +21,9 @@ export const MatchupsProvider = ({ children }) => {
     refetch: refetchMatchups,
   } = useMatchupsHook({ userAId: user?.id });
 
+  console.log('## top ##')
+  matchups.map((matchup) => console.log(`m.id=${matchup.id}`));
+
   const {
     items: selections,
     isLoading: isLoadingSelections,

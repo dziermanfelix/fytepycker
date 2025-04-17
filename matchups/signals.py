@@ -39,20 +39,17 @@ def update_selection_on_fight_update(sender, instance, **kwargs):
                                          bet=determine_default_bet(instance))
 
     # update selection winner
-    if instance.winner:
-        selections = Selection.objects.filter(fight=instance)
-
-        winning_fighter = instance.winner
-
-        for selection in selections:
+    winning_fighter = instance.winner
+    selections = Selection.objects.filter(fight=instance)
+    for selection in selections:
+        if winning_fighter:
             if selection.user_a_selection == winning_fighter:
                 selection.winner = selection.matchup.user_a
             elif selection.user_b_selection == winning_fighter:
                 selection.winner = selection.matchup.user_b
-            else:
-                selection.winner = None
-
-            selection.save()
+        else:
+            selection.winner = None
+        selection.save()
 
     # broadcast to websocket
     event = instance.event

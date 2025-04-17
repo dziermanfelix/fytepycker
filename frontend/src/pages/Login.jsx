@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { FRONTEND_URLS } from '../common/urls';
+import { useAuth } from '@/contexts/AuthContext';
+import { FRONTEND_URLS } from '@/common/urls';
 
 const Login = () => {
   const [formData, setFormData] = useState({

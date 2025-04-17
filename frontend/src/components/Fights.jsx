@@ -131,7 +131,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     return (
       <div>
         {fightCards.map((cardType) => (
-          <div key={cardType} className='mb-4'>
+          <div key={cardType} className='mb-2 mt-2'>
             <ul className='space-y-4'>
               {fights[cardType]?.map((fight) => {
                 const userDibs = selections?.[fight?.id]?.['dibs'] === user?.id;

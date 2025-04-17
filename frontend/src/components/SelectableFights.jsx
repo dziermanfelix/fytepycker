@@ -1,17 +1,23 @@
 import { useState, useEffect } from 'react';
 import { getFightCards } from '@/utils/fightTabUtils';
+import client from '@/api/client';
+import { API_URLS } from '@/common/urls';
 import Fights from '@/components/Fights';
+import { useMatchups } from '@/contexts/MatchupsContext';
 
-const SelectableFights = ({
-  selectedMatchup,
-  postSelection,
-  activeFightTab,
-  initialSelections,
-  refetchSelections,
-  fights,
-  user,
-  ws,
-}) => {
+const SelectableFights = () => {
+  const {
+    user,
+    selectedMatchup,
+    selections: initialSelections,
+    refetchSelections,
+    isLoading,
+    isError,
+    activeFightTab,
+    fights,
+    ws,
+  } = useMatchups();
+
   const [selections, setSelections] = useState({});
   const fightCards = getFightCards(activeFightTab);
   const [readyFight, setReadyFight] = useState(null);
@@ -62,6 +68,17 @@ const SelectableFights = ({
     }
   }, [initialSelections, fights]);
 
+  const postSelection = async (fightId, fighterName) => {
+    try {
+      const { data } = await client.post(API_URLS.SELECTIONS, {
+        matchup: selectedMatchup?.id,
+        fight: fightId,
+        user: user.id,
+        fighter: fighterName,
+      });
+    } catch (error) {}
+  };
+
   const fighterClicked = async (e, fightId, fighterName) => {
     if (isSelectionProcessing) return;
 
@@ -87,6 +104,9 @@ const SelectableFights = ({
       setIsSelectionProcessing(false);
     }
   };
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Error loading selections.</p>;
 
   if (fightCards && fightCards.length > 0) {
     return (

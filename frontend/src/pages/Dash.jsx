@@ -3,8 +3,6 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
-  const { user } = useAuth();
-
   const navItems = [
     { id: 'events', label: 'Events', path: '/dash/events' },
     { id: 'matchups', label: 'Matchups', path: '/dash/matchups' },
@@ -44,15 +42,6 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
           ))}
         </ul>
       </nav>
-      <div className='p-4 border-t border-gray-700'>
-        <div className='flex items-center'>
-          <div className='w-8 h-8 bg-gray-600 rounded-full mr-3'></div>
-          <div>
-            <p className='font-medium'>{user.username}</p>
-            <p className='text-sm text-gray-400'>Pro Plan</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
