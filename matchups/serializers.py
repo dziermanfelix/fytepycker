@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Matchup, Selection, MatchupResult
+from .models import Matchup, Selection
 from ufc.serializers import EventSerializer
 from accounts.serializers import UserSerializer
 from ufc.models import Event, Fight
@@ -37,17 +37,29 @@ class SelectionSerializer(serializers.ModelSerializer):
         validators = []
 
 
-class MatchupResultSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MatchupResult
-        fields = "__all__"
-
-
 class MatchupSerializer(serializers.ModelSerializer):
     event = EventSerializer(read_only=True)
     user_a = UserSerializer(read_only=True)
     user_b = UserSerializer(read_only=True)
     selections = SelectionSerializer(many=True, read_only=True, source='matchup_selections')
+    bets = serializers.SerializerMethodField()
+    winnings = serializers.SerializerMethodField()
+
+    def get_bets(self, obj):
+        return sum(s.bet or 0 for s in obj.matchup_selections.all())
+
+    def get_winnings(self, obj):
+        request = self.context.get('request')
+        if not request or not hasattr(request, 'user'):
+            return 0
+        username = request.user
+        winnings = 0
+        for s in obj.matchup_selections.all():
+            if s.winner == username:
+                winnings += s.bet
+            elif s.winner in [obj.user_a, obj.user_b]:
+                winnings -= s.bet
+        return winnings
 
     # Write: Accept only IDs when creating/updating
     event_id = serializers.PrimaryKeyRelatedField(
@@ -69,6 +81,8 @@ class MatchupSerializer(serializers.ModelSerializer):
 class LifetimeSerializer(serializers.Serializer):
     user = UserSerializer(read_only=True)
     matchups = MatchupSerializer(many=True, read_only=True)
+    bets = serializers.FloatField(read_only=True)
+    winnings = serializers.FloatField(read_only=True)
 
 
 class LifetimeStatsSerializer(serializers.Serializer):

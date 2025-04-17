@@ -3,7 +3,7 @@ from django.dispatch import receiver
 from channels.layers import get_channel_layer
 from itertools import cycle
 from ufc.models import Fight
-from .models import Matchup, Selection, MatchupResult
+from .models import Matchup, Selection
 from asgiref.sync import async_to_sync
 
 
@@ -17,19 +17,6 @@ def create_matchup_related_objects(sender, instance, created, **kwargs):
         for fight in fights:
             Selection.objects.create(matchup=instance, fight=fight, dibs=next(user_cycle),
                                      bet=determine_default_bet(fight))
-
-        # create matchup result
-        if not MatchupResult.objects.filter(matchup=instance).exists():
-            MatchupResult.objects.create(matchup=instance)
-
-
-@receiver(post_save, sender=Selection)
-def create_matchup_result(sender, instance, created, **kwargs):
-    """create matchup result when selection is created"""
-    if created:
-        MatchupResult.objects.get_or_create(
-            matchup=instance.matchup,
-        )
 
 
 @receiver(post_save, sender=Fight)
@@ -80,33 +67,6 @@ def update_selection_on_fight_update(sender, instance, **kwargs):
             room_group_name,
             message
         )
-
-
-@receiver(post_save, sender=Selection)
-def update_matchup_result_on_winner_change(sender, instance, **kwargs):
-    if not instance.winner:
-        return
-
-    matchup = instance.matchup
-
-    selections = Selection.objects.filter(matchup=matchup)
-    user_wins = {user: 0 for user in matchup.get_users()}
-
-    for sel in selections:
-        if sel.winner:
-            user_wins[sel.winner] += 1
-
-    winning_user = max(user_wins, key=user_wins.get)
-    tied = list(user_wins.values()).count(user_wins[winning_user]) > 1
-
-    defaults = {"winner": winning_user}
-    if tied:
-        defaults = {"winner": None}
-
-    MatchupResult.objects.update_or_create(
-        matchup=matchup,
-        defaults=defaults
-    )
 
 
 def determine_default_bet(fight):

@@ -16,9 +16,8 @@ class EventAdmin(admin.ModelAdmin):
 
 
 class FightAdmin(admin.ModelAdmin):
-    def get_list_display(self, request):
-        model_fields = [field.name for field in Fight._meta.get_fields() if field.concrete]
-        return model_fields
+    list_display = ('id', 'event', 'card', 'order', 'weight_class', 'blue_name', 'red_name', 'winner', 'method', 'round')
+    list_editable = ('winner', 'method', 'round')
 
 
 admin.site.register(Event, EventAdmin)

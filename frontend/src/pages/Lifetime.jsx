@@ -24,24 +24,28 @@ const LifetimeContent = () => {
     <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
       {!selectedUser &&
         (items.length > 0 ? (
-          items.map((item) => (
-            <div
-              key={item.user.id}
-              className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
-              onClick={() => handleUserClick(item.user)}
-            >
-              <div>
-                <div className='flex items-center space-x-2'>
-                  <div>
-                    <p className='capitalize'>{item.user.username}</p>
+          items
+            .filter((item) => Array.isArray(item.matchups) && item.matchups.length > 0)
+            .map((item) => (
+              <div
+                key={item.user.id}
+                className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
+                onClick={() => handleUserClick(item.user)}
+              >
+                <div>
+                  <div className='flex items-center justify-between space-x-2 w-full'>
+                    <div>
+                      <p className='ml-2 capitalize'>{item.user.username}</p>
+                    </div>
+                    <p className='mr-4'>{item.winnings}</p>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))
         ) : (
           <p className='text-center text-gray-500'>No Lifetime.</p>
         ))}
+
       {selectedUser && (
         <div>
           <LifetimeTabControls setSelectedUser={setSelectedUser} />
@@ -55,16 +59,17 @@ const LifetimeContent = () => {
                   onClick={() => handleMatchupClick(matchup)}
                 >
                   <div>
-                    <div className='flex items-center space-x-2'>
-                      <p className=''>
+                    <div className='flex items-center justify-between space-x-2 w-full'>
+                      <p className='ml-2'>
                         {matchup?.event?.name} | {matchup?.event?.headline}
                       </p>
+                      <p className='mr-4'>{matchup.winnings}</p>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <p className='text-center text-gray-500'>You have no matchups to display. You are a loser.</p>
+              <p className='text-center text-gray-500'>You have no completed matchups.</p>
             )}
           </div>
         </div>

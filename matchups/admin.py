@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Matchup, Selection, MatchupResult
+from .models import Matchup, Selection
 
 
 class SelectionInline(admin.TabularInline):
@@ -23,12 +23,5 @@ class SelectionAdmin(admin.ModelAdmin):
         return model_fields
 
 
-class MatchupResultAdmin(admin.ModelAdmin):
-    def get_list_display(self, request):
-        model_fields = [field.name for field in MatchupResult._meta.get_fields() if field.concrete]
-        return model_fields
-
-
 admin.site.register(Matchup, MatchupAdmin)
 admin.site.register(Selection, SelectionAdmin)
-admin.site.register(MatchupResult, MatchupResultAdmin)
