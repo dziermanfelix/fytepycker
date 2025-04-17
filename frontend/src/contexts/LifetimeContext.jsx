@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLifetime as useLifetimeHook } from '@/hooks/useLifetime';
 
@@ -6,8 +6,19 @@ const LifetimeContext = createContext({});
 
 export const LifetimeProvider = ({ children }) => {
   const { user } = useAuth();
-  const [selectedUser, setSelectedUser] = useState(null);
   const [activeUserTab, setActiveUserTab] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(() => {
+    const savedSelectedUser = sessionStorage.getItem('selectedUser');
+    return savedSelectedUser ? JSON.parse(savedSelectedUser) : null;
+  });
+
+  useEffect(() => {
+    if (selectedUser) {
+      localStorage.setItem('selectedUser', JSON.stringify(selectedUser));
+    } else {
+      localStorage.removeItem('selectedUser');
+    }
+  }, [selectedUser]);
 
   const { items, isLoading, isError, refetch } = useLifetimeHook({ userId: user?.id });
 

@@ -41,7 +41,7 @@ export const MatchupsProvider = ({ children }) => {
     }
     ws.current = new WebSocket(`ws://localhost:8001/ws/matchups/${selectedMatchup.id}/`);
     ws.current.onopen = () => {
-      console.log('WebSocket connected for matchup', selectedMatchup.id);
+      console.log(`[[WebSocket connected] for matchup ${selectedMatchup.id}]`);
     };
     ws.current.onmessage = async (event) => {
       const data = JSON.parse(event.data);
@@ -58,7 +58,7 @@ export const MatchupsProvider = ({ children }) => {
       console.error('WebSocket error:', error);
     };
     ws.current.onclose = (event) => {
-      console.log(`WebSocket disconnected for matchup ${selectedMatchup.id}. Reason: ${event.reason}`);
+      console.log(`[[WebSocket disconnected] for matchup ${selectedMatchup.id}]`);
     };
     return () => {
       if (ws.current && ws.current.readyState === WebSocket.OPEN) {

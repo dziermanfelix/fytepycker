@@ -11,6 +11,7 @@ const LifetimeContent = () => {
   };
 
   const handleMatchupClick = async (matchup) => {
+    sessionStorage.setItem('selectedUser', JSON.stringify(selectedUser));
     navigate(`/dash/lifetime/matchups/${matchup.id}`);
   };
 
@@ -47,6 +48,7 @@ const LifetimeContent = () => {
         <div>
           <LifetimeTabControls setSelectedUser={setSelectedUser} />
           <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
+            <div className='mb-2 text-center text-lg capitalize'>Stats Vs. {selectedUser.username}</div>
             {filteredMatchups.length > 0 ? (
               filteredMatchups.map((matchup) => (
                 <div
