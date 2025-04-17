@@ -11,15 +11,9 @@ export const LifetimeProvider = ({ children }) => {
 
   const { items, isLoading, isError, refetch } = useLifetimeHook({ userId: user?.id });
 
-  // const formattedItems = items.map((item) => ({
-  //   opponent: item.opponent.username,
-  //   wins: item.wins,
-  //   losses: item.losses,
-  // }));
-
   const contextValue = {
     user,
-    // stats: formattedItems,
+
     items,
     selectedUser,
     setSelectedUser,

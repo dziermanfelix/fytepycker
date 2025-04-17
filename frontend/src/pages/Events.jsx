@@ -75,7 +75,7 @@ const EventsContent = () => {
                 </div>
               ))
             ) : (
-              <p className='text-center text-gray-500'>No events available.</p>
+              <p className='text-center text-gray-500'>No events.</p>
             )}
           </div>
         </div>

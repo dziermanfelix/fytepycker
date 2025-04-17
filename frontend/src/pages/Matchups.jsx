@@ -40,7 +40,7 @@ const MatchupsContent = () => {
             );
           })
         ) : (
-          <p className='text-center text-gray-500'>You have no matchups to display. You are a loser.</p>
+          <p className='text-center text-gray-500'>No Matchups.</p>
         ))}
     </div>
   );
