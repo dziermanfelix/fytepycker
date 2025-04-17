@@ -14,9 +14,9 @@ export const LifetimeProvider = ({ children }) => {
 
   useEffect(() => {
     if (selectedUser) {
-      localStorage.setItem('selectedUser', JSON.stringify(selectedUser));
+      sessionStorage.setItem('selectedUser', JSON.stringify(selectedUser));
     } else {
-      localStorage.removeItem('selectedUser');
+      sessionStorage.removeItem('selectedUser');
     }
   }, [selectedUser]);
 
