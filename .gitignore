@@ -175,3 +175,6 @@ node_modules
 
 # redis
 dump.rdb
+
+/staticfiles/
+/static/

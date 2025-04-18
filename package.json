@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently --kill-others --raw \"redis-server\" \"PYTHONUNBUFFERED=1 python manage.py runserver\" \"daphne -b 127.0.0.1 -p 8001 core.asgi:application\" \"cd frontend && npm run dev\" \"npm run celery\" \"npm run beat\"",
+    "dev": "concurrently --kill-others --raw \"PYTHONUNBUFFERED=1 python manage.py runserver\" \"npm run redis\" \"npm run daphne\" \"npm run celery\" \"npm run beat\" \"cd frontend && npm run dev\"",
+    "redis": "redis-server",
+    "daphne": "daphne -b 127.0.0.1 -p 8001 core.asgi:application",
     "celery": "celery -A core worker --loglevel=info",
     "beat": "celery -A core beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler",
     "test": "python manage.py test"

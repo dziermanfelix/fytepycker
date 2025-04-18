@@ -22,6 +22,7 @@ cron-descriptor==1.4.5
 cryptography==44.0.2
 cssselect==1.2.0
 daphne==4.1.2
+dj-database-url==2.3.0
 Django==5.1.6
 django-celery-beat==2.7.0
 django-cors-headers==4.7.0
@@ -73,5 +74,6 @@ vine==5.1.0
 w3lib==2.3.1
 wcwidth==0.2.13
 websockets==10.4
+whitenoise==6.9.0
 zipp==3.21.0
 zope.interface==7.2

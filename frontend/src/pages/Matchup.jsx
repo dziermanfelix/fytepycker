@@ -5,6 +5,7 @@ import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 import FightTabControls from '@/components/FightTabControls';
 import SelectableFights from '@/components/SelectableFights';
+import { getWinningsBackgroundColor } from '@/utils/winningsDisplayUtils';
 
 const MatchupContent = ({ basePath, deletable }) => {
   const { id } = useParams();
@@ -84,11 +85,7 @@ const MatchupContent = ({ basePath, deletable }) => {
     const selectionsConfirmed = selections.every((selection) => selection.confirmed);
     return (
       selectionsConfirmed && (
-        <p
-          className={`sticky top-0 z-50 p-2 rounded text-right capitalize ${
-            winnings > 0 ? 'bg-green-600' : 'bg-red-600'
-          }`}
-        >
+        <p className={`sticky top-0 z-50 p-2 rounded text-right capitalize ${getWinningsBackgroundColor(winnings)}`}>
           winnings: {selectedMatchup.winnings}
         </p>
       )
