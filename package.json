@@ -5,11 +5,13 @@
   "main": "index.js",
   "scripts": {
     "dev": "concurrently --kill-others --raw \"PYTHONUNBUFFERED=1 python manage.py runserver\" \"npm run redis\" \"npm run daphne\" \"npm run celery\" \"npm run beat\" \"cd frontend && npm run dev\"",
+    "server": "concurrently --kill-others --raw \"npm run build && PYTHONUNBUFFERED=1 python manage.py runserver\" \"npm run redis\" \"npm run daphne\" \"npm run celery\" \"npm run beat\"",
     "redis": "redis-server",
     "daphne": "daphne -b 127.0.0.1 -p 8001 core.asgi:application",
     "celery": "celery -A core worker --loglevel=info",
     "beat": "celery -A core beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler",
-    "test": "python manage.py test"
+    "test": "python manage.py test",
+    "build": "./build.sh"
   },
   "repository": {
     "type": "git",
