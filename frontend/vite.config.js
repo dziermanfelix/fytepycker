@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
@@ -18,10 +18,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
-  base: '/static/',
+  base: mode === 'prod' ? '/static/' : '/',
   build: {
-    outdir: 'dist',
+    outDir: 'dist',
     assetsDir: 'assets',
     emptyOutDir: true,
   },
-});
+}));

@@ -8,7 +8,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
+# we are pushing the build to the prod server
+# dist
 dist-ssr
 *.local
 

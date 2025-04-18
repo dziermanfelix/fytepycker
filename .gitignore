@@ -10,7 +10,8 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+# we are pushing the build to the prod server
+# dist/
 downloads/
 eggs/
 .eggs/
@@ -175,6 +176,3 @@ node_modules
 
 # redis
 dump.rdb
-
-/staticfiles/
-/static/

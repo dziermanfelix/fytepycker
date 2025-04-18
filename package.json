@@ -11,7 +11,8 @@
     "celery": "celery -A core worker --loglevel=info",
     "beat": "celery -A core beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler",
     "test": "python manage.py test",
-    "build": "./build.sh"
+    "build": "./build.sh",
+    "deploy": "./deploy.sh"
   },
   "repository": {
     "type": "git",
