@@ -22,8 +22,7 @@ python manage.py collectstatic --noinput
 
 git add .
 
-if ! git diff --quiet; then
-  git commit -m "Auto-build frontend and prepare static files"
+if ! git diff --cached --quiet; then
   git commit -m "Fytepycker Deployment v${new_version}"
   git push origin main
   git push heroku main
