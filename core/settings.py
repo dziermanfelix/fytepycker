@@ -15,7 +15,7 @@ ALLOWED_HOSTS = [
     config("RENDER_EXTERNAL_HOSTNAME", default="localhost"),
     "127.0.0.1",
     "localhost",
-    "fytepycker-aa95152cd271.herokuapp.com"
+    "fytepycker-611ee5279614.herokuapp.com",
 ]
 
 # Application definition
