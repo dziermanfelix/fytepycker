@@ -29,6 +29,7 @@ class Scraper:
         elif action == 'live':
             now = datetime.now(pytz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
             next_event = Event.objects.filter(date__gte=now).order_by('date').first()
+            print(f"[live action] next event date {next_event.date}")
             if self.is_today_in_eastern(next_event.date):
                 print(f"[live action] Scheduling scrape_until_complete for event {next_event.id}")
                 scrape_until_complete.delay(next_event.id)
