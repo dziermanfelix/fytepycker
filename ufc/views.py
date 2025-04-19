@@ -36,9 +36,11 @@ class ScraperView(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
     def get(self, request):
+        print(f'scraper get called')
         scraper = Scraper()
         action = request.query_params.get('action')
         scraper.scrape_fights_for_action(action)
         events = Event.objects.all()
+        print(f'events = {events.__dict__}')
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
