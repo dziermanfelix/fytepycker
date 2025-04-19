@@ -5,10 +5,8 @@ build:
 
 run:
   web:
-    command:
-      - ["web"]
+    command: ['web']
     image: web
   worker:
-    command:
-      - ["worker"]
+    command: ['worker']
     image: web
