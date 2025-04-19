@@ -23,6 +23,8 @@ const SelectableFights = () => {
   const [readyFight, setReadyFight] = useState(null);
   const [isSelectionProcessing, setIsSelectionProcessing] = useState(false);
 
+  console.log(`selections = ${JSON.stringify(selections)}`);
+
   useEffect(() => {
     if (Object.keys(initialSelections).length > 0) {
       if (selectedMatchup) {
