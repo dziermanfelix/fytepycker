@@ -28,6 +28,9 @@ class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
 
+    def validate_username(self, value):
+        return value.lower()
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

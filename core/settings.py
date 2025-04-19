@@ -84,8 +84,7 @@ url = urlparse(redis_url)
 redis_config = {
     "address": redis_url,
 }
-# Add SSL options if it's using rediss (secure redis)
-if url.scheme == "rediss":
+if url.scheme == "rediss":  # add SSL options if using secure rediss
     redis_config["ssl_cert_reqs"] = None
 CHANNEL_LAYERS = {
     "default": {
@@ -95,20 +94,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
-# redis_url = config("REDIS_URL", default="redis://localhost:6379")
-# url = urlparse(redis_url)
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {
-#             "hosts": [{
-#                 "address": redis_url,
-#                 "ssl_cert_reqs": None,
-#             }],
-#         },
-#     },
-# }
 
 DATABASES = {
     'default': dj_database_url.config(default=config('DATABASE_URL'))

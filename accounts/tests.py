@@ -232,6 +232,29 @@ class AuthenticationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {'password': ['This field is required.']})
 
+    def test_register_and_login_case_insensitivity(self):
+        username = 'BigDog'
+        data = {
+            'username': username,
+            'email': 'newuser@example.com',
+            'password': 'newpass123',
+            'password2': 'newpass123',
+        }
+
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(User.objects.filter(username=username.lower()).exists())
+        self.assertIn('access', response.data)
+        self.assertIn('refresh', response.data)
+
+        response = self.client.post(self.login_url, {
+            'username': username,
+            'password': 'newpass123'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', response.data)
+        self.assertIn('refresh', response.data)
+
     def test_get_user_authenticated(self):
         """Test getting user when authenticated"""
         refresh = RefreshToken.for_user(self.user)
