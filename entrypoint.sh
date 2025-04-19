@@ -1,13 +1,16 @@
 #!/bin/bash
 set -e
 
-# Only run migrate and daphne if no other command was passed
-if [[ "$1" == "daphne" ]]; then
+if [[ "$1" == "web" ]]; then
+  echo "[entrypoint] Starting web dyno..."
   python manage.py migrate
   playwright install chromium
-  daphne -b 0.0.0.0 -p $PORT core.asgi:application &
-  celery -A core worker --loglevel=info &
-  wait -n
+  exec daphne -b 0.0.0.0 -p $PORT core.asgi:application
+  
+elif [[ "$1" == "worker" ]]; then
+  echo "[entrypoint] Starting worker dyno..."
+  exec celery -A core worker --loglevel=info
+
 else
   exec "$@"
 fi
