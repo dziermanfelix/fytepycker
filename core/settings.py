@@ -18,6 +18,10 @@ ALLOWED_HOSTS = [
     "fytepycker-611ee5279614.herokuapp.com",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    url.strip('/') for url in config('FRONTEND_URLS', default='https://fytepycker-611ee5279614.herokuapp.com/').split(',')
+]
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
