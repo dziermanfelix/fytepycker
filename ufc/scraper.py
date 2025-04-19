@@ -13,9 +13,7 @@ from django.utils import timezone
 
 class Scraper:
     def scrape_fights_for_action(self, action):
-        print(f'scraping for action {action}')
         html_content = self.get_html_content('https://www.ufc.com/events', 200)
-        print(f'html content: {str(html_content)}')
         soup = BeautifulSoup(html_content, "html.parser")
         all_fight_divs = soup.select(".c-card-event--result")
         fight_divs = list()
