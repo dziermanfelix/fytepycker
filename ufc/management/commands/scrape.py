@@ -11,8 +11,7 @@ class Command(BaseCommand):
         url = config('SCRAPE_URL')
         username = config('ADMIN_USERNAME')
         password = config('ADMIN_PASSWORD')
-        # actions = ['upcoming', 'past', 'live']
-        actions = ['upcoming']
+        actions = ['upcoming', 'past', 'live']
 
         for action in actions:
             try:

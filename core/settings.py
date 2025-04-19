@@ -91,22 +91,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {
-#             "hosts": [
-#                 (
-#                     url.hostname,
-#                     url.port or 6379,
-#                     {
-#                         "ssl_cert_reqs": None,
-#                     },
-#                 )
-#             ],
-#         },
-#     },
-# }
 
 DATABASES = {
     'default': dj_database_url.config(default=config('DATABASE_URL'))

@@ -52,19 +52,14 @@ def update_selection_on_fight_update(sender, instance, **kwargs):
         selection.save()
 
     # broadcast to websocket
-    print(f'$$$ going to broadcast to web socket {instance.__dict__}')
     event = instance.event
     existing_matchups = Matchup.objects.filter(event=event)
-    print(f'#$% need to broadcast to {existing_matchups}')
     message = {
         'type': 'refetch_matchup',
     }
-    print('going to get channel layer')
     channel_layer = get_channel_layer()
-    print('got channel layer')
     for matchup in existing_matchups:
         room_group_name = f'matchup_{matchup.id}'
-        print(f'====> broadcasting to room_group_name={room_group_name}, message={message}')
         async_to_sync(channel_layer.group_send)(
             room_group_name,
             message

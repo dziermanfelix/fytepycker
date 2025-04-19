@@ -80,12 +80,12 @@ const MatchupContent = ({ basePath, deletable }) => {
     }
   };
 
-  const WinningsDisplay = () => {
+  const WinningsBanner = () => {
     const winnings = selectedMatchup.winnings;
     const selectionsConfirmed = selections.every((selection) => selection.confirmed);
     return (
       selectionsConfirmed && (
-        <p className={`sticky top-0 z-50 p-2 rounded text-right capitalize ${getWinningsBackgroundColor(winnings)}`}>
+        <p className={`sticky top-0 z-20 p-2 rounded text-right capitalize ${getWinningsBackgroundColor(winnings)}`}>
           winnings: {selectedMatchup.winnings}
         </p>
       )
@@ -105,7 +105,7 @@ const MatchupContent = ({ basePath, deletable }) => {
           setActiveFightTab={setActiveFightTab}
           basePath={basePath}
         />
-        <WinningsDisplay />
+        <WinningsBanner />
         <SelectableFights />
         {deletable && (
           <div>
