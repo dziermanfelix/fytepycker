@@ -47,4 +47,5 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/app/.cache/ms-playwright
 
 ENV PATH="/venv/bin:$PATH"
 
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "core.asgi:application"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "$PORT", "core.asgi:application"]
+
