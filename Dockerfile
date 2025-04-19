@@ -1,14 +1,9 @@
-# Use the latest official Playwright image with Python & browsers built in
-FROM mcr.microsoft.com/playwright/python:latest
+FROM python:3.11.12-slim
 
-# Set working directory inside container
 WORKDIR /app
 
-# Copy your application code
 COPY . /app
 
-# Install app dependencies
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install additional browsers
-RUN python -m playwright install
+RUN pip install playwright && python -m playwright install chromium
