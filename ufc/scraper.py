@@ -30,7 +30,8 @@ class Scraper:
             now = datetime.now(pytz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
             next_event = Event.objects.filter(date__gte=now).order_by('date').first()
             if self.is_today_in_eastern(next_event.date):
-                scrape_until_complete(next_event.id)
+                print(f"[live action] Scheduling scrape_until_complete for event {next_event.id}")
+                scrape_until_complete.delay(next_event.id)
         for fight in fight_divs:
             a_tag = fight.find("a")
             if a_tag and "href" in a_tag.attrs:

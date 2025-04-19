@@ -41,8 +41,6 @@ RUN pip install --no-cache-dir virtualenv && \
     virtualenv /venv && \
     /venv/bin/pip install --no-cache-dir -r requirements.txt
 
-# RUN /venv/bin/python -m playwright install chromium
-
 ENV PLAYWRIGHT_BROWSERS_PATH=/app/.cache/ms-playwright
 
 ENV PATH="/venv/bin:$PATH"
