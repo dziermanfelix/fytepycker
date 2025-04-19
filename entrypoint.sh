@@ -1,5 +1,10 @@
 #!/bin/bash
+set -e
 
-python manage.py migrate
-
-exec daphne -b 0.0.0.0 -p $PORT core.asgi:application
+# Only run migrate and daphne if no other command was passed
+if [[ "$1" == "daphne" ]]; then
+  python manage.py migrate
+  exec "$@"
+else
+  exec "$@"
+fi
