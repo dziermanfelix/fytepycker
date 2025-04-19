@@ -6,11 +6,9 @@ build:
 run:
   web:
     command:
-      - ./entrypoint.sh
-      - web
+      - ["web"]
     image: web
   worker:
     command:
-      - ./entrypoint.sh
-      - worker
+      - ["worker"]
     image: web
