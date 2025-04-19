@@ -108,12 +108,15 @@ class SelectionView(APIView):
     def get(self, request):
         matchup_id = request.GET.get("matchup_id")
 
+        print(f'$$$ getting for matchup id {matchup_id}')
+
         if not matchup_id:
             return Response({"error": "matchup_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         selections = []
         selections = Selection.objects.filter(matchup=matchup_id)
         serializer = SelectionSerializer(selections, many=True)
+        print(f'$$$ > selections = {serializer.data}')
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
