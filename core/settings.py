@@ -2,6 +2,7 @@ import os
 from celery.schedules import crontab
 from pathlib import Path
 import dj_database_url
+from urllib.parse import urlparse
 from decouple import config
 from datetime import timedelta
 
@@ -77,13 +78,16 @@ TEMPLATES = [
 
 ASGI_APPLICATION = "core.asgi.application"
 
+redis_url = config("REDIS_URL", default="redis://localhost:6379")
+url = urlparse(redis_url)
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [
                 (
-                    config("REDIS_URL", default="redis://localhost:6379"),
+                    url.hostname,
+                    url.port or 6379,
                     {
                         "ssl_cert_reqs": None,
                     },

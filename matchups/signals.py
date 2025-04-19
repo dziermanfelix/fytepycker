@@ -60,7 +60,7 @@ def update_selection_on_fight_update(sender, instance, **kwargs):
     channel_layer = get_channel_layer()
     for matchup in existing_matchups:
         room_group_name = f'matchup_{matchup.id}'
-        print(f'==> broadcasting to room_group_name={room_group_name}, message={message}')
+        print(f'\n\n==> broadcasting to room_group_name={room_group_name}, message={message}')
         async_to_sync(channel_layer.group_send)(
             room_group_name,
             message
