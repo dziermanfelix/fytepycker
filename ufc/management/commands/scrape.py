@@ -17,7 +17,7 @@ class Command(BaseCommand):
         for action in actions:
             try:
                 response = requests.get(f'{url}?action={action}', auth=HTTPBasicAuth(username, password))
-                print(f'response = {response.data}')
+                print(f'response = {response}')
                 if response.status_code == 200:
                     self.stdout.write(self.style.SUCCESS(f"Scraper {action} ran successfully!"))
                 else:
