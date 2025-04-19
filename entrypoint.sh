@@ -5,9 +5,9 @@ set -e
 if [[ "$1" == "daphne" ]]; then
   python manage.py migrate
   playwright install chromium
-  exec daphne -b 0.0.0.0 -p $PORT core.asgi:application &
-  exec celery -A core worker --loglevel=info &
-  wait
+  daphne -b 0.0.0.0 -p $PORT core.asgi:application &
+  celery -A core worker --loglevel=info &
+  wait -n
 else
   exec "$@"
 fi
