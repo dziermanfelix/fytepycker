@@ -11,4 +11,4 @@ run:
   worker:
     command:
       - worker
-    image: worker
+    image: web
