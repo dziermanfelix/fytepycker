@@ -5,8 +5,8 @@ build:
 
 run:
   web:
-    command: ['web']
+    command: ["./entrypoint.sh", "web"]
     image: web
   worker:
-    command: ['worker']
+    command: ["./entrypoint.sh", "worker"]
     image: web
