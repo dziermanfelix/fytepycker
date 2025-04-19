@@ -39,7 +39,12 @@ export const MatchupsProvider = ({ children }) => {
     if (!selectedMatchup?.id) {
       return;
     }
-    ws.current = new WebSocket(`ws://localhost:8001/ws/matchups/${selectedMatchup.id}/`);
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const host = window.location.hostname;
+    const port = window.location.port || (window.location.protocol === 'https:' ? 443 : 8001);
+    const wsUrl = `${protocol}://${host}:${port}/ws/matchups/${selectedMatchup.id}/`;
+    ws.current = new WebSocket(wsUrl);
+    // ws.current = new WebSocket(`ws://localhost:8001/ws/matchups/${selectedMatchup.id}/`);
     ws.current.onopen = () => {
       console.log(`[[WebSocket connected] for matchup ${selectedMatchup.id}]`);
     };
