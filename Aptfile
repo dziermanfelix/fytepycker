@@ -14,7 +14,6 @@ gstreamer1.0-plugins-base
 libvulkan1
 libgraphene-1.0-0
 libatomic1
-libgstallocators-1.0-0
 libgstapp-1.0-0
 libgstbase-1.0-0
 libgstpbutils-1.0-0
