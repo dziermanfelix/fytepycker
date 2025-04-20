@@ -1,10 +1,10 @@
 # Fytepycker
 
-Tired of arguing over who *really* knows MMA best? Think you can outpick your friends on every fight card? Step into the digital octagon with **Fytepycker**—a head-to-head UFC betting experience that lets your fight predictions do the talking.
+Tired of arguing over who *really* knows UFC best? Think you can outpick your friends on every fight card? Step into the digital octagon with **Fytepycker**—a head-to-head UFC betting experience that lets your fight predictions do the talking.
 
 Fytepycker is a social betting app for UFC events that keeps you in the action. It automatically scrapes official UFC fight cards so you're always picking from up-to-date matchups. Create head-to-head challenges, make your picks, and watch the scores update in realtime. Over time, track exactly how your predictions stack up with a full history of events and a clear record of your total winnings (or losings) — all in a sleek, easy-to-use interface.
 
-🥊 **Try it out:** [Fytepycker]([https://fytepycker.app](https://fytepycker-611ee5279614.herokuapp.com/))
+**Try it out:** [Fytepycker](https://fytepycker-611ee5279614.herokuapp.com/)
 
 ## How To Play
 1. **Create an Account** – Sign up and log in to start picking.
