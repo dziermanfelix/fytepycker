@@ -41,7 +41,8 @@ export const MatchupsProvider = ({ children }) => {
     }
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = window.location.hostname;
-    const port = window.location.port || (window.location.protocol === 'https:' ? 443 : 8001);
+    let port = window.location.port || (window.location.protocol === 'https:' ? 443 : 8001);
+    if (Number(port) === 5173) port = 8001;
     const wsUrl = `${protocol}://${host}:${port}/ws/matchups/${selectedMatchup.id}/`;
     ws.current = new WebSocket(wsUrl);
     ws.current.onopen = () => {

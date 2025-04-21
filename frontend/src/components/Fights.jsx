@@ -44,7 +44,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
         className={`${
           fight?.winner === name && 'border-6 border-yellow-500'
         } p-2 rounded transition-colors duration-300 ${selectable && 'cursor-pointer'} ${
-          selections && determineColor(fight, name)
+          selections && getFighterButtonColor(fight, name)
         }`}
         onClick={
           selectable
@@ -59,7 +59,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     );
   };
 
-  const determineColor = (fight, fighterName) => {
+  const getFighterButtonColor = (fight, fighterName) => {
     if (selections[fight.id]?.userSelection === fighterName) return 'bg-red-500';
     if (selections[fight.id]?.otherSelection === fighterName) return 'bg-blue-500';
     return 'bg-gray-200';
@@ -127,6 +127,20 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     );
   };
 
+  const getFightBorderColor = (fight) => {
+    const userDibs = selections?.[fight?.id]?.['dibs'] === user?.id;
+    const ready = selections?.[fight?.id]?.['ready'];
+    let borderColor = 'border-1 white';
+    if (ready) {
+      borderColor = 'border-5 white';
+    } else if (selections && userDibs) {
+      borderColor = 'border-1 border-red-500';
+    } else if (selections && !userDibs) {
+      borderColor = 'border-1 border-blue-500';
+    }
+    return borderColor;
+  };
+
   if (fightCards && fightCards.length > 0) {
     return (
       <div>
@@ -134,19 +148,11 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
           <div key={cardType} className='mb-2 mt-2'>
             <ul className='space-y-4'>
               {fights[cardType]?.map((fight) => {
-                const userDibs = selections?.[fight?.id]?.['dibs'] === user?.id;
-                const confirmed = selections?.[fight?.id]?.['confirmed'];
-                let borderColor = 'border-white';
-                if (selections && !confirmed && userDibs) {
-                  borderColor = 'border-red-500';
-                } else if (selections && !confirmed && !userDibs) {
-                  borderColor = 'border-blue-500';
-                }
                 return (
                   <li
                     key={fight?.id}
                     ref={(el) => (fightRefs.current[fight?.id] = el)}
-                    className={`p-4 bg-white shadow rounded border-2 ${borderColor}`}
+                    className={`p-4 bg-white shadow rounded ${getFightBorderColor(fight)}`}
                   >
                     <div className='flex items-center justify-between w-full'>
                       <FighterButton fight={fight} selection={selections?.[fight?.id]} color='red' />
