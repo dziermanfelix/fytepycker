@@ -26,19 +26,26 @@ const SelectableFights = () => {
   useEffect(() => {
     if (Object.keys(initialSelections).length > 0) {
       if (selectedMatchup) {
-        const unconfirmed = initialSelections
-          .filter((selection) => {
-            const early = selectedMatchup.event.fights.early;
-            const prelim = selectedMatchup.event.fights.prelim;
-            const main = selectedMatchup.event.fights.main;
-            let fight;
-            if (early) fight = early.filter((f) => f.id === selection.fight)[0];
-            if (!fight && prelim) fight = prelim.filter((f) => f.id === selection.fight)[0];
-            if (!fight && main) fight = main.filter((f) => f.id === selection.fight)[0];
-            return !fight?.winner && !selection.confirmed;
-          })
-          .sort((a, b) => b.id - a.id);
-        const readyFight = unconfirmed.length > 0 ? unconfirmed[0].fight : null;
+        const cardPriority = { early: 0, prelim: 1, main: 2 };
+        const allFights = [
+          ...(selectedMatchup.event.fights.early || []),
+          ...(selectedMatchup.event.fights.prelim || []),
+          ...(selectedMatchup.event.fights.main || []),
+        ];
+        const readyFight =
+          initialSelections
+            .map((selection) => {
+              const fight = allFights.find((f) => f.id === selection.fight);
+              return !selection.confirmed && !fight?.winner ? { ...selection, _fight: fight } : null;
+            })
+            .filter(Boolean)
+            .sort((a, b) => {
+              const fightA = a._fight;
+              const fightB = b._fight;
+              const cardDiff = cardPriority[fightA.card] - cardPriority[fightB.card];
+              if (cardDiff !== 0) return cardDiff;
+              return fightB.order - fightA.order;
+            })[0]?.fight || null;
         setReadyFight(readyFight);
         const selectionsMap = initialSelections.reduce((acc, selection) => {
           const fight = selection.fight;
