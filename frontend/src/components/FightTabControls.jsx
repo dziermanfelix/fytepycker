@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { IoMdClose } from 'react-icons/io';
 
 const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTab, basePath }) => {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTa
           if (selectItem) selectItem(null);
         }}
       >
-        Close
+        <IoMdClose />
       </button>
     </div>
   );

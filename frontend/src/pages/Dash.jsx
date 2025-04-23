@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import { FaBell, FaUser } from 'react-icons/fa';
+import { IoMdClose } from 'react-icons/io';
+import { RxHamburgerMenu } from 'react-icons/rx';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
@@ -19,8 +22,8 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
     <div className='bg-white shadow-sm w-50 h-full flex-shrink-0 flex flex-col'>
       <div className='mt-12 flex items-center justify-between'>
         {isMobile && (
-          <button onClick={() => setIsSidebarOpen(false)} className='text-gray-400 hover:text-white'>
-            ✕
+          <button onClick={() => setIsSidebarOpen(false)} className='ml-2 text-gray-400 hover:text-red-500'>
+            <IoMdClose />
           </button>
         )}
       </div>
@@ -86,7 +89,7 @@ const Header = ({ setIsSidebarOpen }) => {
     <header className='bg-white shadow-sm py-4 px-4 sm:px-6 flex justify-between items-center'>
       <div className='flex items-center'>
         <button onClick={() => setIsSidebarOpen(true)} className='mr-4 md:hidden text-gray-500 hover:text-gray-700'>
-          ☰
+          <RxHamburgerMenu />
         </button>
       </div>
       <div className='flex items-center space-x-2 sm:space-x-4'>
@@ -95,7 +98,7 @@ const Header = ({ setIsSidebarOpen }) => {
             onClick={() => handleDropdownSelect()}
             className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 focus:outline-none'
           >
-            🔔
+            <FaBell />
           </button>
         </Link>
         <div className='relative' ref={dropdownRef}>
@@ -104,7 +107,9 @@ const Header = ({ setIsSidebarOpen }) => {
             className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 focus:outline-none'
           >
             <span className='sr-only'>Open user menu</span>
-            <span className='text-xs'>👤</span>
+            <span className='text-xs'>
+              <FaUser />
+            </span>
           </button>
 
           {isDropdownOpen && (
