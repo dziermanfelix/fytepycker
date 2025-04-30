@@ -47,7 +47,7 @@ client.interceptors.response.use(
       const newAccessToken = await refreshAccessToken();
       if (newAccessToken) {
         error.config.headers['Authorization'] = `Bearer ${newAccessToken}`;
-        return axios(error.config); // retry request
+        return client(error.config); // retry request
       }
     }
     return Promise.reject(error);
