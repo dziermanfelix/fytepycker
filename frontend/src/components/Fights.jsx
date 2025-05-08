@@ -130,9 +130,11 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
   const getFightBorderColor = (fight) => {
     const userDibs = selections?.[fight?.id]?.['dibs'] === user?.id;
     const ready = selections?.[fight?.id]?.['ready'];
-    let borderColor = 'border-1 white';
-    if (ready) {
-      borderColor = 'border-5 white';
+    let borderColor = '';
+    if (ready && userDibs) {
+      borderColor = 'border-10 border-red-500 animate-pulse';
+    } else if (ready && !userDibs) {
+      borderColor = 'border-10 border-blue-500 animate-pulse';
     } else if (selections && userDibs) {
       borderColor = 'border-1 border-red-500';
     } else if (selections && !userDibs) {

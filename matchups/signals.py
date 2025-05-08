@@ -1,3 +1,4 @@
+from django.db.models import Case, When, IntegerField, Value
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from channels.layers import get_channel_layer
@@ -13,7 +14,14 @@ def create_matchup_related_objects(sender, instance, created, **kwargs):
         # create selection for each fight
         user_cycle = cycle([instance.first_pick, instance.user_b if instance.first_pick ==
                            instance.user_a else instance.user_a])
-        fights = Fight.objects.filter(event=instance.event).order_by('id')
+        fights = Fight.objects.filter(event=instance.event).annotate(
+            card_order=Case(
+                When(card='early', then=Value(0)),
+                When(card='prelim', then=Value(1)),
+                When(card='main', then=Value(2)),
+                output_field=IntegerField()
+            )
+        ).order_by('card_order', '-order')
         for fight in fights:
             Selection.objects.create(matchup=instance, fight=fight, dibs=next(user_cycle),
                                      bet=determine_default_bet(fight))
