@@ -4,6 +4,7 @@ import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 import Fights from '@/components/Fights';
 import { useMatchups } from '@/contexts/MatchupsContext';
+import { getReadyFight } from '@/common/fight';
 
 const SelectableFights = () => {
   const {
@@ -26,26 +27,7 @@ const SelectableFights = () => {
   useEffect(() => {
     if (Object.keys(initialSelections).length > 0) {
       if (selectedMatchup) {
-        const cardPriority = { early: 0, prelim: 1, main: 2 };
-        const allFights = [
-          ...(selectedMatchup.event.fights.early || []),
-          ...(selectedMatchup.event.fights.prelim || []),
-          ...(selectedMatchup.event.fights.main || []),
-        ];
-        const readyFight =
-          initialSelections
-            .map((selection) => {
-              const fight = allFights.find((f) => f.id === selection.fight);
-              return !selection.confirmed && !fight?.winner ? { ...selection, _fight: fight } : null;
-            })
-            .filter(Boolean)
-            .sort((a, b) => {
-              const fightA = a._fight;
-              const fightB = b._fight;
-              const cardDiff = cardPriority[fightA.card] - cardPriority[fightB.card];
-              if (cardDiff !== 0) return cardDiff;
-              return fightB.order - fightA.order;
-            })[0]?.fight || null;
+        const readyFight = getReadyFight(initialSelections, selectedMatchup);
         setReadyFight(readyFight);
         const selectionsMap = initialSelections.reduce((acc, selection) => {
           const fight = selection.fight;

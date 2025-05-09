@@ -127,20 +127,24 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     );
   };
 
-  const getFightBorderColor = (fight) => {
+  const getFightBorder = (fight) => {
     const userDibs = selections?.[fight?.id]?.['dibs'] === user?.id;
     const ready = selections?.[fight?.id]?.['ready'];
-    let borderColor = '';
+    const userSelection = selections?.[fight?.id]?.['userSelection'];
+    const otherSelection = selections?.[fight?.id]?.['otherSelection'];
+    const yourTurn = (ready && !userDibs && otherSelection !== null) || (ready && userDibs && !userSelection);
+    let borderStyle = '';
     if (ready && userDibs) {
-      borderColor = 'border-10 border-red-500 animate-pulse';
+      borderStyle = 'border-10 border-red-500';
     } else if (ready && !userDibs) {
-      borderColor = 'border-10 border-blue-500 animate-pulse';
+      borderStyle = 'border-10 border-blue-500';
     } else if (selections && userDibs) {
-      borderColor = 'border-1 border-red-500';
+      borderStyle = 'border-1 border-red-500';
     } else if (selections && !userDibs) {
-      borderColor = 'border-1 border-blue-500';
+      borderStyle = 'border-1 border-blue-500';
     }
-    return borderColor;
+    if (yourTurn) borderStyle += ' animate-pulse';
+    return borderStyle;
   };
 
   if (fightCards && fightCards.length > 0) {
@@ -154,7 +158,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
                   <li
                     key={fight?.id}
                     ref={(el) => (fightRefs.current[fight?.id] = el)}
-                    className={`p-4 bg-white shadow rounded ${getFightBorderColor(fight)}`}
+                    className={`p-4 bg-white shadow rounded ${getFightBorder(fight)}`}
                   >
                     <div className='flex items-center justify-between w-full'>
                       <FighterButton fight={fight} selection={selections?.[fight?.id]} color='red' />
