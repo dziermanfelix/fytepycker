@@ -76,7 +76,7 @@ def update_selection_on_fight_update(sender, instance, **kwargs):
 
 def determine_default_bet(fight):
     default_bet = 30
-    if 'title' in fight.weight_class:
+    if 'title' in fight.weight_class.lower():
         default_bet = 100
     elif fight.card == 'main' and fight.order == 0:
         default_bet = 50
