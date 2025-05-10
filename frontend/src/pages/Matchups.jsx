@@ -51,8 +51,12 @@ const MatchupsContent = () => {
                   <div className='flex items-center justify-between space-x-2 w-full'>
                     <p className='ml-2 capitalize'>
                       {matchup?.event?.name} | {otherUser}
-                      {numUnconfirmed > 0 && ` | ${numUnconfirmed} uncomfirmed`}
-                      {numUnconfirmed === 0 && ` | All Bets In`}
+                      {numUnconfirmed > 0 && (
+                        <>
+                          {' '}
+                          | <span className='text-red-500'>{numUnconfirmed} unconfirmed</span>
+                        </>
+                      )}
                     </p>
                     {yourTurn && <p className='text-red-500'>You're Up</p>}
                     <p className={`mr-4 ${getWinningsTextColor(matchup.winnings)}`}>{matchup.winnings}</p>
