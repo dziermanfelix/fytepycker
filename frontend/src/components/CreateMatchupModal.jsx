@@ -59,7 +59,7 @@ const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user 
           <label className='block text-gray-700 mb-2'>Select Opponent</label>
           {users.length > 0 ? (
             <select
-              className='w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-300'
+              className='w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-300 hover:cursor-pointer'
               value={selectedOpponent}
               onChange={(e) => setSelectedOpponent(e.target.value)}
               disabled={isSubmitting}
@@ -77,7 +77,7 @@ const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user 
 
         <div className='flex justify-end mt-6'>
           <button
-            className='px-4 py-2 mr-2 bg-gray-300 rounded hover:bg-gray-400 transition duration-200'
+            className='px-4 py-2 mr-2 bg-gray-300 rounded hover:bg-gray-400 transition duration-200 hover:cursor-pointer'
             onClick={() => {
               if (selectEvent) selectEvent(null);
               onClose();
@@ -87,7 +87,7 @@ const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user 
             Cancel
           </button>
           <button
-            className='px-4 py-2 bg-yellow-900 text-white rounded hover:bg-yellow-800 transition duration-200 disabled:opacity-50'
+            className='px-4 py-2 bg-yellow-900 text-white rounded hover:bg-yellow-800 transition duration-200 disabled:opacity-50 hover:cursor-pointer'
             onClick={handleSubmitMatchup}
             disabled={isSubmitting || !selectedOpponent}
           >

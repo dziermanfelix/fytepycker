@@ -2,6 +2,7 @@ import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
 import { getWinningsTextColor } from '@/utils/winningsDisplayUtils';
 import { getReadyFight } from '@/common/fight';
+import CurrentEvent from '@/components/CurrentEvent';
 
 const MatchupsContent = () => {
   const { id } = useParams();
@@ -20,6 +21,9 @@ const MatchupsContent = () => {
 
   return (
     <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
+      <div className='pb-4'>
+        <CurrentEvent />
+      </div>
       {!id &&
         (currentMatchups.length > 0 ? (
           currentMatchups.map((matchup) => {
@@ -47,19 +51,18 @@ const MatchupsContent = () => {
                 className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
                 onClick={() => handleClick(matchup)}
               >
-                <div>
-                  <div className='flex items-center justify-between space-x-2 w-full'>
-                    <p className='ml-2 capitalize'>
-                      {matchup?.event?.name} | {otherUser}
-                      {numUnconfirmed > 0 && (
-                        <>
-                          {' '}
-                          | <span className='text-red-500'>{numUnconfirmed} unconfirmed</span>
-                        </>
-                      )}
-                    </p>
-                    {yourTurn && <p className='text-red-500'>You're Up</p>}
-                    <p className={`mr-4 ${getWinningsTextColor(matchup.winnings)}`}>{matchup.winnings}</p>
+                <div className='flex justify-between space-x-2 w-full'>
+                  <div className='flex'>
+                    <p className='ml-1'>{otherUser}</p>
+                  </div>
+                  <div className='flex items-center'>
+                    {numUnconfirmed === 0 ? (
+                      <p className={`mr-4 ${getWinningsTextColor(matchup.winnings)}`}>{matchup.winnings}</p>
+                    ) : yourTurn ? (
+                      <span className='inline-block w-3 h-3 bg-red-500 rounded-full animate-pulse' />
+                    ) : (
+                      <span className='inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse' />
+                    )}
                   </div>
                 </div>
               </div>

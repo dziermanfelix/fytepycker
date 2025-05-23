@@ -43,11 +43,17 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response && error.response.status === 401) {
+    const originalRequest = error.config;
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes(API_URLS.REFRESH_TOKEN)
+    ) {
+      originalRequest._retry = true;
       const newAccessToken = await refreshAccessToken();
       if (newAccessToken) {
         error.config.headers['Authorization'] = `Bearer ${newAccessToken}`;
-        return client(error.config); // retry request
+        return client(originalRequest);
       }
     }
     return Promise.reject(error);

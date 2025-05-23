@@ -7,7 +7,6 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
   const navItems = [
-    { id: 'events', label: 'Events', path: '/dash/events' },
     { id: 'matchups', label: 'Matchups', path: '/dash/matchups' },
     { id: 'lifetime', label: 'Lifetime', path: '/dash/lifetime' },
   ];

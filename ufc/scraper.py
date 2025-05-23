@@ -75,14 +75,16 @@ class Scraper:
             blue_name = self.normalize_name(fight_row.find(
                 "div", class_="c-listing-fight__corner-name--blue").find("a").text.strip().replace("\n", " "))
             blue_img_tag = fight_row.select_one(".c-listing-fight__corner--blue .layout__region--content img")
-            blue_img = blue_img_tag["src"] if blue_img_tag else None
+            blue_img_url = blue_img_tag["src"] if blue_img_tag else None
+            blue_img = blue_img_url if blue_img_url and blue_img_url.startswith("https://ufc.com/") else None
             blue_url = fight_row.find("div", class_="c-listing-fight__corner-image--blue").find("a")["href"]
             red_corner = fight_row.find("div", class_="c-listing-fight__corner-body--red")
             red_winner = red_corner.find("div", class_="c-listing-fight__outcome--win")
             blue_corner = fight_row.find("div", class_="c-listing-fight__corner-body--blue")
             blue_winner = blue_corner.find("div", class_="c-listing-fight__outcome--win")
             red_img_tag = fight_row.select_one(".c-listing-fight__corner--red .layout__region--content img")
-            red_img = red_img_tag["src"] if red_img_tag else None
+            red_img_url = red_img_tag["src"] if red_img_tag else None
+            red_img = red_img_url if red_img_url and red_img_url.startswith("https://ufc.com/") else None
             red_url = fight_row.find("div", class_="c-listing-fight__corner-image--red").find("a")["href"]
             winner = red_name if red_winner is not None else blue_name if blue_winner is not None else None
             results = fight_row.find("div", class_="js-listing-fight__results")
@@ -90,23 +92,31 @@ class Scraper:
             method = method_element.text.strip() if method_element else None
             round_element = results.find("div", class_="c-listing-fight__result-text round")
             round = int(round_element.text.strip()) if round_element and round_element.text.strip().isdigit() else None
+
+            defaults = {
+                "card": fight_card,
+                "order": order,
+                "weight_class": weight_class,
+                "blue_url": blue_url,
+                "red_url": red_url,
+                "winner": winner,
+                "method": method,
+                "round": round,
+            }
+
+            if blue_img is not None:
+                defaults["blue_img"] = blue_img
+
+            if red_img is not None:
+                defaults["red_img"] = red_img
+
             fight = Fight.objects.update_or_create(
                 event_id=event.id,
                 blue_name=blue_name,
                 red_name=red_name,
-                defaults={
-                    "card": fight_card,
-                    "order": order,
-                    "weight_class": weight_class,
-                    "blue_img": blue_img,
-                    "blue_url": blue_url,
-                    "red_img": red_img,
-                    "red_url": red_url,
-                    "winner": winner,
-                    "method": method,
-                    "round": round,
-                }
+                defaults=defaults
             )
+
             order += 1
             newly_scraped_fights.append(fight[0])
         # clean up fights that have changed or been canceled
