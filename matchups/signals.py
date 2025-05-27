@@ -3,9 +3,23 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from channels.layers import get_channel_layer
 from itertools import cycle
-from ufc.models import Fight
+from ufc.models import Fight, Event
 from .models import Matchup, Selection
 from asgiref.sync import async_to_sync
+
+
+@receiver(post_save, sender=Event)
+def clear_empty_matchups(sender, instance, **kwargs):
+    matchups = Matchup.objects.filter(event=instance)
+
+    for matchup in matchups:
+        has_confirmed = Selection.objects.filter(
+            matchup=matchup,
+            confirmed=True
+        ).exists()
+
+        if not has_confirmed:
+            matchup.delete()
 
 
 @receiver(post_save, sender=Matchup)

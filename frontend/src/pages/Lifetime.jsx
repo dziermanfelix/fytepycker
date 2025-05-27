@@ -36,7 +36,7 @@ const LifetimeContent = () => {
                 onClick={() => handleUserClick(item.user)}
               >
                 <div className='flex items-center justify-between space-x-2 w-full'>
-                  <p className='ml-2 capitalize'>{item.user.username}</p>
+                  <p className='ml-2'>{item.user.username}</p>
                   <p className={`mr-4 ${getWinningsTextColor(item.winnings)}`}>{item.winnings}</p>
                 </div>
               </div>
