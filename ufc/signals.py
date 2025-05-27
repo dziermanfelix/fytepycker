@@ -7,11 +7,9 @@ from .models import Event, Fight
 def check_event_completion(sender, instance, **kwargs):
     event = instance.event
 
-    all_complete = event.fights.exclude(winner__isnull=False).count() == 0
+    main_event = instance.card == 'main' and instance.order == 0
+    main_event_complete = main_event and instance.winner != None
 
-    if all_complete and not event.complete:
+    if main_event and main_event_complete and not event.complete:
         event.complete = True
-        event.save(update_fields=["complete"])
-    elif not all_complete and event.complete:
-        event.complete = False
         event.save(update_fields=["complete"])

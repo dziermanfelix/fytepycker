@@ -23,6 +23,7 @@ class EventView(APIView):
         if not event_id:
             past_events = Event.objects.prefetch_related('fights').filter(complete=True).order_by('-date')
             upcoming_events = Event.objects.prefetch_related('fights').filter(complete=False).order_by('date')
+            print(f'VIEWS upcoming events = {upcoming_events}')
             return Response({
                 'past': EventSerializer(past_events, many=True).data,
                 'upcoming': EventSerializer(upcoming_events, many=True).data

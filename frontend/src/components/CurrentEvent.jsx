@@ -27,8 +27,6 @@ const CurrentEventContent = () => {
     selectEvent(event);
   };
 
-  const events = [upcomingEvents[0]];
-
   if (isLoading) return <p className='text-center text-gray-500'>Loading events...</p>;
   if (isError) return <p className='text-center text-red-500'>Failed to load events.</p>;
 
@@ -37,8 +35,8 @@ const CurrentEventContent = () => {
       {!selectedEvent && (
         <div>
           <div className='grid gap-2'>
-            {events.length > 0 ? (
-              events.map((event) => (
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event) => (
                 <div
                   key={event?.id}
                   className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
@@ -48,7 +46,12 @@ const CurrentEventContent = () => {
                     <div className='flex flex-col justify-center'>
                       {event?.url && (
                         <div className='flex items-center space-x-2'>
-                          <a href={event?.url} target='_blank' rel='noopener noreferrer' className='underline hover:text-gray-700'>
+                          <a
+                            href={event?.url}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='underline hover:text-gray-700'
+                          >
                             {event?.name} | {event?.headline} | {new Date(event?.date).toLocaleString()}
                           </a>
                         </div>

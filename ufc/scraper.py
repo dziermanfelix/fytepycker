@@ -17,8 +17,10 @@ class Scraper:
         soup = BeautifulSoup(html_content, "html.parser")
         all_fight_divs = soup.select(".c-card-event--result")
         fight_divs = list()
+
         if action == 'upcoming':
             fight_divs = all_fight_divs[:1]
+
         elif action == 'past':
             for fight_div in all_fight_divs:
                 date_div = fight_div.find("div", "c-card-event--result__date")
@@ -26,17 +28,25 @@ class Scraper:
                 if self.parse_event_date(main_card_date) < timezone.now():
                     fight_divs.append(fight_div)
                     break
+
         elif action == 'live':
             now = datetime.now(pytz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
             next_event = Event.objects.filter(date__gte=now).order_by('date').first()
             if self.is_today_in_eastern(next_event.date):
                 print(f"[live action] Scheduling scrape_until_complete for event {next_event.id}")
                 scrape_until_complete.delay(next_event.id)
+
+        # scrape fights from web page
         for fight in fight_divs:
             a_tag = fight.find("a")
             if a_tag and "href" in a_tag.attrs:
                 fight_url = "https://www.ufc.com" + a_tag["href"]
                 self.scrape_fights_from_url(fight_url)
+
+        # rescrape past fights that are incomplete
+        incomplete_fights = Event.objects.filter(complete=False)
+        for fight in incomplete_fights:
+            self.scrape_fights_from_url(fight.url)
 
     def scrape_fights_from_url(self, url):
         print(f"[scraper.scrape_fights_from_url] url={url}.")
