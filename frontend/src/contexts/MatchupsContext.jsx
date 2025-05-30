@@ -10,6 +10,7 @@ const MatchupsContext = createContext();
 export const MatchupsProvider = ({ children }) => {
   const { user } = useAuth();
   const [activeFightTab, setActiveFightTab] = useState('all');
+  const socketsRef = useRef({});
 
   const {
     items: matchups,
@@ -36,41 +37,59 @@ export const MatchupsProvider = ({ children }) => {
   const ws = useRef(null);
 
   useEffect(() => {
-    if (!selectedMatchup?.id) {
-      return;
-    }
+    if (!matchups || matchups.length === 0) return;
+
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = window.location.hostname;
     let port = window.location.port || (window.location.protocol === 'https:' ? 443 : 8001);
     if (Number(port) === 5173) port = 8001;
-    const wsUrl = `${protocol}://${host}:${port}/ws/matchups/${selectedMatchup.id}/`;
-    ws.current = new WebSocket(wsUrl);
-    ws.current.onopen = () => {
-      console.log(`[[WebSocket connected] for matchup ${selectedMatchup.id}]`);
-    };
-    ws.current.onmessage = async (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'refetch_selections') {
-        refetchSelections();
-      } else if (data.type === 'refetch_matchup') {
-        const fetchData = await fetchSelectedMatchup(selectedMatchup.id);
-        const updatedMatchup = fetchData ? fetchData[0] : null;
-        selectMatchup(updatedMatchup);
-        refetchSelections();
-      }
-    };
-    ws.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-    ws.current.onclose = (event) => {
-      console.log(`[[WebSocket disconnected] for matchup ${selectedMatchup.id}]`);
-    };
+
+    const currentMatchups = matchups.filter((matchup) => !matchup.event.complete);
+
+    currentMatchups.forEach((matchup) => {
+      if (socketsRef.current[matchup.id]) return;
+
+      const wsUrl = `${protocol}://${host}:${port}/ws/matchups/${matchup.id}/`;
+      const socket = new WebSocket(wsUrl);
+      socket.onopen = () => console.log(`[WS connected] matchup ${matchup.id}`);
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log(`[WS ${matchup.id}] event:`, data.type);
+        if (data.type === 'refetch_selections') {
+          refetchMatchups();
+          refetchSelections();
+        } else if (data.type === 'refetch_matchup') {
+          (async () => {
+            const fetchData = await fetchSelectedMatchup(matchup.id);
+            const updatedMatchup = fetchData ? fetchData[0] : null;
+            if (updatedMatchup) {
+              selectMatchup(updatedMatchup);
+            }
+            refetchSelections();
+          })();
+        }
+      };
+      socket.onerror = (err) => console.error(`[WS error] matchup ${matchup.id}`, err);
+      socket.onclose = () => console.log(`[WS closed] matchup ${matchup.id}`);
+
+      socketsRef.current[matchup.id] = socket;
+    });
+
+    if (!selectedMatchup?.id) {
+      return;
+    }
+    ws.current = socketsRef.current[selectedMatchup.id];
+
     return () => {
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.close();
-      }
+      console.log('[WS cleanup] closing all sockets...');
+      Object.values(socketsRef.current).forEach((socket) => {
+        if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+          socket.close();
+        }
+      });
+      socketsRef.current = {};
     };
-  }, [selectedMatchup?.id]);
+  }, [matchups, selections]);
 
   const fights = selectedMatchup?.event?.fights || {};
 
