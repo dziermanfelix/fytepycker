@@ -37,16 +37,19 @@ class Scraper:
                 scrape_until_complete.delay(next_event.id)
 
         # scrape fights from web page
+        scraped_urls = list()
         for fight in fight_divs:
             a_tag = fight.find("a")
             if a_tag and "href" in a_tag.attrs:
                 fight_url = "https://www.ufc.com" + a_tag["href"]
                 self.scrape_fights_from_url(fight_url)
+                scraped_urls.append(fight_url)
 
-        # rescrape past fights that are incomplete
-        incomplete_fights = Event.objects.filter(complete=False)
-        for fight in incomplete_fights:
-            self.scrape_fights_from_url(fight.url)
+        # rescrape incomplete past fights
+        incomplete_past_fights = Event.objects.filter(complete=False, date__lt=timezone.now())
+        for fight in incomplete_past_fights:
+            if fight.url not in scraped_urls:
+                self.scrape_fights_from_url(fight.url)
 
     def scrape_fights_from_url(self, url):
         print(f"[scraper.scrape_fights_from_url] url={url}.")
@@ -61,11 +64,13 @@ class Scraper:
         location = soup.find(
             "div", class_="field field--name-venue field--type-entity-reference field--label-hidden field__item").text.strip().replace("\n", "")
         event = Event.objects.get_or_create(
-            name=name,
-            headline=headline,
-            url=url,
             date=date,
-            location=location,
+            defaults={
+                'name': name,
+                'headline': headline,
+                'url': url,
+                'location': location,
+            }
         )
         self.get_fights_for_card(soup.find("div", class_="main-card"), event[0], FightCard.MAIN)
         self.get_fights_for_card(soup.find("div", class_="fight-card-prelims"), event[0], FightCard.PRELIM)

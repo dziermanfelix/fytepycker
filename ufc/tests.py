@@ -52,9 +52,9 @@ class EventTests(APITestCase):
     def test_get_events(self):
         response = self.client.get(self.events_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['past'], [])
-        self.assertEqual(len(response.data['upcoming']), 1)
-        self.assertEqual(response.data['upcoming'][0], EventSerializer(self.event).data)
+        self.assertEqual(len(response.data['past']), 1)
+        self.assertEqual(len(response.data['upcoming']), 0)
+        self.assertEqual(response.data['past'][0], EventSerializer(self.event).data)
 
     def test_get_event_by_id(self):
         response = self.client.get(f'{self.events_url}{self.event.id}/')
@@ -63,9 +63,9 @@ class EventTests(APITestCase):
     def test_event_complete(self):
         response = self.client.get(self.events_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['past'], [])
-        self.assertEqual(len(response.data['upcoming']), 1)
-        self.assertEqual(response.data['upcoming'][0], EventSerializer(self.event).data)
+        self.assertEqual(len(response.data['past']), 1)
+        self.assertEqual(len(response.data['upcoming']), 0)
+        self.assertEqual(response.data['past'][0], EventSerializer(self.event).data)
 
         fight = Fight.objects.filter(id=self.fight.id).first()
         fight.winner = "paul"
