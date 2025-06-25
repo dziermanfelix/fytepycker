@@ -51,8 +51,11 @@ const Login = () => {
             name='username'
             value={formData.username}
             onChange={handleChange}
-            className='w-full px-3 py-2 border border-gray-300 rounded-md'
+            className='w-full px-3 py-2 border border-gray-300 rounded-md lowercase'
             required
+            autoCapitalize='off'
+            spellCheck={false}
+            autoComplete='off'
           />
         </div>
 

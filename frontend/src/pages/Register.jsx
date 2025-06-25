@@ -62,8 +62,11 @@ const Register = () => {
             name='username'
             value={formData.username}
             onChange={handleChange}
-            className='w-full px-3 py-2 border border-gray-300 rounded-md'
+            className='w-full px-3 py-2 border border-gray-300 rounded-md lowercase'
             required
+            autoCapitalize='off'
+            spellCheck={false}
+            autoComplete='off'
           />
           {errors.username && <p className='text-red-500 text-sm mt-1'>{errors.username.join(', ')}</p>}
         </div>
