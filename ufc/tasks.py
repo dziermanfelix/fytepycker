@@ -4,7 +4,7 @@ import pytz
 from .models import Event
 
 
-@shared_task
+@shared_task(name='ufc.tasks.midnight_scrape')
 def midnight_scrape():
     from .scraper import Scraper
     scraper = Scraper()
