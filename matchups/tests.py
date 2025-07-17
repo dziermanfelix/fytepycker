@@ -376,7 +376,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data['selection']['user_b_selection'], None)
         self.assertEqual(response.data['selection']['bet'], 50)
         self.assertEqual(response.data['selection']['winner'], None)
-        # self.assertEqual(response.data['selection']['dibs'], None)
+        self.assertIn(response.data['selection']['dibs'], [self.user.id, self.user2.id])
         self.assertEqual(response.data['selection']['confirmed'], False)
 
     def test_create_selection_error_matchup_not_exists(self):
@@ -483,7 +483,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['user_b_selection'], None)
         self.assertEqual(response.data[0]['bet'], 50)
         self.assertEqual(response.data[0]['winner'], None)
-        # self.assertEqual(response.data[0]['dibs'], None)
+        self.assertIn(response.data[0]['dibs'], [self.user.id, self.user2.id])
         self.assertEqual(response.data[0]['confirmed'], False)
 
     def test_get_selection_error_matchup_id_not_provided(self):
@@ -515,7 +515,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['user_b_selection'], None)
         self.assertEqual(response.data[0]['bet'], 50)
         self.assertEqual(response.data[0]['winner'], None)
-        # self.assertEqual(response.data[0]['dibs'], None)
+        self.assertIn(response.data[0]['dibs'], [self.user.id, self.user2.id])
         self.assertEqual(response.data[0]['confirmed'], False)
         data = {
             "matchup": self.matchup.id,
@@ -533,7 +533,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['user_b_selection'], None)
         self.assertEqual(response.data[0]['bet'], 50)
         self.assertEqual(response.data[0]['winner'], None)
-        # self.assertEqual(response.data[0]['dibs'], None)
+        self.assertIn(response.data[0]['dibs'], [self.user.id, self.user2.id])
         self.assertEqual(response.data[0]['confirmed'], False)
 
     def test_undo_selection(self):
@@ -553,7 +553,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['user_b_selection'], None)
         self.assertEqual(response.data[0]['bet'], 50)
         self.assertEqual(response.data[0]['winner'], None)
-        # self.assertEqual(response.data[0]['dibs'], None)
+        self.assertIn(response.data[0]['dibs'], [self.user.id, self.user2.id])
         self.assertEqual(response.data[0]['confirmed'], False)
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -565,7 +565,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data[0]['user_b_selection'], None)
         self.assertEqual(response.data[0]['bet'], 50)
         self.assertEqual(response.data[0]['winner'], None)
-        # self.assertEqual(response.data[0]['dibs'], None)
+        self.assertIn(response.data[0]['dibs'], [self.user.id, self.user2.id])
         self.assertEqual(response.data[0]['confirmed'], False)
 
     def test_two_users_select_different_fighters(self):
