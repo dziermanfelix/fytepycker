@@ -149,9 +149,10 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
 
   if (fightCards && fightCards.length > 0) {
     return (
-      <div>
+      <div className=''>
         {fightCards.map((cardType) => (
-          <div key={cardType} className='mb-2 mt-2'>
+          <div key={cardType} className='mb-2 mt-2 p-2 border border-red-400'>
+            <div className='capitalize mb-1'>{cardType}</div>
             <ul className='space-y-4'>
               {fights[cardType]?.map((fight) => {
                 return (

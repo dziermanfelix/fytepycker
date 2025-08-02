@@ -4,7 +4,7 @@ import Fights from '@/components/Fights';
 import CreateMatchupModal from './CreateMatchupModal';
 
 const EventFights = () => {
-  const { activeEventTab, activeFightTab, selectEvent, selectedEvent, isLoading, isError, user, fights } = useEvents();
+  const { activeEventTab, activeFightTab, selectedEvent, isLoading, isError, user, fights } = useEvents();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
