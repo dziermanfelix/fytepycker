@@ -16,4 +16,5 @@ export const API_URLS = {
   SELECTIONS: '/matchups/selections/',
   USERS: '/auth/users/',
   LIFETIME: '/matchups/lifetime/',
+  VERSION:'/version'
 };
