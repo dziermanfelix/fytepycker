@@ -84,6 +84,8 @@ const Header = ({ setIsSidebarOpen }) => {
     setIsDropdownOpen(false);
   };
 
+  // TODO add version call
+
   return (
     <header className='bg-white shadow-sm py-4 px-4 sm:px-6 flex justify-between items-center'>
       <div className='flex items-center'>
@@ -113,6 +115,10 @@ const Header = ({ setIsSidebarOpen }) => {
 
           {isDropdownOpen && (
             <div className='absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200'>
+              <div className='px-4 py-2 text-sm text-gray-700 border-b border-gray-100 capitalize'>
+                <p className='font-medium'>fytepycker</p>
+                <p className='text-gray-500 text-xs truncate'>version x.x.x</p>
+              </div>
               <div className='px-4 py-2 text-sm text-gray-700 border-b border-gray-100'>
                 <p className='font-medium'>{user.username}</p>
                 <p className='text-gray-500 text-xs truncate'>{user.email}</p>
@@ -129,9 +135,9 @@ const Header = ({ setIsSidebarOpen }) => {
               ))}
               <button
                 onClick={handleLogout}
-                className='block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100'
+                className='block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 capitalize'
               >
-                Log out
+                log out
               </button>
             </div>
           )}
