@@ -13,3 +13,11 @@ class HealthCheckView(APIView):
             "status": "healthy",
             "message": "API is running"
         }, status=status.HTTP_200_OK)
+
+
+class VersionView(APIView):
+    def get(self, request):
+        version = open('VERSION.txt', 'r').readline().strip()
+        return Response({
+            "version": version
+        }, status=status.HTTP_200_OK)
