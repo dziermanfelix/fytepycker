@@ -138,10 +138,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/dist'),
-]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if DEBUG:
+    TEMPLATES[0]['DIRS'] = []
+    STATICFILES_DIRS = []
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+else:
+    TEMPLATES[0]['DIRS'] = [BASE_DIR / "frontend" / "dist"]
+    STATICFILES_DIRS = [BASE_DIR / "frontend" / "dist"]
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

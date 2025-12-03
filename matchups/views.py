@@ -73,6 +73,7 @@ class SelectionView(APIView):
             matchup = validated_data['matchup']
             user = validated_data['user']
             fighter = validated_data['fighter']
+            other_fighter = validated_data['other_fighter']
             fight = validated_data['fight']
 
             unique_fields = {
@@ -90,12 +91,18 @@ class SelectionView(APIView):
                     return Response({"error": f"Fighter '{fighter}' is not valid for fight {fight.id}"}, status=status.HTTP_400_BAD_REQUEST)
 
                 user_select_string = 'user_a_selection' if user == valid_users[0] else 'user_b_selection'
-                defaults = {user_select_string: fighter}
+                other_user_select_string = 'user_b_selection' if user == valid_users[0] else 'user_a_selection'
+                defaults = {user_select_string: fighter, other_user_select_string: other_fighter}
 
-                selection, created = Selection.objects.get_or_create(
+                # TODO figure out how to confirm selections later if we need to
+                # or just remove it from the db
+                defaults['confirmed'] = True
+
+                selection, created = Selection.objects.update_or_create(
                     **unique_fields,
                     defaults=defaults
                 )
+
                 result_serializer = SelectionSerializer(selection)
                 status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
                 return Response({'selection': result_serializer.data, }, status=status_code)

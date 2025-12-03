@@ -17,6 +17,8 @@ class CustomSelectionPostSerializer(serializers.Serializer):
         fight = data.get('fight')
         user = data.get('user')
         fighter = data.get('fighter')
+        other_fighter = next(f for f in fight.get_fighters() if f != fighter)
+        data['other_fighter'] = other_fighter
 
         # Check if the selection is already taken by another user for the same fight
         existing_selection = Selection.objects.filter(matchup=matchup, fight=fight).first()
