@@ -1,4 +1,5 @@
 export const getReadyFight = (selections, matchup) => {
+  if (matchup.event.complete) return null;
   const cardPriority = { early: 0, prelim: 1, main: 2 };
   const allFights = [
     ...(matchup.event.fights.early || []),

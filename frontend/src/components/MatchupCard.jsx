@@ -20,25 +20,61 @@ const MatchupCard = ({ matchup, handleClick }) => {
     yourTurn = (!userDibs && otherSelection !== null) || (userDibs && !userSelection);
   }
 
+  const firstPick = matchup.first_pick === matchup.user_a.id ? matchup.user_a.username : matchup.user_b.username;
+
+  console.log('userId', user.id);
+  console.log('matchupFirstPickId', matchup.first_pick);
+  console.log('matchup', matchup);
+
   return (
     <div
       key={matchup.id}
-      className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
       onClick={() => handleClick(matchup)}
+      className='p-5 rounded-2xl shadow-sm border border-gray-100 bg-white cursor-pointer 
+             hover:shadow-lg hover:-translate-y-1 transition-all duration-200'
     >
-      <div className='flex justify-between space-x-2 w-full'>
-        <div className='flex'>
-          <p className='ml-1'>{otherUser}</p>
+      {/* Header */}
+      <div className='flex justify-between items-center mb-3'>
+        <div>
+          <p className='text-xs text-gray-400 uppercase tracking-wide'>Opponent</p>
+          <p className='text-lg font-semibold text-gray-800 capitalize'>{otherUser}</p>
         </div>
-        <div className='flex items-center'>
+
+        {/* Status Dot */}
+        <div>
           {numUnconfirmed === 0 ? (
-            <p className={`mr-4 ${getWinningsTextColor(matchup.winnings)}`}>{matchup.winnings}</p>
+            <span className='inline-block w-3 h-3 bg-black rounded-full' />
           ) : yourTurn ? (
             <span className='inline-block w-3 h-3 bg-red-500 rounded-full animate-pulse' />
           ) : (
             <span className='inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse' />
           )}
         </div>
+      </div>
+
+      {/* Info grid */}
+      <div className='grid grid-cols-2 gap-3 text-sm'>
+        <div>
+          <p className='text-gray-400'>Winnings</p>
+          <p className={`font-semibold ${getWinningsTextColor(matchup.winnings)}`}>{matchup.winnings}</p>
+        </div>
+
+        <div>
+          <p className='text-gray-400'>Selection Status</p>
+          {yourTurn ? (
+            <p className='font-semibold text-red-500'>Your Move</p>
+          ) : numUnconfirmed === 0 ? (
+            <p className='font-semibold text-gray-500'>Complete</p>
+          ) : (
+            <p className='font-semibold text-green-600'>Waiting</p>
+          )}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className='mt-4 flex justify-between text-xs text-gray-400'>
+        <span>First Pick: {firstPick}</span>
+        <p>Bets: {matchup.bets}</p>
       </div>
     </div>
   );

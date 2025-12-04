@@ -23,14 +23,16 @@ const MatchupsContent = () => {
       <div className='pb-4'>
         <CurrentEvent />
       </div>
-      {!id &&
-        (currentMatchups.length > 0 ? (
-          currentMatchups.map((matchup) => {
-            return <MatchupCard key={matchup.id} matchup={matchup} handleClick={handleClick} />;
-          })
-        ) : (
-          <p className='text-center text-gray-500'>No Matchups.</p>
-        ))}
+      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+        {!id &&
+          (currentMatchups.length > 0 ? (
+            currentMatchups.map((matchup) => {
+              return <MatchupCard key={matchup.id} matchup={matchup} handleClick={handleClick} />;
+            })
+          ) : (
+            <p className='text-center text-gray-500'>No Matchups.</p>
+          ))}
+      </div>
     </div>
   );
 };

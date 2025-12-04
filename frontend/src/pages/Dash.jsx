@@ -20,7 +20,7 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
   };
 
   return (
-    <div className='bg-white shadow-sm w-50 h-full flex-shrink-0 flex flex-col'>
+    <div className='bg-white shadow-sm w-75 h-full flex-shrink-0 flex flex-col'>
       <div className='mt-12 flex items-center justify-between'>
         {isMobile && (
           <button
@@ -31,16 +31,17 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
           </button>
         )}
       </div>
-      <nav className='mt-6 flex-1 overflow-y-auto'>
+      <nav className='mt-4 flex-1 overflow-y-auto'>
         <ul>
           {navItems.map((item) => (
-            <li key={item.id} className='mb-2 px-2'>
+            <li key={item.id} className=''>
               <Link to={item.path}>
                 <button
                   onClick={() => handleNavClick()}
-                  className={`flex items-center w-full px-4 py-3 hover:bg-gray-100 rounded-md transition-colors hover:cursor-pointer ${
-                    activePath === item.path ? 'bg-gray-200' : ''
-                  }`}
+                  className={`flex items-center w-full px-4 py-3 
+                            hover:bg-gray-200 transition-colors 
+                            hover:cursor-pointer 
+                            ${activePath === item.path ? 'bg-gray-100' : ''}`}
                 >
                   <span>{item.label}</span>
                 </button>

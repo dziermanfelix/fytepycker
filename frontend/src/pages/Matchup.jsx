@@ -82,13 +82,19 @@ const MatchupContent = ({ basePath, deletable }) => {
 
   const WinningsBanner = () => {
     const winnings = selectedMatchup.winnings;
-    const selectionsConfirmed = selections.every((selection) => selection.confirmed);
+    const displayBanner = selections.every((s) => s.confirmed) || selectedMatchup.event.complete;
+
+    if (!displayBanner) return null;
+
     return (
-      selectionsConfirmed && (
-        <p className={`sticky top-0 z-20 p-2 rounded text-right capitalize ${getWinningsBackgroundColor(winnings)}`}>
-          winnings: {selectedMatchup.winnings}
-        </p>
-      )
+      <div
+        className={`sticky top-0 z-30 px-4 py-2 rounded-full 
+                    text-sm font-semibold shadow text-white
+                    backdrop-blur-lg bg-opacity-90 ${getWinningsBackgroundColor(winnings)}`}
+      >
+        <span className='uppercase tracking-wide text-xs opacity-80 mr-2'>{winnings >= 0 ? 'Winnings' : 'Losings'}</span>
+        <span className='text-lg'>{winnings}</span>
+      </div>
     );
   };
 
