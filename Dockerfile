@@ -1,9 +1,26 @@
+# Stage 1: Build frontend
+FROM node:20-slim AS frontend-builder
+
+WORKDIR /app/frontend
+
+# Copy package files for dependency installation
+COPY frontend/package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production=false
+
+# Copy frontend source
+COPY frontend/ ./
+
+# Build frontend
+RUN npm run build
+
+# Stage 2: Python runtime
 FROM python:3.13-slim
 
 WORKDIR /app
 
-COPY . /app
-
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
@@ -15,7 +32,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg-dev \
     zlib1g-dev \
     libmagic1 \
-    curl \
     git \
     unzip \
     libnss3 \
@@ -34,18 +50,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgbm1 \
     libfontconfig1 \
     libnss3-dev \
-    --no-install-recommends && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
+# Copy requirements first for better layer caching
+COPY requirements.txt ./
+
+# Create virtual environment and install Python dependencies
 RUN pip install --no-cache-dir virtualenv && \
     virtualenv /venv && \
     /venv/bin/pip install --no-cache-dir -r requirements.txt
 
-ENV PLAYWRIGHT_BROWSERS_PATH=/app/.cache/ms-playwright
+# Copy application code
+COPY . /app/
 
+# Copy built frontend from builder stage (overwrites any existing frontend/dist)
+COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
+
+# Collect static files
+RUN /venv/bin/python manage.py collectstatic --noinput
+
+ENV PLAYWRIGHT_BROWSERS_PATH=/app/.cache/ms-playwright
 ENV PATH="/venv/bin:$PATH"
 
 COPY entrypoint.sh /app/entrypoint.sh
-
 RUN chmod +x /app/entrypoint.sh
 
 ENTRYPOINT ["/app/entrypoint.sh"]
