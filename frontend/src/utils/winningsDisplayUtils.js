@@ -11,3 +11,10 @@ export const getWinningsBackgroundColor = (winnings) => {
   else if (winnings < 0) color = 'bg-red-600';
   return color;
 };
+
+export const getWinningsBorderColor = (winnings) => {
+  let color = 'border border-gray-300';
+  if (winnings > 0) color = 'border border-green-600';
+  else if (winnings < 0) color = 'border border-red-600';
+  return color;
+};
