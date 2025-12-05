@@ -24,6 +24,7 @@ with connection.cursor() as cursor:
     cursor.execute('GRANT ALL ON SCHEMA public TO public;')
 " || true
   python manage.py migrate
+  python manage.py collectstatic --noinput
   playwright install chromium
   exec daphne -b 0.0.0.0 -p ${PORT:-8000} core.asgi:application
 

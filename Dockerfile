@@ -66,9 +66,6 @@ COPY . /app/
 # Copy built frontend from builder stage (overwrites any existing frontend/dist)
 COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 
-# Collect static files
-RUN /venv/bin/python manage.py collectstatic --noinput
-
 ENV PLAYWRIGHT_BROWSERS_PATH=/app/.cache/ms-playwright
 ENV PATH="/venv/bin:$PATH"
 
