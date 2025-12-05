@@ -25,7 +25,6 @@ git add .
 if ! git diff --cached --quiet; then
   git commit -m "Fytepycker Deployment v${new_version}"
   git push origin main
-  git push heroku main
 else
   echo "No changes to commit."
 fi

@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite --mode dev",
     "build": "vite build --mode prod",
-    "heroku-postbuild": "npm install && npm run build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
