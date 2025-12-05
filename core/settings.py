@@ -1,5 +1,4 @@
 import os
-from celery.schedules import crontab
 from pathlib import Path
 import dj_database_url
 from urllib.parse import urlparse
@@ -38,7 +37,7 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'channels',
-    'django_celery_beat',
+    # 'django_celery_beat',  # Commented out for free hosting - using APScheduler + GitHub Actions instead
 
     'api',
     'accounts',
@@ -156,17 +155,17 @@ else:
     CORS_ALLOW_ALL_ORIGINS = False
     CORS_ALLOWED_ORIGINS = config('FRONTEND_URLS', default='https://fytepycker-aa95152cd271.herokuapp.com/').split(',')
 
-# celery
-CELERY_BROKER_URL = config('REDIS_URL')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-
-CELERY_BEAT_SCHEDULE = {
-    'midnight-scrape': {
-        'task': 'ufc.tasks.midnight_scrape',
-        'schedule': crontab(minute=0, hour=0),  # midnight UTC
-    },
-}
+# Celery configuration removed for free hosting
+# Using APScheduler + GitHub Actions instead
+# CELERY_BROKER_URL = config('REDIS_URL')
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_BEAT_SCHEDULE = {
+#     'midnight-scrape': {
+#         'task': 'ufc.tasks.midnight_scrape',
+#         'schedule': crontab(minute=0, hour=0),  # midnight UTC
+#     },
+# }
 
 LOGGING = {
     'version': 1,

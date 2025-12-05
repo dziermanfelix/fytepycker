@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     unzip \
     libnss3 \
-    libgdk-pixbuf2.0-dev \
+    libgdk-pixbuf2.0 \
     libglib2.0-0 \
     libx11-xcb1 \
     libx11-6 \
@@ -34,7 +34,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgbm1 \
     libfontconfig1 \
     libnss3-dev \
-    libgdk-pixbuf2.0-0 \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir virtualenv && \

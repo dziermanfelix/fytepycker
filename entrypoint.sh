@@ -9,16 +9,16 @@ echo "[entrypoint] Arg3: $3"
 echo "[entrypoint] Arg4: $4"
 echo "[entrypoint] All args: $@"
 
-if [[ "$4" == "web" ]]; then
-  echo "[entrypoint] Starting web dyno..."
+if [[ "$1" == "web" ]]; then
+  echo "[entrypoint] Starting web server..."
   python manage.py migrate
   playwright install chromium
-  exec daphne -b 0.0.0.0 -p $PORT core.asgi:application
+  exec daphne -b 0.0.0.0 -p ${PORT:-8000} core.asgi:application
 
-elif [[ "$4" == "worker" ]]; then
-  echo "[entrypoint] Starting worker dyno..."
-  playwright install chromium
-  exec celery -A core worker --loglevel=info
+elif [[ "$1" == "worker" ]]; then
+  echo "[entrypoint] Worker dyno is no longer needed for free hosting."
+  echo "[entrypoint] Background tasks are handled by APScheduler in web process and GitHub Actions."
+  exit 1
 
 else
   echo "[entrypoint] Running command directly: $@"

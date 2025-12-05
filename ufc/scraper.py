@@ -4,10 +4,6 @@ from .models import Event, Fight, FightCard
 from datetime import datetime
 import pytz
 from unidecode import unidecode
-from bs4 import BeautifulSoup
-from .models import Event
-import pytz
-from .tasks import scrape_until_complete
 from django.utils import timezone
 
 
@@ -32,9 +28,10 @@ class Scraper:
         elif action == 'live':
             now = datetime.now(pytz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
             next_event = Event.objects.filter(date__gte=now).order_by('date').first()
-            if self.is_today_in_eastern(next_event.date):
+            if next_event and self.is_today_in_eastern(next_event.date):
                 print(f"[live action] Scheduling scrape_until_complete for event {next_event.id}")
-                scrape_until_complete.delay(next_event.id)
+                from .scheduler import schedule_event_scraping
+                schedule_event_scraping(next_event.id)
 
         # scrape fights from web page
         scraped_urls = list()
