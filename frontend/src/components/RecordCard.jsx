@@ -2,7 +2,6 @@ import { getWinningsTextColor } from '@/utils/winningsDisplayUtils';
 import React from 'react';
 
 const RecordCard = ({ item, handleClick }) => {
-  console.log('item', item);
   return (
     <div
       key={item.user.id}
