@@ -10,7 +10,7 @@ import { API_URLS } from '@/common/urls';
 const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
   const navItems = [
     { id: 'matchups', label: 'Matchups', path: '/dash/matchups' },
-    { id: 'lifetime', label: 'Lifetime', path: '/dash/lifetime' },
+    { id: 'record', label: 'Record', path: '/dash/record' },
   ];
 
   const handleNavClick = () => {

@@ -716,7 +716,7 @@ class SelectionTests(APITestCase):
         self.assertEqual(selections[1].confirmed, False)
 
 
-class LifetimeTests(APITestCase):
+class RecordTests(APITestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(username='testuser', email='testuser@gmail.com', password='testpass')
         self.user2 = get_user_model().objects.create_user(username='testuser2', email='testuser2@gmail.com', password='testpass2')
@@ -725,7 +725,7 @@ class LifetimeTests(APITestCase):
 
         self.matchups_url = reverse('api:matchups:matchups')
         self.selection_url = reverse('api:matchups:selections')
-        self.lifetime_url = reverse('api:matchups:lifetime')
+        self.record_url = reverse('api:matchups:record')
         self.scraper = Scraper()
         self.addDummyData()
 
@@ -781,7 +781,7 @@ class LifetimeTests(APITestCase):
         )
         self.matchup = matchup[0]
 
-    def test_get_lifetime(self):
+    def test_get_record(self):
         # user makes selections
         response = self.client.post(self.selection_url, data={
             "matchup": self.matchup.id,
@@ -830,15 +830,15 @@ class LifetimeTests(APITestCase):
         self.assertEqual(response.data[0]['bets'], 80)
         self.assertEqual(response.data[0]['winnings'], 80)
 
-        # verify lifetime
-        response = self.client.get(self.lifetime_url, {'user_id': self.user.id})
+        # verify record
+        response = self.client.get(self.record_url, {'user_id': self.user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['user']['id'], self.user2.id)
         self.assertEqual(response.data[0]['matchups'][0]['id'], self.matchup.id)
         self.assertEqual(response.data[0]['matchups'][0]['bets'], 80)
         self.assertEqual(response.data[0]['matchups'][0]['winnings'], 80)
 
-    def test_get_lifetime2(self):
+    def test_get_record2(self):
         # user makes selections
         response = self.client.post(self.selection_url, data={
             "matchup": self.matchup.id,
@@ -887,15 +887,15 @@ class LifetimeTests(APITestCase):
         self.assertEqual(response.data[0]['bets'], 80)
         self.assertEqual(response.data[0]['winnings'], -80)
 
-        # verify lifetime
-        response = self.client.get(self.lifetime_url, {'user_id': self.user.id})
+        # verify record
+        response = self.client.get(self.record_url, {'user_id': self.user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['user']['id'], self.user2.id)
         self.assertEqual(response.data[0]['matchups'][0]['id'], self.matchup.id)
         self.assertEqual(response.data[0]['matchups'][0]['bets'], 80)
         self.assertEqual(response.data[0]['matchups'][0]['winnings'], -80)
 
-    def test_get_lifetime3(self):
+    def test_get_record3(self):
         # user makes selections
         response = self.client.post(self.selection_url, data={
             "matchup": self.matchup.id,
@@ -944,14 +944,14 @@ class LifetimeTests(APITestCase):
         self.assertEqual(response.data[0]['bets'], 80)
         self.assertEqual(response.data[0]['winnings'], 20)
 
-        # verify lifetime
-        response = self.client.get(self.lifetime_url, {'user_id': self.user.id})
+        # verify record
+        response = self.client.get(self.record_url, {'user_id': self.user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['user']['id'], self.user2.id)
         self.assertEqual(response.data[0]['matchups'][0]['id'], self.matchup.id)
         self.assertEqual(response.data[0]['matchups'][0]['bets'], 80)
         self.assertEqual(response.data[0]['matchups'][0]['winnings'], 20)
 
-    def test_get_lifetime_error_missing_user_id(self):
-        response = self.client.get(self.lifetime_url)
+    def test_get_record_error_missing_user_id(self):
+        response = self.client.get(self.record_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

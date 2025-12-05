@@ -11,7 +11,7 @@ Fytepycker is a social betting app for UFC events that keeps you in the action. 
 2. **View Upcoming Events** – Fytepycker pulls the latest UFC fight cards so you’re always in the know.
 3. **Start a Matchup** – Create a matchup against a friend.
 4. **Make Your Picks** – Predict the winners for each fight in the event by selecting your fighter when it's your turn.
-5. **Track Results & Rankings** – After each event, visit the Lifetime tab to see how you fare against your opponents.
+5. **Track Results & Rankings** – After each event, visit the Record tab to see how you fare against your opponents.
 
 ## Tech Stack
 - **Frontend:** React, Tailwind CSS for fast and responsive UI

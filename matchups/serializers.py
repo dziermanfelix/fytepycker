@@ -80,14 +80,14 @@ class MatchupSerializer(serializers.ModelSerializer):
         validators = []
 
 
-class LifetimeSerializer(serializers.Serializer):
+class RecordSerializer(serializers.Serializer):
     user = UserSerializer(read_only=True)
     matchups = MatchupSerializer(many=True, read_only=True)
     bets = serializers.FloatField(read_only=True)
     winnings = serializers.FloatField(read_only=True)
 
 
-class LifetimeStatsSerializer(serializers.Serializer):
+class RecordStatsSerializer(serializers.Serializer):
     opponent = serializers.SerializerMethodField()
     wins = serializers.IntegerField()
     losses = serializers.IntegerField()

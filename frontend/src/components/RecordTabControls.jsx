@@ -1,6 +1,6 @@
 import { IoMdClose } from 'react-icons/io';
 
-const LifetimeTabControls = ({ setSelectedUser }) => {
+const RecordTabControls = ({ setSelectedUser }) => {
   return (
     <div className='flex border-b mb-2'>
       <button
@@ -16,4 +16,4 @@ const LifetimeTabControls = ({ setSelectedUser }) => {
   );
 };
 
-export default LifetimeTabControls;
+export default RecordTabControls;

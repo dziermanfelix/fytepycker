@@ -15,6 +15,7 @@ export const API_URLS = {
   MATCHUPS: '/matchups/',
   SELECTIONS: '/matchups/selections/',
   USERS: '/auth/users/',
-  LIFETIME: '/matchups/lifetime/',
-  VERSION:'/version'
+  RECORD: '/matchups/record/',
+  RECORD_DETAILS: (id) => `dash/record/matchups/${id}`,
+  VERSION: '/version',
 };

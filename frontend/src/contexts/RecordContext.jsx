@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLifetime as useLifetimeHook } from '@/hooks/useLifetime';
+import { useRecord as useRecordHook } from '@/hooks/useRecord';
 
-const LifetimeContext = createContext({});
+const RecordContext = createContext({});
 
-export const LifetimeProvider = ({ children }) => {
+export const RecordProvider = ({ children }) => {
   const { user } = useAuth();
   const [activeUserTab, setActiveUserTab] = useState(null);
   const [selectedUser, setSelectedUser] = useState(() => {
@@ -20,7 +20,7 @@ export const LifetimeProvider = ({ children }) => {
     }
   }, [selectedUser]);
 
-  const { items, isLoading, isError, refetch } = useLifetimeHook({ userId: user?.id });
+  const { items, isLoading, isError, refetch } = useRecordHook({ userId: user?.id });
 
   const contextValue = {
     user,
@@ -37,13 +37,13 @@ export const LifetimeProvider = ({ children }) => {
     refetch,
   };
 
-  return <LifetimeContext.Provider value={contextValue}>{children}</LifetimeContext.Provider>;
+  return <RecordContext.Provider value={contextValue}>{children}</RecordContext.Provider>;
 };
 
-export const useLifetime = () => {
-  const context = useContext(LifetimeContext);
+export const useRecord = () => {
+  const context = useContext(RecordContext);
   if (context === undefined) {
-    throw new Error('useLifetime must be used within an LifetimeProvider');
+    throw new Error('useRecord must be used within an RecordProvider');
   }
   return context;
 };

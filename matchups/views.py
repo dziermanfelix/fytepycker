@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
-from .serializers import MatchupSerializer, CustomSelectionPostSerializer, SelectionSerializer, LifetimeSerializer
+from .serializers import MatchupSerializer, CustomSelectionPostSerializer, SelectionSerializer, RecordSerializer
 from .models import Matchup, Selection
 from accounts.models import User
 
@@ -124,7 +124,7 @@ class SelectionView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class LifetimeView(APIView):
+class RecordView(APIView):
     def get(self, request, *args, **kwargs):
         user_id = request.GET.get("user_id")
         username = User.objects.filter(id=user_id).first()
@@ -154,6 +154,6 @@ class LifetimeView(APIView):
                     elif s.winner == opponent:
                         user_map[opponent.id]["winnings"] -= s.bet
 
-        lifetime_data = list(user_map.values())
-        serialized_data = LifetimeSerializer(lifetime_data, many=True, context={'request': request}).data
+        record_data = list(user_map.values())
+        serialized_data = RecordSerializer(record_data, many=True, context={'request': request}).data
         return Response(serialized_data, status=status.HTTP_200_OK)

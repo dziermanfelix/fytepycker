@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { useLifetime, LifetimeProvider } from '@/contexts/LifetimeContext';
-import LifetimeTabControls from '@/components/LifetimeTabControls';
+import { useRecord, RecordProvider } from '@/contexts/RecordContext';
+import RecordTabControls from '@/components/RecordTabControls';
 import { getWinningsTextColor, getWinningsBackgroundColor } from '@/utils/winningsDisplayUtils';
+import { API_URLS } from '@/common/urls';
 
-const LifetimeContent = () => {
+const RecordContent = () => {
   const navigate = useNavigate();
-  const { isLoading, isError, items, selectedUser, setSelectedUser } = useLifetime();
+  const { isLoading, isError, items, selectedUser, setSelectedUser } = useRecord();
 
   const handleUserClick = async (user) => {
     setSelectedUser(user);
@@ -13,11 +14,11 @@ const LifetimeContent = () => {
 
   const handleMatchupClick = async (matchup) => {
     sessionStorage.setItem('selectedUser', JSON.stringify(selectedUser));
-    navigate(`/dash/lifetime/matchups/${matchup.id}`);
+    navigate(API_URLS.RECORD_DETAILS(matchup.id));
   };
 
-  if (isLoading) return <p className='text-center text-gray-500'>Loading lifetime...</p>;
-  if (isError) return <p className='text-center text-red-500'>Failed to load lifetime.</p>;
+  if (isLoading) return <p className='text-center text-gray-500'>Loading record...</p>;
+  if (isError) return <p className='text-center text-red-500'>Failed to load Record.</p>;
 
   const filteredMatchups = items.flatMap((item) => (item.user.id === selectedUser?.id ? item.matchups : []));
   const totalWinnings = filteredMatchups.reduce((sum, item) => sum + item.winnings, 0);
@@ -42,13 +43,13 @@ const LifetimeContent = () => {
               </div>
             ))
           ) : (
-            <p className='text-center text-gray-500'>No Lifetime.</p>
+            <p className='text-center text-gray-500'>No Record.</p>
           );
         })()}
 
       {selectedUser && (
         <div>
-          <LifetimeTabControls setSelectedUser={setSelectedUser} />
+          <RecordTabControls setSelectedUser={setSelectedUser} />
           <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
             <div
               className={`flex justify-between p-1 rounded text-center text-lg capitalize ${getWinningsBackgroundColor(
@@ -85,10 +86,10 @@ const LifetimeContent = () => {
   );
 };
 
-const Lifetime = () => (
-  <LifetimeProvider>
-    <LifetimeContent />
-  </LifetimeProvider>
+const Record = () => (
+  <RecordProvider>
+    <RecordContent />
+  </RecordProvider>
 );
 
-export default Lifetime;
+export default Record;

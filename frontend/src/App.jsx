@@ -2,13 +2,13 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { MatchupsProvider } from '@/contexts/MatchupsContext';
-import { LifetimeProvider } from '@/contexts/LifetimeContext';
+import { RecordProvider } from '@/contexts/RecordContext';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import Dash from '@/pages/Dash';
 import Matchups from '@/pages/Matchups';
 import Matchup from '@/pages/Matchup';
-import Lifetime from '@/pages/Lifetime';
+import Record from '@/pages/Record';
 import Messages from '@/pages/Messages';
 import Settings from '@/pages/Settings';
 import Profile from '@/pages/Profile';
@@ -45,18 +45,18 @@ function App() {
               }
             />
             <Route
-              path='lifetime/*'
+              path='record/*'
               element={
-                <LifetimeProvider>
-                  <Lifetime />
-                </LifetimeProvider>
+                <RecordProvider>
+                  <Record />
+                </RecordProvider>
               }
             />
             <Route
-              path='lifetime/matchups/:id'
+              path='record/matchups/:id'
               element={
                 <MatchupsProvider>
-                  <Matchup basePath='/dash/lifetime' />
+                  <Matchup basePath='/dash/record' />
                 </MatchupsProvider>
               }
             />
