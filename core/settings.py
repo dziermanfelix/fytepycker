@@ -11,16 +11,39 @@ SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = [
-    config("RENDER_EXTERNAL_HOSTNAME", default="localhost"),
-    "127.0.0.1",
-    "localhost",
-    "fytepycker-611ee5279614.herokuapp.com",
-]
+# ALLOWED_HOSTS - Render automatically sets RENDER_EXTERNAL_HOSTNAME
+render_hostname = config("RENDER_EXTERNAL_HOSTNAME", default="")
+allowed_hosts_list = ["127.0.0.1", "localhost"]
+if render_hostname:
+    # Render provides just the hostname (e.g., "fytepycker.onrender.com")
+    allowed_hosts_list.append(render_hostname)
+# Also check ALLOWED_HOSTS env var if explicitly set
+allowed_hosts_env = config("ALLOWED_HOSTS", default="")
+if allowed_hosts_env:
+    allowed_hosts_list.extend([h.strip() for h in allowed_hosts_env.split(",") if h.strip()])
+ALLOWED_HOSTS = allowed_hosts_list
 
-CSRF_TRUSTED_ORIGINS = [
-    url.strip('/') for url in config('FRONTEND_URLS', default='https://fytepycker-611ee5279614.herokuapp.com/').split(',')
-]
+# CSRF_TRUSTED_ORIGINS - must include https:// scheme (Django 4.0+ requirement)
+frontend_urls = config('FRONTEND_URLS', default='')
+if not frontend_urls and render_hostname:
+    # Auto-generate from Render hostname if FRONTEND_URLS not set
+    frontend_urls = f'https://{render_hostname}'
+
+csrf_origins = []
+if frontend_urls:
+    # Ensure all URLs have https:// scheme
+    for url in frontend_urls.split(','):
+        url = url.strip().strip('/')
+        if url:
+            # Add https:// if missing
+            if not url.startswith('http://') and not url.startswith('https://'):
+                url = f'https://{url}'
+            csrf_origins.append(url)
+else:
+    # Fallback for local dev
+    csrf_origins = ['https://localhost', 'http://localhost']
+
+CSRF_TRUSTED_ORIGINS = csrf_origins
 
 # Application definition
 INSTALLED_APPS = [
@@ -153,7 +176,24 @@ if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
     CORS_ALLOW_ALL_ORIGINS = False
-    CORS_ALLOWED_ORIGINS = config('FRONTEND_URLS', default='https://fytepycker-aa95152cd271.herokuapp.com/').split(',')
+    frontend_urls = config('FRONTEND_URLS', default='')
+    if not frontend_urls and render_hostname:
+        # Auto-generate from Render hostname if FRONTEND_URLS not set
+        frontend_urls = f'https://{render_hostname}'
+
+    if frontend_urls:
+        # Ensure all URLs have https:// scheme for CORS
+        cors_origins = []
+        for url in frontend_urls.split(','):
+            url = url.strip().strip('/')
+            if url:
+                # Add https:// if missing
+                if not url.startswith('http://') and not url.startswith('https://'):
+                    url = f'https://{url}'
+                cors_origins.append(url)
+        CORS_ALLOWED_ORIGINS = cors_origins
+    else:
+        CORS_ALLOWED_ORIGINS = []
 
 # Celery configuration removed for free hosting
 # Using APScheduler + GitHub Actions instead
