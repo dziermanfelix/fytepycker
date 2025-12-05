@@ -11,6 +11,18 @@ echo "[entrypoint] All args: $@"
 
 if [[ "$1" == "web" ]]; then
   echo "[entrypoint] Starting web server..."
+  # Ensure public schema exists before migrations
+  python -c "
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+import django
+django.setup()
+from django.db import connection
+with connection.cursor() as cursor:
+    cursor.execute('CREATE SCHEMA IF NOT EXISTS public;')
+    cursor.execute('SET search_path TO public;')
+    cursor.execute('GRANT ALL ON SCHEMA public TO public;')
+" || true
   python manage.py migrate
   playwright install chromium
   exec daphne -b 0.0.0.0 -p ${PORT:-8000} core.asgi:application
