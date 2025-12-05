@@ -22,16 +22,15 @@ const MatchupCard = ({ matchup, handleClick }) => {
 
   const firstPick = matchup.first_pick === matchup.user_a.id ? matchup.user_a.username : matchup.user_b.username;
 
-  console.log('userId', user.id);
-  console.log('matchupFirstPickId', matchup.first_pick);
-  console.log('matchup', matchup);
-
   return (
     <div
       key={matchup.id}
       onClick={() => handleClick(matchup)}
-      className='p-5 rounded-2xl shadow-sm border border-gray-100 bg-white cursor-pointer 
-             hover:shadow-lg hover:-translate-y-1 transition-all duration-200'
+      className='
+      p-5 rounded-2xl shadow-sm border border-gray-100 
+      bg-white cursor-pointer 
+      hover:shadow-lg hover:-translate-y-1 
+      transition-all duration-200'
     >
       {/* Header */}
       <div className='flex justify-between items-center mb-3'>

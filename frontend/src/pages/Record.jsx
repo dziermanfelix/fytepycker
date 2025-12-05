@@ -3,6 +3,7 @@ import { useRecord, RecordProvider } from '@/contexts/RecordContext';
 import RecordTabControls from '@/components/RecordTabControls';
 import { getWinningsTextColor, getWinningsBackgroundColor } from '@/utils/winningsDisplayUtils';
 import { API_URLS } from '@/common/urls';
+import RecordCard from '@/components/RecordCard';
 
 const RecordContent = () => {
   const navigate = useNavigate();
@@ -22,30 +23,18 @@ const RecordContent = () => {
 
   const filteredMatchups = items.flatMap((item) => (item.user.id === selectedUser?.id ? item.matchups : []));
   const totalWinnings = filteredMatchups.reduce((sum, item) => sum + item.winnings, 0);
+  const filteredItems = items.filter((item) => Array.isArray(item.matchups) && item.matchups.length > 0);
 
   return (
     <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
-      {!selectedUser &&
-        (() => {
-          const filteredItems = items.filter((item) => Array.isArray(item.matchups) && item.matchups.length > 0);
-
-          return filteredItems.length > 0 ? (
-            filteredItems.map((item) => (
-              <div
-                key={item.user.id}
-                className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
-                onClick={() => handleUserClick(item.user)}
-              >
-                <div className='flex items-center justify-between space-x-2 w-full'>
-                  <p className='ml-2'>{item.user.username}</p>
-                  <p className={`mr-4 ${getWinningsTextColor(item.winnings)}`}>{item.winnings}</p>
-                </div>
-              </div>
-            ))
+      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+        {!selectedUser &&
+          (filteredItems.length > 0 ? (
+            filteredItems.map((item) => <RecordCard key={item.user.id} item={item} handleClick={handleUserClick} />)
           ) : (
             <p className='text-center text-gray-500'>No Record.</p>
-          );
-        })()}
+          ))}
+      </div>
 
       {selectedUser && (
         <div>
