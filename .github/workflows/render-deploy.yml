@@ -24,33 +24,47 @@ jobs:
             echo "ERROR: RENDER_DEPLOY_HOOK_URL secret is not set!"
             exit 1
           fi
-          
+
+          # Validate that URL contains the key parameter
+          if ! echo "$RENDER_DEPLOY_HOOK_URL" | grep -q "?key="; then
+            echo "ERROR: Deploy hook URL is missing the '?key=' parameter!"
+            echo "The URL should be in the format: https://api.render.com/deploy/srv-XXXXXXX?key=XXXXX"
+            echo "Get the full URL from Render Dashboard → Your Service → Settings → Deploy Hook"
+            exit 1
+          fi
+
           # Show partial URL for debugging (without exposing key)
           url_without_key=$(echo "$RENDER_DEPLOY_HOOK_URL" | sed 's/?key=[^&]*/?key=***/')
           echo "Deploy hook URL: $url_without_key"
           echo "Triggering Render deployment..."
-          
+
           # Use curl with verbose output and proper error handling
           set -x
           response=$(curl -v -X POST "$RENDER_DEPLOY_HOOK_URL" 2>&1)
           curl_exit_code=$?
           set +x
-          
+
           echo "--- Full Response ---"
           echo "$response"
           echo "--- End Response ---"
-          
+
           if [ $curl_exit_code -ne 0 ]; then
             echo "ERROR: curl command failed with exit code $curl_exit_code"
             exit 1
           fi
-          
+
           # Check for HTTP 200 in the verbose output
-          if echo "$response" | grep -q "< HTTP/1.1 200"; then
+          if echo "$response" | grep -q "< HTTP/1.1 200\|< HTTP/2 200"; then
             echo "✓ Deploy hook returned HTTP 200 - deployment should be triggered"
-          elif echo "$response" | grep -q "< HTTP/2 200"; then
-            echo "✓ Deploy hook returned HTTP 200 - deployment should be triggered"
+          elif echo "$response" | grep -q "< HTTP/1.1 401\|< HTTP/2 401"; then
+            echo "ERROR: HTTP 401 Unauthorized - The deploy hook key is invalid or missing!"
+            echo "Please check your RENDER_DEPLOY_HOOK_URL secret in GitHub:"
+            echo "1. Go to Render Dashboard → Your Service → Settings → Deploy Hook"
+            echo "2. Copy the FULL URL (must include ?key=XXXXX)"
+            echo "3. Update the secret in GitHub: Settings → Secrets → Actions → RENDER_DEPLOY_HOOK_URL"
+            exit 1
           else
-            echo "WARNING: Expected HTTP 200, but response may indicate an issue"
+            echo "WARNING: Expected HTTP 200, but got a different response"
             echo "Check the response above for error messages"
+            exit 1
           fi
