@@ -3,6 +3,10 @@ export const FRONTEND_URLS = {
   REGISTER: `/register`,
   LOGIN: `/login`,
   DASH: `/dash`,
+  MATCHUPS: '/dash/matchups/',
+  RECORD: '/dash/record/',
+  MATCHUP_DETAILS: (id) => `/dash/matchups/${id}`,
+  RECORD_DETAILS: (id) => `/dash/record/matchups/${id}`,
 };
 
 export const API_URLS = {
@@ -13,10 +17,8 @@ export const API_URLS = {
   USER: '/auth/user/',
   EVENTS: '/ufc/events/',
   MATCHUPS: '/matchups/',
-  MATCHUP_DETAILS: (id) => `/dash/matchups/${id}`,
   SELECTIONS: '/matchups/selections/',
   USERS: '/auth/users/',
   RECORD: '/matchups/record/',
-  RECORD_DETAILS: (id) => `/dash/record/matchups/${id}`,
   VERSION: '/version',
 };

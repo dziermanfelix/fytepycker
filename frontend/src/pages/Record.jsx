@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useRecord, RecordProvider } from '@/contexts/RecordContext';
 import RecordTabControls from '@/components/RecordTabControls';
-import { getWinningsBackgroundColor } from '@/utils/winningsDisplayUtils';
-import { API_URLS } from '@/common/urls';
+import { FRONTEND_URLS } from '@/common/urls';
 import RecordCard from '@/components/RecordCard';
 import { MatchupsProvider } from '@/contexts/MatchupsContext';
 import RecordMatchupCard from '@/components/RecordMatchupCard';
@@ -18,7 +17,7 @@ const RecordContent = () => {
 
   const handleMatchupClick = async (matchup) => {
     sessionStorage.setItem('selectedUser', JSON.stringify(selectedUser));
-    navigate(API_URLS.RECORD_DETAILS(matchup.id));
+    navigate(FRONTEND_URLS.RECORD_DETAILS(matchup.id));
   };
 
   if (isLoading) return <p className='text-center text-gray-500'>Loading record...</p>;

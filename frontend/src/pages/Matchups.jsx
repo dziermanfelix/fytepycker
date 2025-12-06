@@ -2,7 +2,7 @@ import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useMatchups } from '@/contexts/MatchupsContext';
 import CurrentEvent from '@/components/CurrentEvent';
 import MatchupCard from '@/components/MatchupCard';
-import { API_URLS } from '@/common/urls';
+import { FRONTEND_URLS } from '@/common/urls';
 
 const MatchupsContent = () => {
   const { id } = useParams();
@@ -11,7 +11,7 @@ const MatchupsContent = () => {
 
   const handleClick = async (matchup) => {
     selectMatchup(matchup);
-    navigate(API_URLS.MATCHUP_DETAILS(matchup.id));
+    navigate(FRONTEND_URLS.MATCHUP_DETAILS(matchup.id));
   };
 
   if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useMatchups } from '@/contexts/MatchupsContext';
 import client from '@/api/client';
-import { API_URLS } from '@/common/urls';
+import { API_URLS, FRONTEND_URLS } from '@/common/urls';
 import FightTabControls from '@/components/FightTabControls';
 import SelectableFights from '@/components/SelectableFights';
 import { getWinningsBackgroundColor } from '@/utils/winningsDisplayUtils';
@@ -72,7 +72,8 @@ const MatchupContent = ({ basePath, deletable }) => {
       });
 
       setIsModalOpen(false);
-      navigate('/dash/matchups');
+      navigate(FRONTEND_URLS.MATCHUPS);
+      refetchMatchups();
     } catch (error) {
       setError('Failed to delete matchup.');
     } finally {
