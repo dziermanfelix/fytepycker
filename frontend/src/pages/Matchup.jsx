@@ -6,6 +6,7 @@ import { API_URLS, FRONTEND_URLS } from '@/common/urls';
 import FightTabControls from '@/components/FightTabControls';
 import SelectableFights from '@/components/SelectableFights';
 import { getWinningsBackgroundColor } from '@/utils/winningsDisplayUtils';
+import { IoMdClose } from 'react-icons/io';
 
 const MatchupContent = ({ basePath, deletable }) => {
   const { id } = useParams();
@@ -91,12 +92,18 @@ const MatchupContent = ({ basePath, deletable }) => {
       <div
         className={`sticky top-0 z-30 px-4 py-2 rounded-full 
                     text-sm font-semibold shadow text-white
-                    backdrop-blur-lg bg-opacity-90 ${getWinningsBackgroundColor(winnings)}`}
+                    backdrop-blur-lg bg-opacity-90 ${getWinningsBackgroundColor(winnings)}
+                    flex justify-between items-center`}
       >
-        <span className='uppercase tracking-wide text-xs opacity-80 mr-2'>
-          {winnings >= 0 ? 'Winnings' : 'Losings'}
-        </span>
-        <span className='text-lg'>{winnings}</span>
+        <div>
+          <span className='uppercase tracking-wide text-xs opacity-80 mr-2'>
+            {winnings >= 0 ? 'Winnings' : 'Losings'}
+          </span>
+          <span className='text-lg'>{winnings}</span>
+        </div>
+        <button className={`px-4 py-2 cursor-pointer rounded-sm hover:text-red-500`} onClick={() => navigate(basePath)}>
+          <IoMdClose />
+        </button>
       </div>
     );
   };
