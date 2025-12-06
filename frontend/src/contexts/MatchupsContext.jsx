@@ -40,16 +40,19 @@ export const MatchupsProvider = ({ children }) => {
     if (!matchups || matchups.length === 0) return;
 
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const host = window.location.hostname;
-    let port = window.location.port || (window.location.protocol === 'https:' ? 443 : 8001);
-    if (Number(port) === 5173) port = 8001;
+    let host = window.location.host; // Includes port if non-default
+
+    // For development (Vite dev server on port 5173, connect to Django on 8001)
+    if (window.location.port === '5173') {
+      host = `${window.location.hostname}:8001`;
+    }
 
     const currentMatchups = matchups.filter((matchup) => !matchup.event.complete);
 
     currentMatchups.forEach((matchup) => {
       if (socketsRef.current[matchup.id]) return;
 
-      const wsUrl = `${protocol}://${host}:${port}/ws/matchups/${matchup.id}/`;
+      const wsUrl = `${protocol}://${host}/ws/matchups/${matchup.id}/`;
       const socket = new WebSocket(wsUrl);
       socket.onopen = () => console.log(`[WS connected] matchup ${matchup.id}`);
       socket.onmessage = (event) => {
