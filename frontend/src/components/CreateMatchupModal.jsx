@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUsers } from '@/hooks/useUsers';
+import { useMatchups } from '@/contexts/MatchupsContext';
 import client from '@/api/client';
-import { API_URLS } from '@/common/urls';
+import { API_URLS, FRONTEND_URLS } from '@/common/urls';
 
 const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { users, selectedOpponent, setSelectedOpponent, fetchUsers } = useUsers(user.id);
+  const { refetchMatchups } = useMatchups();
 
   useEffect(() => {
     if (isOpen) {
@@ -36,7 +38,10 @@ const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user 
         user_b_id: selectedOpponent,
       });
 
-      navigate(`/dash/matchups/${res.data.matchup.id}`);
+      // Refetch matchups to ensure the new matchup is in the context
+      await refetchMatchups();
+
+      navigate(FRONTEND_URLS.MATCHUP_DETAILS(res.data.matchup.id));
       setSelectedOpponent('');
       onClose();
     } catch (error) {
