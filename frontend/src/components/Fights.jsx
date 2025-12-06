@@ -1,15 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { getFightCards } from '@/utils/fightTabUtils';
 
-const Fights = ({
-  activeFightTab,
-  fights,
-  user,
-  selections,
-  fighterClicked,
-  readyFight,
-  isSelectionProcessing = false,
-}) => {
+const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, readyFight, processingFightId = null }) => {
   const fightRefs = useRef({});
 
   useEffect(() => {
@@ -41,20 +33,20 @@ const Fights = ({
       img = fight.red_img;
       url = fight.red_url;
     }
+    const isProcessing = processingFightId !== null;
     const selectable =
-      !isSelectionProcessing &&
+      !isProcessing &&
       !fight.winner &&
       selection?.ready &&
       (selection?.dibs === user?.id || selection?.otherSelection) &&
       selection?.otherSelection !== name &&
       !selection?.confirmed;
+
     return (
       <button
-        className={`${
-          fight?.winner === name && 'border-6 border-yellow-500'
-        } p-2 rounded transition-colors duration-300 ${selectable && !isSelectionProcessing && 'cursor-pointer'} ${
-          selections && getFighterButtonColor(fight, name)
-        }`}
+        className={`${fight?.winner === name && 'border-6 border-yellow-500'} p-2 rounded transition-all duration-300 ${
+          selectable && 'cursor-pointer'
+        } ${selections && getFighterButtonColor(fight, name)}`}
         onClick={
           selectable
             ? (e) => {
@@ -62,6 +54,7 @@ const Fights = ({
               }
             : null
         }
+        disabled={isProcessing}
       >
         <Fighter img={img} name={name} url={url} />
       </button>
@@ -168,8 +161,13 @@ const Fights = ({
                   <li
                     key={fight?.id}
                     ref={(el) => (fightRefs.current[fight?.id] = el)}
-                    className={`p-4 bg-white shadow rounded ${getFightBorder(fight)}`}
+                    className={`relative p-4 bg-white shadow rounded ${getFightBorder(fight)} ${
+                      processingFightId === fight?.id ? 'pointer-events-none' : ''
+                    }`}
                   >
+                    {processingFightId === fight?.id && (
+                      <div className='absolute inset-0 backdrop-blur-sm rounded z-10' />
+                    )}
                     <div className='flex items-center justify-between w-full'>
                       <FighterButton fight={fight} selection={selections?.[fight?.id]} color='red' />
                       <div className='flex flex-col justify-between'>

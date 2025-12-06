@@ -22,7 +22,7 @@ const SelectableFights = () => {
   const [selections, setSelections] = useState({});
   const fightCards = getFightCards(activeFightTab);
   const [readyFight, setReadyFight] = useState(null);
-  const [isSelectionProcessing, setIsSelectionProcessing] = useState(false);
+  const [processingFightId, setProcessingFightId] = useState(null);
 
   useEffect(() => {
     if (Object.keys(initialSelections).length > 0) {
@@ -69,14 +69,16 @@ const SelectableFights = () => {
   };
 
   const fighterClicked = async (e, fightId, fighterName) => {
-    if (isSelectionProcessing) return;
+    if (processingFightId !== null) return;
 
     if (e.target.tagName === 'A') {
       e.stopPropagation();
       return;
     }
 
-    setIsSelectionProcessing(true);
+    // Set processing immediately so user sees the blur overlay right away
+    setProcessingFightId(fightId);
+
     try {
       await postSelection(fightId, fighterName);
       refetchSelections();
@@ -90,7 +92,7 @@ const SelectableFights = () => {
         );
       }
     } finally {
-      setIsSelectionProcessing(false);
+      setProcessingFightId(null);
     }
   };
 
@@ -107,7 +109,7 @@ const SelectableFights = () => {
           selections={selections}
           fighterClicked={fighterClicked}
           readyFight={readyFight}
-          isSelectionProcessing={isSelectionProcessing}
+          processingFightId={processingFightId}
         />
       </div>
     );

@@ -11,7 +11,7 @@ const MatchupsContent = () => {
 
   const handleClick = async (matchup) => {
     selectMatchup(matchup);
-    navigate(API_URLS.RECORD_DETAILS(matchup.id));
+    navigate(API_URLS.MATCHUP_DETAILS(matchup.id));
   };
 
   if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
