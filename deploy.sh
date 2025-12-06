@@ -10,15 +10,8 @@ new_version="${major}.${minor}.${patch}"
 echo "$new_version" > ${versionf}
 
 echo
-echo "~~~ Building Fytepycker v$new_version ~~~"
+echo "~~~ Deploying Fytepycker v$new_version ~~~"
 echo
-
-cd frontend
-npm install
-npm run build
-cd ..
-
-python manage.py collectstatic --noinput
 
 git add .
 
