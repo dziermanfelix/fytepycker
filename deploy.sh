@@ -16,7 +16,7 @@ echo
 git add .
 
 if ! git diff --cached --quiet; then
-  git commit -m "Fytepycker Deployment v${new_version}"
+  git commit -m "[deploy] Fytepycker Deployment v${new_version}"
   git push origin main
 else
   echo "No changes to commit."
