@@ -101,21 +101,67 @@ TEMPLATES = [
 ASGI_APPLICATION = "core.asgi.application"
 
 # configure redis
-redis_url = config("REDIS_URL", default="redis://localhost:6379")
-url = urlparse(redis_url)
-redis_config = {
-    "address": redis_url,
-}
-if url.scheme == "rediss":  # add SSL options if using secure rediss
-    redis_config["ssl_cert_reqs"] = None
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [redis_config],
+redis_url = config("REDIS_URL", default="")
+redis_configured = False
+
+if redis_url:
+    # Handle Upstash or other Redis URLs
+    # If it's an HTTPS URL (Upstash REST endpoint), we need the Redis endpoint instead
+    if redis_url.startswith("https://"):
+        print(f"[SETTINGS] WARNING: REDIS_URL appears to be an HTTPS/REST endpoint: {redis_url}")
+        print("[SETTINGS] You need the Redis connection URL (starts with redis:// or rediss://)")
+        print("[SETTINGS] Check your Upstash dashboard for the 'Redis URL' (not REST URL)")
+        # Try to convert Upstash REST URL to Redis URL (this is a guess, user should provide correct URL)
+        host = redis_url.replace("https://", "").replace("http://", "").split("/")[0]
+        redis_password = config("REDIS_PASSWORD", default="")
+        redis_port = config("REDIS_PORT", default="6379")
+        if redis_password:
+            redis_url = f"rediss://:{redis_password}@{host}:{redis_port}"
+            print(f"[SETTINGS] Attempting to construct Redis URL from components")
+        else:
+            print("[SETTINGS] ERROR: Cannot construct Redis URL. Please set REDIS_URL to the Redis connection string")
+            redis_url = None
+
+    if redis_url and not redis_url.startswith(("redis://", "rediss://", "unix://")):
+        # If no scheme, assume redis://
+        redis_url = f"redis://{redis_url}"
+
+    if redis_url:
+        url = urlparse(redis_url)
+        # Validate scheme
+        if url.scheme not in ("redis", "rediss", "unix"):
+            print(f"[SETTINGS] ERROR: Invalid Redis URL scheme: {url.scheme}")
+            print("[SETTINGS] Falling back to InMemoryChannelLayer")
+        else:
+            # Configure Redis channel layer
+            if url.scheme == "rediss":  # add SSL options if using secure rediss
+                redis_config = [{
+                    "address": redis_url,
+                    "ssl_cert_reqs": None,
+                }]
+            else:
+                redis_config = [redis_url]
+
+            CHANNEL_LAYERS = {
+                "default": {
+                    "BACKEND": "channels_redis.core.RedisChannelLayer",
+                    "CONFIG": {
+                        "hosts": redis_config,
+                    },
+                },
+            }
+            print(
+                f"[SETTINGS] Redis channel layer configured with URL: {url.scheme}://{url.hostname}:{url.port or 'default'}")
+            redis_configured = True
+
+# Fallback to in-memory channel layer if Redis is not configured
+if not redis_configured:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
         },
-    },
-}
+    }
+    print("[SETTINGS] Redis not configured, using InMemoryChannelLayer (not suitable for production)")
 
 DATABASES = {
     'default': dj_database_url.config(default=config('DATABASE_URL'))
