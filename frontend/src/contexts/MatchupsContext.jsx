@@ -36,6 +36,20 @@ export const MatchupsProvider = ({ children, disableWebSockets = false }) => {
 
   const ws = useRef(null);
 
+  // Store functions in refs to avoid dependency issues
+  const refetchMatchupsRef = useRef(refetchMatchups);
+  const refetchSelectionsRef = useRef(refetchSelections);
+  const selectMatchupRef = useRef(selectMatchup);
+  const fetchSelectedMatchupRef = useRef(fetchSelectedMatchup);
+
+  // Update refs when functions change
+  useEffect(() => {
+    refetchMatchupsRef.current = refetchMatchups;
+    refetchSelectionsRef.current = refetchSelections;
+    selectMatchupRef.current = selectMatchup;
+    fetchSelectedMatchupRef.current = fetchSelectedMatchup;
+  }, [refetchMatchups, refetchSelections, selectMatchup]);
+
   // Create stable string of matchup IDs to use as dependency
   const matchupIdsKey = useMemo(() => {
     if (!matchups || matchups.length === 0) return '';
@@ -46,106 +60,141 @@ export const MatchupsProvider = ({ children, disableWebSockets = false }) => {
       .join(',');
   }, [matchups]);
 
+  // Track which matchup IDs we've seen (to know which ones to keep open)
+  const seenMatchupIdsRef = useRef(new Set());
+
+  // WebSocket management - keeps sockets open for all incomplete matchups
   useEffect(() => {
     // Skip WebSocket creation if disabled (e.g., for Record page)
     if (disableWebSockets) return;
-    if (!matchups || matchups.length === 0) return;
 
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    let host = window.location.host; // Includes port if non-default
-
-    // For development (Vite dev server on port 5173, connect to Django on 8001)
+    let host = window.location.host;
     if (window.location.port === '5173') {
       host = `${window.location.hostname}:8001`;
     }
 
-    const currentMatchups = matchups.filter((matchup) => !matchup.event.complete);
-    const currentMatchupIds = new Set(currentMatchups.map((m) => m.id));
+    // Get current incomplete matchup IDs
+    const currentMatchupIds = matchupIdsKey ? new Set(matchupIdsKey.split(',').map(Number).filter(Boolean)) : new Set();
 
-    // Close sockets for matchups that no longer exist
-    Object.keys(socketsRef.current).forEach((matchupId) => {
-      if (!currentMatchupIds.has(Number(matchupId))) {
-        const socket = socketsRef.current[matchupId];
-        if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
-          console.log(`[WS cleanup] closing socket for matchup ${matchupId}`);
-          socket.close();
+    // Add current IDs to seen set (so we remember them even if temporarily not in list)
+    currentMatchupIds.forEach((id) => seenMatchupIdsRef.current.add(id));
+
+    // Only close sockets for matchups that we've confirmed are completed/removed
+    // (i.e., they were in our seen set but are no longer in current incomplete matchups)
+    // AND we have matchup data loaded (not just loading)
+    if (matchups && matchups.length > 0) {
+      // Get all matchup IDs from loaded data (including completed ones)
+      const allLoadedMatchupIds = new Set(matchups.map((m) => m.id));
+
+      // Close sockets for matchups that are no longer in the loaded data at all
+      Object.keys(socketsRef.current).forEach((matchupId) => {
+        const id = Number(matchupId);
+        if (!allLoadedMatchupIds.has(id)) {
+          // Matchup was deleted or doesn't exist anymore
+          const socket = socketsRef.current[matchupId];
+          if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+            console.log(`[WS cleanup] closing socket for matchup ${matchupId} (removed from data)`);
+            socket.close();
+          }
+          delete socketsRef.current[matchupId];
+          seenMatchupIdsRef.current.delete(id);
+        } else if (!currentMatchupIds.has(id)) {
+          // Matchup exists but is now completed - close socket
+          const socket = socketsRef.current[matchupId];
+          if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+            console.log(`[WS cleanup] closing socket for matchup ${matchupId} (event completed)`);
+            socket.close();
+          }
+          delete socketsRef.current[matchupId];
+          seenMatchupIdsRef.current.delete(id);
         }
+      });
+    }
+
+    // Create sockets for incomplete matchups (current or previously seen)
+    const matchupsToConnect = currentMatchupIds.size > 0 ? currentMatchupIds : seenMatchupIdsRef.current; // If no current data, use seen IDs to keep sockets open
+
+    matchupsToConnect.forEach((matchupId) => {
+      // Skip if socket already exists and is connected/connecting
+      if (socketsRef.current[matchupId]) {
+        const socket = socketsRef.current[matchupId];
+        if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+          return; // Socket is good, skip
+        }
+        // Socket exists but is closed, reconnect it
+        console.log(`[WS] reconnecting closed socket for matchup ${matchupId}`);
         delete socketsRef.current[matchupId];
       }
-    });
 
-    // Create sockets for new matchups
-    currentMatchups.forEach((matchup) => {
-      if (socketsRef.current[matchup.id]) {
-        // Socket already exists, check if it's still connected
-        const socket = socketsRef.current[matchup.id];
-        if (socket.readyState === WebSocket.CLOSED) {
-          // Socket was closed, remove it so we can create a new one
-          delete socketsRef.current[matchup.id];
-        } else {
-          // Socket exists and is connected/connecting, skip
-          return;
-        }
-      }
-
-      const wsUrl = `${protocol}://${host}/ws/matchups/${matchup.id}/`;
+      // Create new socket
+      const wsUrl = `${protocol}://${host}/ws/matchups/${matchupId}/`;
       const socket = new WebSocket(wsUrl);
-      socket.onopen = () => console.log(`[WS connected] matchup ${matchup.id}`);
+
+      socket.onopen = () => console.log(`[WS connected] matchup ${matchupId}`);
+
       socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log(`[WS ${matchup.id}] event:`, data.type);
-        if (data.type === 'refetch_selections') {
-          refetchMatchups();
-          refetchSelections();
-        } else if (data.type === 'refetch_matchup') {
-          (async () => {
-            const fetchData = await fetchSelectedMatchup(matchup.id);
-            const updatedMatchup = fetchData ? fetchData[0] : null;
-            if (updatedMatchup) {
-              selectMatchup(updatedMatchup);
-            }
-            refetchSelections();
-          })();
-        }
-      };
-      socket.onerror = (err) => console.error(`[WS error] matchup ${matchup.id}`, err);
-      socket.onclose = () => {
-        console.log(`[WS closed] matchup ${matchup.id}`);
-        // Remove from ref when closed (unless it's being replaced)
-        if (socketsRef.current[matchup.id] === socket) {
-          delete socketsRef.current[matchup.id];
+        try {
+          const data = JSON.parse(event.data);
+          console.log(`[WS ${matchupId}] event:`, data.type);
+
+          if (data.type === 'refetch_selections') {
+            refetchMatchupsRef.current();
+            refetchSelectionsRef.current();
+          } else if (data.type === 'refetch_matchup') {
+            (async () => {
+              const fetchData = await fetchSelectedMatchupRef.current();
+              const updatedMatchup = fetchData ? fetchData[0] : null;
+              if (updatedMatchup) {
+                selectMatchupRef.current(updatedMatchup);
+              }
+              refetchSelectionsRef.current();
+            })();
+          }
+        } catch (err) {
+          console.error(`[WS ${matchupId}] error parsing message:`, err);
         }
       };
 
-      socketsRef.current[matchup.id] = socket;
+      socket.onerror = (err) => console.error(`[WS error] matchup ${matchupId}`, err);
+
+      socket.onclose = () => {
+        console.log(`[WS closed] matchup ${matchupId}`);
+        // Only remove if this is still the current socket for this matchup
+        if (socketsRef.current[matchupId] === socket) {
+          delete socketsRef.current[matchupId];
+        }
+      };
+
+      socketsRef.current[matchupId] = socket;
     });
 
     // Update ws.current to point to selected matchup's socket
     if (selectedMatchup?.id) {
-      ws.current = socketsRef.current[selectedMatchup.id];
+      ws.current = socketsRef.current[selectedMatchup.id] || null;
     } else {
       ws.current = null;
     }
-  }, [
-    disableWebSockets,
-    matchupIdsKey,
-    matchups,
-    selectedMatchup?.id,
-    refetchMatchups,
-    refetchSelections,
-    selectMatchup,
-  ]); // Only re-run when matchup IDs actually change
+  }, [disableWebSockets, matchupIdsKey, matchups, selectedMatchup?.id]); // Include matchups to detect when they're removed
 
-  // Cleanup on unmount
+  // Cleanup on window unload (page close/refresh) - not on component unmount
   useEffect(() => {
-    return () => {
-      console.log('[WS cleanup] component unmounting, closing all sockets...');
+    const handleBeforeUnload = () => {
+      console.log('[WS cleanup] page unloading, closing all sockets...');
       Object.values(socketsRef.current).forEach((socket) => {
         if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
           socket.close();
         }
       });
       socketsRef.current = {};
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Don't close sockets on component unmount - they should persist during navigation
+      // The provider wrapping /dash/* should not unmount during normal navigation
     };
   }, []);
 

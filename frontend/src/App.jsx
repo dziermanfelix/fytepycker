@@ -24,26 +24,14 @@ function App() {
             path='/dash/*'
             element={
               <ProtectedRoute>
-                <Dash />
+                <MatchupsProvider>
+                  <Dash />
+                </MatchupsProvider>
               </ProtectedRoute>
             }
           >
-            <Route
-              path='matchups'
-              element={
-                <MatchupsProvider>
-                  <Matchups />
-                </MatchupsProvider>
-              }
-            />
-            <Route
-              path='matchups/:id'
-              element={
-                <MatchupsProvider>
-                  <Matchup basePath='/dash/matchups/' deletable />
-                </MatchupsProvider>
-              }
-            />
+            <Route path='matchups' element={<Matchups />} />
+            <Route path='matchups/:id' element={<Matchup basePath='/dash/matchups/' deletable />} />
             <Route
               path='record/*'
               element={
@@ -52,14 +40,7 @@ function App() {
                 </RecordProvider>
               }
             />
-            <Route
-              path='record/matchups/:id'
-              element={
-                <MatchupsProvider>
-                  <Matchup basePath='/dash/record' />
-                </MatchupsProvider>
-              }
-            />
+            <Route path='record/matchups/:id' element={<Matchup basePath='/dash/record' />} />
             <Route path='messages' element={<Messages />} />
             <Route path='settings' element={<Settings />} />
             <Route path='profile' element={<Profile />} />

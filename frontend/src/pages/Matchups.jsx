@@ -1,5 +1,5 @@
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
-import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
+import { useMatchups } from '@/contexts/MatchupsContext';
 import CurrentEvent from '@/components/CurrentEvent';
 import MatchupCard from '@/components/MatchupCard';
 import { API_URLS } from '@/common/urls';
@@ -39,10 +39,10 @@ const MatchupsContent = () => {
 };
 
 const Matchups = () => (
-  <MatchupsProvider>
+  <>
     <MatchupsContent />
     <Outlet />
-  </MatchupsProvider>
+  </>
 );
 
 export default Matchups;

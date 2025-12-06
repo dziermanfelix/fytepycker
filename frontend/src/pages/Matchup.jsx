@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
-import { useMatchups, MatchupsProvider } from '@/contexts/MatchupsContext';
+import { useMatchups } from '@/contexts/MatchupsContext';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 import FightTabControls from '@/components/FightTabControls';
@@ -92,7 +92,9 @@ const MatchupContent = ({ basePath, deletable }) => {
                     text-sm font-semibold shadow text-white
                     backdrop-blur-lg bg-opacity-90 ${getWinningsBackgroundColor(winnings)}`}
       >
-        <span className='uppercase tracking-wide text-xs opacity-80 mr-2'>{winnings >= 0 ? 'Winnings' : 'Losings'}</span>
+        <span className='uppercase tracking-wide text-xs opacity-80 mr-2'>
+          {winnings >= 0 ? 'Winnings' : 'Losings'}
+        </span>
         <span className='text-lg'>{winnings}</span>
       </div>
     );
@@ -161,10 +163,10 @@ const MatchupContent = ({ basePath, deletable }) => {
 };
 
 const Matchup = ({ basePath, deletable }) => (
-  <MatchupsProvider>
+  <>
     <MatchupContent basePath={basePath} deletable={deletable} />
     <Outlet />
-  </MatchupsProvider>
+  </>
 );
 
 export default Matchup;
