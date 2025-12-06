@@ -11,8 +11,25 @@ jobs:
     # Only run if commit message contains [deploy]
     if: contains(github.event.head_commit.message, '[deploy]')
     steps:
+      - name: Check commit message
+        run: |
+          echo "Commit message: ${{ github.event.head_commit.message }}"
+          echo "Contains [deploy]: ${{ contains(github.event.head_commit.message, '[deploy]') }}"
+      
       - name: Trigger Render Deployment
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
-          curl -X POST "$RENDER_DEPLOY_HOOK_URL"
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "ERROR: RENDER_DEPLOY_HOOK_URL secret is not set!"
+            exit 1
+          fi
+          echo "Triggering Render deployment..."
+          response=$(curl -X POST -w "\nHTTP_CODE:%{http_code}" "$RENDER_DEPLOY_HOOK_URL" 2>&1)
+          echo "$response"
+          http_code=$(echo "$response" | grep -oP 'HTTP_CODE:\K\d+')
+          if [ "$http_code" != "200" ] && [ "$http_code" != "201" ]; then
+            echo "ERROR: Deploy hook returned HTTP $http_code"
+            exit 1
+          fi
+          echo "Deployment triggered successfully!"
