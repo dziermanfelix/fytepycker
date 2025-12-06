@@ -66,7 +66,7 @@ const RecordContent = () => {
 };
 
 const Record = () => (
-  <MatchupsProvider>
+  <MatchupsProvider disableWebSockets>
     <RecordProvider>
       <RecordContent />
     </RecordProvider>
