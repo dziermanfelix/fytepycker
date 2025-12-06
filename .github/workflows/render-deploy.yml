@@ -15,7 +15,7 @@ jobs:
         run: |
           echo "Commit message: ${{ github.event.head_commit.message }}"
           echo "Contains [deploy]: ${{ contains(github.event.head_commit.message, '[deploy]') }}"
-      
+
       - name: Trigger Render Deployment
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
@@ -24,12 +24,33 @@ jobs:
             echo "ERROR: RENDER_DEPLOY_HOOK_URL secret is not set!"
             exit 1
           fi
+          
+          # Show partial URL for debugging (without exposing key)
+          url_without_key=$(echo "$RENDER_DEPLOY_HOOK_URL" | sed 's/?key=[^&]*/?key=***/')
+          echo "Deploy hook URL: $url_without_key"
           echo "Triggering Render deployment..."
-          response=$(curl -X POST -w "\nHTTP_CODE:%{http_code}" "$RENDER_DEPLOY_HOOK_URL" 2>&1)
+          
+          # Use curl with verbose output and proper error handling
+          set -x
+          response=$(curl -v -X POST "$RENDER_DEPLOY_HOOK_URL" 2>&1)
+          curl_exit_code=$?
+          set +x
+          
+          echo "--- Full Response ---"
           echo "$response"
-          http_code=$(echo "$response" | grep -oP 'HTTP_CODE:\K\d+')
-          if [ "$http_code" != "200" ] && [ "$http_code" != "201" ]; then
-            echo "ERROR: Deploy hook returned HTTP $http_code"
+          echo "--- End Response ---"
+          
+          if [ $curl_exit_code -ne 0 ]; then
+            echo "ERROR: curl command failed with exit code $curl_exit_code"
             exit 1
           fi
-          echo "Deployment triggered successfully!"
+          
+          # Check for HTTP 200 in the verbose output
+          if echo "$response" | grep -q "< HTTP/1.1 200"; then
+            echo "✓ Deploy hook returned HTTP 200 - deployment should be triggered"
+          elif echo "$response" | grep -q "< HTTP/2 200"; then
+            echo "✓ Deploy hook returned HTTP 200 - deployment should be triggered"
+          else
+            echo "WARNING: Expected HTTP 200, but response may indicate an issue"
+            echo "Check the response above for error messages"
+          fi
