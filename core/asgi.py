@@ -28,3 +28,7 @@ application = ProtocolTypeRouter({
         URLRouter(core.routing.websocket_urlpatterns)
     ),
 })
+
+# Log ASGI application startup
+print("[ASGI] Application configured with WebSocket support")
+print("[ASGI] WebSocket routes:", core.routing.websocket_urlpatterns)

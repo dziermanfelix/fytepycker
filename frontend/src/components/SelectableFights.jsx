@@ -107,6 +107,7 @@ const SelectableFights = () => {
           selections={selections}
           fighterClicked={fighterClicked}
           readyFight={readyFight}
+          isSelectionProcessing={isSelectionProcessing}
         />
       </div>
     );

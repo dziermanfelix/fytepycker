@@ -1,7 +1,15 @@
 import { useRef, useEffect } from 'react';
 import { getFightCards } from '@/utils/fightTabUtils';
 
-const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, readyFight }) => {
+const Fights = ({
+  activeFightTab,
+  fights,
+  user,
+  selections,
+  fighterClicked,
+  readyFight,
+  isSelectionProcessing = false,
+}) => {
   const fightRefs = useRef({});
 
   useEffect(() => {
@@ -34,6 +42,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
       url = fight.red_url;
     }
     const selectable =
+      !isSelectionProcessing &&
       !fight.winner &&
       selection?.ready &&
       (selection?.dibs === user?.id || selection?.otherSelection) &&
@@ -43,7 +52,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
       <button
         className={`${
           fight?.winner === name && 'border-6 border-yellow-500'
-        } p-2 rounded transition-colors duration-300 ${selectable && 'cursor-pointer'} ${
+        } p-2 rounded transition-colors duration-300 ${selectable && !isSelectionProcessing && 'cursor-pointer'} ${
           selections && getFighterButtonColor(fight, name)
         }`}
         onClick={
