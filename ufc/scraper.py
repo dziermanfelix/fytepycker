@@ -170,7 +170,22 @@ class Scraper:
     def parse_event_date(self, date_str):
         date_str = date_str.strip()
         dt = datetime.strptime(date_str, "%a, %b %d / %I:%M %p UTC")
-        dt = dt.replace(year=datetime.now().year)
+
+        # Try current year first
+        current_year = datetime.now().year
+        dt = dt.replace(year=current_year)
         utc_zone = pytz.utc
         dt = utc_zone.localize(dt)
+
+        # If the date is more than 30 days in the past, it's probably next year
+        # (e.g., we're in Dec 2025 and the event is in Jan 2026)
+        now = timezone.now()
+        if dt < now:
+            days_diff = (now - dt).days
+            if days_diff > 30:
+                # Try next year
+                dt = datetime.strptime(date_str, "%a, %b %d / %I:%M %p UTC")
+                dt = dt.replace(year=current_year + 1)
+                dt = utc_zone.localize(dt)
+
         return dt

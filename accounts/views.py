@@ -2,6 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer
@@ -10,6 +12,8 @@ from .models import User
 
 class RegisterView(APIView):
     permission_classes = (AllowAny,)
+    # Exclude SessionAuthentication to avoid CSRF requirements for unauthenticated requests
+    authentication_classes = []
 
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
@@ -28,6 +32,8 @@ class RegisterView(APIView):
 
 class LoginView(APIView):
     permission_classes = (AllowAny,)
+    # Exclude SessionAuthentication to avoid CSRF requirements for unauthenticated requests
+    authentication_classes = []
 
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
