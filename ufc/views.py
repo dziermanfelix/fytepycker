@@ -33,12 +33,23 @@ class EventView(APIView):
 
 class ScraperView(APIView):
     permission_classes = [IsAdminUser]
+    # Note: authentication_classes override is optional now since SessionAuthentication
+    # is in DEFAULT_AUTHENTICATION_CLASSES, but keeping it explicit for clarity
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
     def get(self, request):
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'You must be a staff user to access this endpoint'},
+                status=status.HTTP_403_FORBIDDEN
+            )
         scraper = Scraper()
-        action = request.query_params.get('action')
-        scraper.scrape_fights_for_action(action)
-        events = Event.objects.all()
-        serializer = EventSerializer(events, many=True)
+        action = request.query_params.get('action', 'upcoming')
+        if action not in ['past', 'upcoming', 'live']:
+            return Response(
+                {'error': f'Invalid action. Must be one of: past, upcoming, live'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        scraped_events = scraper.scrape_fights_for_action(action)
+        serializer = EventSerializer(scraped_events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -12,7 +12,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         scraper = Scraper()
         actions = ['past', 'upcoming', 'live']
-        
+
         for action in actions:
             try:
                 self.stdout.write(f"Scraping {action} events...")
@@ -20,5 +20,3 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f"Successfully scraped {action} events"))
             except Exception as e:
                 self.stderr.write(self.style.ERROR(f"Error scraping {action}: {str(e)}"))
-
-
