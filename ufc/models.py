@@ -14,6 +14,10 @@ class Event(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["name", "date"], name="unique_name_and_date_per_event"),
         ]
+        indexes = [
+            models.Index(fields=['complete']),
+            models.Index(fields=['date']),
+        ]
 
     def __str__(self):
         return f'{{Event|{self.name}|{self.headline}}}'
@@ -46,6 +50,10 @@ class Fight(models.Model):
             models.CheckConstraint(
                 check=models.Q(winner__isnull=True) | models.Q(winner=models.F("blue_name")) | models.Q(winner=models.F("red_name")), name="winner_must_be_fighter",
             )
+        ]
+        indexes = [
+            models.Index(fields=['event']),
+            models.Index(fields=['event', 'order']),
         ]
 
     def get_fighters(self):

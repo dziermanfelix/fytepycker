@@ -116,10 +116,10 @@ class MatchupTests(APITestCase):
         user_cycle = cycle([matchup.first_pick, matchup.user_b if matchup.first_pick ==
                            matchup.user_a else matchup.user_a])
         self.assertEqual(selections[0].fight, self.fight)
-        self.assertEqual(selections[1].dibs, next(user_cycle))
+        self.assertEqual(selections[0].dibs, next(user_cycle))
         self.assertEqual(selections[0].bet, 50)
         self.assertEqual(selections[1].fight, self.fight2)
-        self.assertEqual(selections[0].dibs, next(user_cycle))
+        self.assertEqual(selections[1].dibs, next(user_cycle))
         self.assertEqual(selections[1].bet, 30)
 
     def test_get_matchup_by_id(self):
@@ -274,7 +274,7 @@ class SelectionTests(APITestCase):
             name="UFC 999",
             headline="beatlemania",
             url="https://ufc.com/ufc999",
-            date=self.scraper.parse_event_date("Sat, Mar 15 / 11:00 PM UTC"),
+            date=self.scraper.parse_event_date("Sat, Nov 22 / 11:00 PM UTC"),
             location="the sun",
         )
         self.event = event[0]
@@ -332,10 +332,10 @@ class SelectionTests(APITestCase):
         user_cycle = cycle([self.matchup.first_pick, self.matchup.user_b if self.matchup.first_pick ==
                            self.matchup.user_a else self.matchup.user_a])
         self.assertEqual(selections[0].fight, self.fight)
-        self.assertEqual(selections[1].dibs, next(user_cycle))
+        self.assertEqual(selections[0].dibs, next(user_cycle))
         self.assertEqual(selections[0].bet, 50)
         self.assertEqual(selections[1].fight, self.fight2)
-        self.assertEqual(selections[0].dibs, next(user_cycle))
+        self.assertEqual(selections[1].dibs, next(user_cycle))
         self.assertEqual(selections[1].bet, 30)
 
     def test_default_bets(self):

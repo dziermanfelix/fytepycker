@@ -31,7 +31,11 @@ class MatchupView(APIView):
         matchup_id = request.GET.get("id")
         user_a_id = request.GET.get("user_a_id")
         user_b_id = request.GET.get("user_b_id")
-        matchups = Matchup.objects.select_related('event', 'user_a', 'user_b').all()
+        matchups = Matchup.objects.select_related('event', 'user_a', 'user_b').prefetch_related(
+            'matchup_selections',
+            'matchup_selections__winner',
+            'matchup_selections__fight',
+        ).all()
         if matchup_id:
             matchups = matchups.filter(id=matchup_id)
         elif user_a_id and user_b_id:
@@ -118,8 +122,10 @@ class SelectionView(APIView):
         if not matchup_id:
             return Response({"error": "matchup_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        selections = []
-        selections = Selection.objects.filter(matchup=matchup_id)
+        selections = Selection.objects.filter(matchup=matchup_id).select_related(
+            'matchup', 'matchup__event', 'matchup__user_a', 'matchup__user_b',
+            'fight', 'fight__event', 'winner', 'dibs'
+        )
         serializer = SelectionSerializer(selections, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -127,10 +133,14 @@ class SelectionView(APIView):
 class RecordView(APIView):
     def get(self, request, *args, **kwargs):
         user_id = request.GET.get("user_id")
-        username = User.objects.filter(id=user_id).first()
 
         if not user_id:
             return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            username = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         all_users = User.objects.exclude(id=user_id)
 
@@ -138,6 +148,12 @@ class RecordView(APIView):
             ((Q(user_a_id=user_id) & Q(user_b__in=all_users)) |
              (Q(user_b_id=user_id) & Q(user_a__in=all_users))) &
             Q(event__complete=True)
+        ).select_related(
+            'event', 'user_a', 'user_b'
+        ).prefetch_related(
+            'matchup_selections',
+            'matchup_selections__winner',
+            'matchup_selections__fight',
         )
 
         user_map = {user.id: {"user": user, "matchups": [], "bets": 0, "winnings": 0} for user in all_users}

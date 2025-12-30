@@ -26,7 +26,7 @@ class EventTests(APITestCase):
             name="UFC 999",
             headline="Beatle Showdown",
             url="https://ufc.com/ufc999",
-            date=self.scraper.parse_event_date("Sat, Mar 15 / 11:00 PM UTC"),
+            date=self.scraper.parse_event_date("Sun, Feb 23 / 2:00 AM UTC"),
             location="the sun",
         )
         self.event = event[0]
@@ -52,9 +52,9 @@ class EventTests(APITestCase):
     def test_get_events(self):
         response = self.client.get(self.events_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['past']), 1)
-        self.assertEqual(len(response.data['upcoming']), 0)
-        self.assertEqual(response.data['past'][0], EventSerializer(self.event).data)
+        self.assertEqual(len(response.data['past']), 0)
+        self.assertEqual(len(response.data['upcoming']), 1)
+        self.assertEqual(response.data['upcoming'][0], EventSerializer(self.event).data)
 
     def test_get_event_by_id(self):
         response = self.client.get(f'{self.events_url}{self.event.id}/')
@@ -63,9 +63,9 @@ class EventTests(APITestCase):
     def test_event_complete(self):
         response = self.client.get(self.events_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['past']), 1)
-        self.assertEqual(len(response.data['upcoming']), 0)
-        self.assertEqual(response.data['past'][0], EventSerializer(self.event).data)
+        self.assertEqual(len(response.data['past']), 0)
+        self.assertEqual(len(response.data['upcoming']), 1)
+        self.assertEqual(response.data['upcoming'][0], EventSerializer(self.event).data)
 
         fight = Fight.objects.filter(id=self.fight.id).first()
         fight.winner = "paul"
@@ -87,13 +87,17 @@ class ScraperTests(APITestCase):
         self.scraper = Scraper()
 
     def test_parse_event_date(self):
+        date_str = "Sun, Jan 25 / 2:00 AM UTC"
+        result = self.scraper.parse_event_date(date_str)
+        self.assertEqual(str(result), "2026-01-25 02:00:00+00:00")
+
         date_str = "Sun, Feb 23 / 2:00 AM UTC"
         result = self.scraper.parse_event_date(date_str)
-        self.assertEqual(str(result), "2025-02-23 02:00:00+00:00")
+        self.assertEqual(str(result), "2026-02-23 02:00:00+00:00")
 
         date_str = "Sat, Mar 15 / 11:00 PM UTC"
         result = self.scraper.parse_event_date(date_str)
-        self.assertEqual(str(result), "2025-03-15 23:00:00+00:00")
+        self.assertEqual(str(result), "2026-03-15 23:00:00+00:00")
 
     def test_normalize_name(self):
         result = self.scraper.normalize_name("Jan Błachowicz")

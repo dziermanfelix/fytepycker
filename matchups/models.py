@@ -24,6 +24,11 @@ class Matchup(models.Model):
                 name="ensure_user_a_less_than_user_b"
             )
         ]
+        indexes = [
+            models.Index(fields=['user_a']),
+            models.Index(fields=['user_b']),
+            models.Index(fields=['event', 'user_a', 'user_b']),
+        ]
 
     def get_users(self):
         return [self.user_a, self.user_b]
@@ -53,7 +58,14 @@ class Selection(models.Model):
                 name="unique_selection_per_fight_per_matchup"
             ),
         ]
+        indexes = [
+            # Index for filtering selections by matchup (most common query)
+            models.Index(fields=['matchup']),
+            # Index for filtering selections by fight
+            models.Index(fields=['fight']),
+            # Index for winner lookups (used in RecordView and MatchupSerializer)
+            models.Index(fields=['winner']),
+        ]
 
     def __str__(self):
         return f"{{Matchup:{self.matchup}|Fight:{self.fight}|UserASelection:{self.user_a_selection}|UserBSelection:{self.user_b_selection}}}"
-

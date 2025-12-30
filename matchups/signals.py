@@ -35,7 +35,7 @@ def create_matchup_related_objects(sender, instance, created, **kwargs):
                 When(card='main', then=Value(2)),
                 output_field=IntegerField()
             )
-        ).order_by('card_order', '-order')
+        ).order_by('card_order', 'order')
         for fight in fights:
             Selection.objects.create(matchup=instance, fight=fight, dibs=next(user_cycle),
                                      bet=determine_default_bet(fight))

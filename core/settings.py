@@ -163,8 +163,20 @@ if not redis_configured:
     }
     print("[SETTINGS] Redis not configured, using InMemoryChannelLayer (not suitable for production)")
 
+# Database configuration with connection pooling for Neon
+database_config = dj_database_url.config(default=config('DATABASE_URL'))
+
+database_config.update({
+    'CONN_MAX_AGE': 600,
+    'OPTIONS': {
+        'connect_timeout': 10,
+        'options': '-c statement_timeout=30000',
+    },
+    'ATOMIC_REQUESTS': False,
+})
+
 DATABASES = {
-    'default': dj_database_url.config(default=config('DATABASE_URL'))
+    'default': database_config
 }
 
 AUTH_PASSWORD_VALIDATORS = [
