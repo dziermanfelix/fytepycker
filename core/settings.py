@@ -170,7 +170,6 @@ database_config.update({
     'CONN_MAX_AGE': 600,
     'OPTIONS': {
         'connect_timeout': 10,
-        'options': '-c statement_timeout=30000',
     },
     'ATOMIC_REQUESTS': False,
 })
