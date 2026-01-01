@@ -11,7 +11,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.core.settings')
 
 application = get_wsgi_application()
 
@@ -20,9 +20,9 @@ application = get_wsgi_application()
 try:
     from ufc.scheduler import get_scheduler
     scheduler = get_scheduler()
-    print("[WSGI] ✅ APScheduler initialized")
+    print("[WSGI] APScheduler initialized")
 except ImportError:
     # APScheduler not installed - that's okay for dev
     pass
 except Exception as e:
-    print(f"[WSGI] ⚠️  Could not initialize scheduler: {e}")
+    print(f"[WSGI] Could not initialize scheduler: {e}")

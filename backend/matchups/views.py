@@ -4,7 +4,7 @@ from rest_framework import status
 from django.db.models import Q
 from .serializers import MatchupSerializer, CustomSelectionPostSerializer, SelectionSerializer, RecordSerializer
 from .models import Matchup, Selection
-from accounts.models import User
+from backend.accounts.models import User
 
 
 class MatchupView(APIView):

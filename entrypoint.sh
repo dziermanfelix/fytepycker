@@ -14,7 +14,7 @@ if [[ "$1" == "web" ]]; then
   # Ensure public schema exists before migrations
   python -c "
 import os
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.core.settings')
 import django
 django.setup()
 from django.db import connection
@@ -26,7 +26,7 @@ with connection.cursor() as cursor:
   python manage.py migrate
   python manage.py collectstatic --noinput
   playwright install chromium
-  exec daphne -b 0.0.0.0 -p ${PORT:-8000} core.asgi:application
+  exec daphne -b 0.0.0.0 -p ${PORT:-8000} backend.core.asgi:application
 
 elif [[ "$1" == "worker" ]]; then
   echo "[entrypoint] Worker dyno is no longer needed for free hosting."

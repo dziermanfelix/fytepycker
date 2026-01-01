@@ -60,12 +60,11 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'channels',
-    # 'django_celery_beat',  # Commented out for free hosting - using APScheduler + GitHub Actions instead
 
-    'api',
-    'accounts',
-    'ufc',
-    'matchups',
+    'backend.api',
+    'backend.accounts',
+    'backend.ufc',
+    'backend.matchups',
 ]
 
 MIDDLEWARE = [
@@ -80,7 +79,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'core.urls'
+ROOT_URLCONF = 'backend.core.urls'
 
 TEMPLATES = [
     {
@@ -98,7 +97,7 @@ TEMPLATES = [
     },
 ]
 
-ASGI_APPLICATION = "core.asgi.application"
+ASGI_APPLICATION = "backend.core.asgi.application"
 
 # configure redis
 redis_url = config("REDIS_URL", default="")

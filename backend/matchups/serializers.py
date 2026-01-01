@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from .models import Matchup, Selection
-from ufc.serializers import EventSerializer
-from accounts.serializers import UserSerializer
-from ufc.models import Event, Fight
-from accounts.models import User
+from backend.ufc.serializers import EventSerializer
+from backend.accounts.serializers import UserSerializer
+from backend.ufc.models import Event, Fight
+from backend.accounts.models import User
 
 
 class CustomSelectionPostSerializer(serializers.Serializer):

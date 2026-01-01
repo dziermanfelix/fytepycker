@@ -2,9 +2,9 @@ import os
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
-import core.routing
+import backend.core.routing
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.core.settings')
 
 # Initialize Django before importing scheduler
 django_asgi_app = get_asgi_application()
@@ -25,10 +25,10 @@ except Exception as e:
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
     "websocket": AuthMiddlewareStack(
-        URLRouter(core.routing.websocket_urlpatterns)
+        URLRouter(backend.core.routing.websocket_urlpatterns)
     ),
 })
 
 # Log ASGI application startup
 print("[ASGI] Application configured with WebSocket support")
-print("[ASGI] WebSocket routes:", core.routing.websocket_urlpatterns)
+print("[ASGI] WebSocket routes:", backend.core.routing.websocket_urlpatterns)

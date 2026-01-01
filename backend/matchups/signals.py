@@ -3,7 +3,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from channels.layers import get_channel_layer
 from itertools import cycle
-from ufc.models import Fight, Event
+from backend.ufc.models import Fight, Event
 from .models import Matchup, Selection
 from asgiref.sync import async_to_sync
 

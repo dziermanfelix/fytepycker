@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/', include('api.urls', namespace='api')),
+    path('api/v1/', include('backend.api.urls', namespace='api')),
     re_path(r'^(?!admin|api).*$', FrontendAppView.as_view()),
 ]
 

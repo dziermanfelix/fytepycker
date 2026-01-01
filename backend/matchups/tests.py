@@ -4,9 +4,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 from itertools import cycle
-from ufc.models import Event, Fight
+from backend.ufc.models import Event, Fight
 from .models import Matchup, Selection
-from ufc.scraper import Scraper
+from backend.ufc.scraper import Scraper
 
 
 User = get_user_model()

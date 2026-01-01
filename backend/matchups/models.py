@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MaxValueValidator
-from ufc.models import Event, Fight
-from accounts.models import User
+from backend.ufc.models import Event, Fight
+from backend.accounts.models import User
 from .managers import MatchupManager, SelectionManager
 
 
