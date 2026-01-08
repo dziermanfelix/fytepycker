@@ -11,6 +11,7 @@ echo "[entrypoint] All args: $@"
 
 if [[ "$1" == "web" ]]; then
   echo "[entrypoint] Starting web server..."
+
   # Ensure public schema exists before migrations
   python -c "
 import os
@@ -23,15 +24,22 @@ with connection.cursor() as cursor:
     cursor.execute('SET search_path TO public;')
     cursor.execute('GRANT ALL ON SCHEMA public TO public;')
 " || true
+
+  # run migrations
+  echo "[entrypoint] Migrating DB..."
   python manage.py migrate
-  python manage.py collectstatic --noinput
+
+  # collect static
+  echo "[entrypoint] Collecting static..."
+  python manage.py collectstatic --noinput --clear
+
+  echo "[entrypoint] Installing chromium..."
   playwright install chromium
+
+  echo "[entrypoint] Starting daphne..."
   exec daphne -b 0.0.0.0 -p ${PORT:-8000} backend.core.asgi:application
 
-elif [[ "$1" == "worker" ]]; then
-  echo "[entrypoint] Worker dyno is no longer needed for free hosting."
-  echo "[entrypoint] Background tasks are handled by APScheduler in web process and GitHub Actions."
-  exit 1
+  echo "[entrypoint] DAMN THE TORPEDOES"
 
 else
   echo "[entrypoint] Running command directly: $@"

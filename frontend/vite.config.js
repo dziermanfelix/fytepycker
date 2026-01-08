@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
   },
   base: mode === 'prod' ? '/static/' : '/',
   build: {
-    outDir: 'dist',
+    outDir: 'static',
     assetsDir: 'assets',
     emptyOutDir: true,
   },

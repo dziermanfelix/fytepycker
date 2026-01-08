@@ -11,4 +11,4 @@ urlpatterns = [
     re_path(r'^(?!admin|api).*$', FrontendAppView.as_view()),
 ]
 
-urlpatterns += static(settings.STATIC_URL, document_root=os.path.join(settings.BASE_DIR, '../frontend/dist'))
+urlpatterns += static(settings.STATIC_URL, document_root=os.path.join(settings.BASE_DIR, '../../frontend/static'))

@@ -63,8 +63,8 @@ RUN pip install --no-cache-dir virtualenv && \
 # Copy application code
 COPY . /app/
 
-# Copy built frontend from builder stage (overwrites any existing frontend/dist)
-COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
+# Copy built frontend from builder stage (overwrites any existing frontend/static)
+COPY --from=frontend-builder /app/frontend/static /app/frontend/static
 
 ENV PLAYWRIGHT_BROWSERS_PATH=/app/.cache/ms-playwright
 ENV PATH="/venv/bin:$PATH"
