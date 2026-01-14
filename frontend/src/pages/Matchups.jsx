@@ -14,10 +14,7 @@ const MatchupsContent = () => {
     navigate(FRONTEND_URLS.MATCHUP_DETAILS(matchup.id));
   };
 
-  if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
-  if (isError) return <p className='text-center text-red-500'>Failed to load matchups.</p>;
-
-  const currentMatchups = matchups.filter((matchup) => !matchup.event.complete);
+  const currentMatchups = matchups?.filter((matchup) => !matchup.event.complete) || [];
 
   return (
     <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
@@ -25,14 +22,21 @@ const MatchupsContent = () => {
         <CurrentEvent />
       </div>
       <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
-        {!id &&
-          (currentMatchups.length > 0 ? (
-            currentMatchups.map((matchup) => {
-              return <MatchupCard key={matchup.id} matchup={matchup} handleClick={handleClick} />;
-            })
-          ) : (
-            <p className='text-center text-gray-500'>No Matchups.</p>
-          ))}
+        {!id && (
+          <>
+            {isLoading && <p className='text-center text-gray-500 col-span-full'>Loading matchups...</p>}
+            {isError && <p className='text-center text-red-500 col-span-full'>Failed to load matchups.</p>}
+            {!isLoading &&
+              !isError &&
+              (currentMatchups.length > 0 ? (
+                currentMatchups.map((matchup) => {
+                  return <MatchupCard key={matchup.id} matchup={matchup} handleClick={handleClick} />;
+                })
+              ) : (
+                <p className='text-center text-gray-500 col-span-full'>No Matchups.</p>
+              ))}
+          </>
+        )}
       </div>
     </div>
   );
