@@ -6,6 +6,7 @@ import RecordCard from '@/components/RecordCard';
 import { MatchupsProvider } from '@/contexts/MatchupsContext';
 import RecordMatchupCard from '@/components/RecordMatchupCard';
 import RecordStats from '@/components/RecordStats';
+import LoadingCards from '@/components/LoadingCards';
 
 const RecordContent = () => {
   const navigate = useNavigate();
@@ -20,7 +21,12 @@ const RecordContent = () => {
     navigate(FRONTEND_URLS.RECORD_DETAILS(matchup.id));
   };
 
-  if (isLoading) return <p className='text-center text-gray-500'>Loading record...</p>;
+  if (isLoading)
+    return (
+      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+        <LoadingCards />
+      </div>
+    );
   if (isError) return <p className='text-center text-red-500'>Failed to load Record.</p>;
 
   const filteredMatchups = items.flatMap((item) => (item.user.id === selectedUser?.id ? item.matchups : []));
