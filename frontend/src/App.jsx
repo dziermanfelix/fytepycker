@@ -12,14 +12,29 @@ import Record from '@/pages/Record';
 import Messages from '@/pages/Messages';
 import Settings from '@/pages/Settings';
 import Profile from '@/pages/Profile';
+import PublicRoute from './components/PublicRoute';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path='/login' element={<Login />} />
-          <Route path='/register' element={<Register />} />
+          <Route
+            path='/login'
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path='/register'
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
           <Route
             path='/dash/*'
             element={

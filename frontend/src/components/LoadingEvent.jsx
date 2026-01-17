@@ -13,4 +13,5 @@ const LoadingEvent = () => {
     </div>
   );
 };
+
 export default LoadingEvent;
