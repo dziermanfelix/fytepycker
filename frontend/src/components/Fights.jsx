@@ -153,8 +153,8 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     return (
       <div className=''>
         {fightCards.map((cardType) => (
-          <div key={cardType} className='mb-2 mt-2 p-2 border border-red-400'>
-            <div className='capitalize mb-1'>{cardType}</div>
+          <div key={cardType} className='bg-gray-200 p-4 border border-gray-300 rounded-xl shadow-md'>
+            <div className='capitalize mb-2 text-lg font-bold'>{cardType}</div>
             <ul className='space-y-4'>
               {fights[cardType]?.map((fight) => {
                 return (
