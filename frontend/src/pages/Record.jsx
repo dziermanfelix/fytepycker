@@ -7,6 +7,7 @@ import { MatchupsProvider } from '@/contexts/MatchupsContext';
 import RecordMatchupCard from '@/components/RecordMatchupCard';
 import RecordStats from '@/components/RecordStats';
 import LoadingCards from '@/components/LoadingCards';
+import { FaTrophy } from 'react-icons/fa';
 
 const RecordContent = () => {
   const navigate = useNavigate();
@@ -41,7 +42,19 @@ const RecordContent = () => {
           (filteredItems.length > 0 ? (
             filteredItems.map((item) => <RecordCard key={item.user.id} item={item} handleClick={handleUserClick} />)
           ) : (
-            <p className='text-center text-gray-500'>No Record.</p>
+            <div className='col-span-full flex flex-col items-center justify-center py-12 px-4'>
+              <div className='mb-4 p-4 rounded-full bg-gray-100'>
+                <FaTrophy className='text-4xl text-gray-400' />
+              </div>
+              <h3 className='text-xl font-semibold text-gray-800 mb-2'>No Records Yet</h3>
+              <p className='text-gray-500 text-center mb-6 max-w-md'>Completed matchups get recorded here.</p>
+              <button
+                onClick={() => navigate(FRONTEND_URLS.MATCHUPS)}
+                className='px-6 py-2 bg-yellow-900 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 hover:text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-300 transition duration-200 ease-in-out'
+              >
+                Go To Matchups
+              </button>
+            </div>
           ))}
       </div>
 
@@ -60,7 +73,15 @@ const RecordContent = () => {
                   />
                 ))
               ) : (
-                <p className='text-center text-gray-500'>You have no completed matchups.</p>
+                <div className='col-span-full flex flex-col items-center justify-center py-12 px-4'>
+                  <div className='mb-4 p-4 rounded-full bg-gray-100'>
+                    <FaTrophy className='text-4xl text-gray-400' />
+                  </div>
+                  <h3 className='text-xl font-semibold text-gray-800 mb-2'>No Completed Matchups</h3>
+                  <p className='text-gray-500 text-center max-w-md'>
+                    Once you complete matchups with {selectedUser?.username}, they'll appear here.
+                  </p>
+                </div>
               )}
             </div>
           </div>
