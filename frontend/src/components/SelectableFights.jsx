@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { getFightCards } from '@/utils/fightTabUtils';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 import Fights from '@/components/Fights';
 import { useMatchups } from '@/contexts/MatchupsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { getReadyFight } from '@/common/fight';
 
 const SelectableFights = () => {
@@ -18,6 +20,8 @@ const SelectableFights = () => {
     fights,
     ws,
   } = useMatchups();
+  const queryClient = useQueryClient();
+  const { user: authUser } = useAuth();
 
   const [selections, setSelections] = useState({});
   const fightCards = getFightCards(activeFightTab);
@@ -82,6 +86,13 @@ const SelectableFights = () => {
     try {
       await postSelection(fightId, fighterName);
       refetchSelections();
+
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const [endpoint, userId] = query.queryKey;
+          return endpoint === API_URLS.MATCHUPS && userId === authUser?.id;
+        },
+      });
 
       if (ws?.current && ws.current.readyState === WebSocket.OPEN) {
         ws.current.send(
