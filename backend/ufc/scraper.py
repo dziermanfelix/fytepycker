@@ -169,19 +169,16 @@ class Scraper:
 
     def parse_event_date(self, date_str):
         date_str = date_str.strip()
-        dt = datetime.strptime(date_str, "%a, %b %d / %I:%M %p UTC")
+        base_dt = datetime.strptime(date_str, "%a, %b %d / %I:%M %p UTC")
 
-        current_year = datetime.now().year
-        utc_zone = pytz.utc
-        now = timezone.now()
+        utc = pytz.utc
+        now = timezone.now().astimezone(utc)
 
-        # add year
-        dt = dt.replace(year=current_year)
-        dt = utc_zone.localize(dt)
+        candidates = []
+        for year_offset in (-1, 0, 1):
+            candidate = base_dt.replace(year=now.year + year_offset)
+            candidate = utc.localize(candidate)
+            candidates.append(candidate)
 
-        if dt < now:
-            dt = datetime.strptime(date_str, "%a, %b %d / %I:%M %p UTC")
-            dt = dt.replace(year=current_year + 1)
-            dt = utc_zone.localize(dt)
-
-        return dt
+        closest = min(candidates, key=lambda d: abs(d - now))
+        return closest
