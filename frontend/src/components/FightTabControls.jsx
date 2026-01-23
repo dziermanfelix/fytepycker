@@ -7,7 +7,7 @@ const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTa
   return (
     <div className='flex border-b mb-2'>
       <button
-        className={`px-4 py-2 mr-2 cursor-pointer hover:text-yellow-700 ${
+        className={`px-4 py-2 mr-2 hover:text-yellow-700 ${
           activeFightTab === 'all' ? 'border-b-2 border-blue-500 font-semibold' : ''
         }`}
         onClick={() => setActiveFightTab('all')}
@@ -16,7 +16,7 @@ const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTa
       </button>
       {fights?.main && (
         <button
-          className={`px-4 py-2 cursor-pointer hover:text-yellow-600 ${
+          className={`px-4 py-2 hover:text-yellow-600 ${
             activeFightTab === 'main' ? 'border-b-2 border-blue-500 font-semibold' : ''
           }`}
           onClick={() => setActiveFightTab('main')}
@@ -26,7 +26,7 @@ const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTa
       )}
       {fights?.prelim && (
         <button
-          className={`px-4 py-2 cursor-pointer hover:text-yellow-500 ${
+          className={`px-4 py-2 hover:text-yellow-500 ${
             activeFightTab === 'prelim' ? 'border-b-2 border-blue-500 font-semibold' : ''
           }`}
           onClick={() => setActiveFightTab('prelim')}
@@ -36,7 +36,7 @@ const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTa
       )}
       {fights?.early && (
         <button
-          className={`px-4 py-2 cursor-pointer hover:text-yellow-400 ${
+          className={`px-4 py-2 hover:text-yellow-400 ${
             activeFightTab === 'early' ? 'border-b-2 border-blue-500 font-semibold' : ''
           }`}
           onClick={() => setActiveFightTab('early')}
@@ -45,7 +45,7 @@ const FightTabControls = ({ selectItem, fights, activeFightTab, setActiveFightTa
         </button>
       )}
       <button
-        className={`px-4 py-2 cursor-pointer rounded-sm hover:text-red-500`}
+        className={`px-4 py-2 rounded-sm hover:text-red-500`}
         onClick={() => {
           setActiveFightTab('all');
           navigate(basePath);

@@ -23,10 +23,7 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
     <div className='bg-white shadow-sm w-75 h-full flex-shrink-0 flex flex-col'>
       <div className='mt-12 flex items-center justify-between'>
         {isMobile && (
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className='ml-2 text-gray-400 hover:text-red-500 hover:cursor-pointer'
-          >
+          <button onClick={() => setIsSidebarOpen(false)} className='ml-2 text-gray-400 hover:text-red-500'>
             <IoMdClose />
           </button>
         )}
@@ -38,10 +35,9 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
               <Link to={item.path}>
                 <button
                   onClick={() => handleNavClick()}
-                  className={`flex items-center w-full px-4 py-3 
-                            hover:bg-gray-200 transition-colors 
-                            hover:cursor-pointer 
-                            ${activePath === item.path ? 'bg-gray-100' : ''}`}
+                  className={`flex items-center w-full px-4 py-3 hover:bg-gray-200 transition-colors ${
+                    activePath === item.path ? 'bg-gray-100' : ''
+                  }`}
                 >
                   <span>{item.label}</span>
                 </button>
@@ -110,7 +106,7 @@ const Header = ({ setIsSidebarOpen }) => {
         <Link to={'/dash/messages'}>
           <button
             onClick={() => handleDropdownSelect()}
-            className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 hover:cursor-pointer focus:outline-none'
+            className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 hover: focus:outline-none'
           >
             <FaBell />
           </button>
@@ -118,7 +114,7 @@ const Header = ({ setIsSidebarOpen }) => {
         <div className='relative' ref={dropdownRef}>
           <button
             onClick={toggleDropdown}
-            className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 hover:cursor-pointer focus:outline-none'
+            className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 focus:outline-none'
           >
             <span className='sr-only'>Open user menu</span>
             <span className='text-xs'>
@@ -140,7 +136,7 @@ const Header = ({ setIsSidebarOpen }) => {
                 <Link key={item.id} to={item.path}>
                   <button
                     onClick={() => handleDropdownSelect()}
-                    className={`block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:cursor-pointer`}
+                    className={`block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100`}
                   >
                     <span>{item.label}</span>
                   </button>
@@ -148,7 +144,7 @@ const Header = ({ setIsSidebarOpen }) => {
               ))}
               <button
                 onClick={handleLogout}
-                className='block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 hover:cursor-pointer capitalize'
+                className='block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 capitalize'
               >
                 log out
               </button>

@@ -40,7 +40,7 @@ const CurrentEventContent = () => {
               upcomingEvents.map((event) => (
                 <div
                   key={event?.id}
-                  className='p-4 shadow-lg rounded-lg border border-gray-200 cursor-pointer'
+                  className='p-4 shadow-lg rounded-lg border border-gray-200'
                   onClick={(e) => openEvent(e, event)}
                 >
                   <div className='flex justify-between items-center'>
@@ -59,7 +59,7 @@ const CurrentEventContent = () => {
                       )}
                     </div>
                     <button
-                      className='px-6 py-2 bg-yellow-900 font-semibold rounded-lg shadow-md hover:cursor-pointer hover:bg-yellow-700 hover:text-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200 ease-in-out'
+                      className='px-6 py-2 bg-yellow-900 font-semibold rounded-lg shadow-md hover:bg-yellow-700 hover:text-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200 ease-in-out'
                       onClick={() => {
                         setIsModalOpen(true);
                       }}

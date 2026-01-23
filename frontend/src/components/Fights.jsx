@@ -45,7 +45,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     return (
       <button
         className={`${fight?.winner === name && 'border-6 border-yellow-500'} p-2 rounded transition-all duration-300 ${
-          selectable && 'cursor-pointer'
+          !selectable && 'cursor-not-allowed'
         } ${selections && getFighterButtonColor(fight, name)}`}
         onClick={
           selectable
@@ -54,7 +54,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
               }
             : null
         }
-        disabled={isProcessing}
+        disabled={isProcessing || !selectable}
       >
         <Fighter img={img} name={name} url={url} />
       </button>

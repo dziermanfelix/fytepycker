@@ -26,11 +26,7 @@ const MatchupCard = ({ matchup, handleClick }) => {
     <div
       key={matchup.id}
       onClick={() => handleClick(matchup)}
-      className='
-      p-5 rounded-2xl shadow-sm border border-gray-100 
-      bg-white cursor-pointer 
-      hover:shadow-lg hover:-translate-y-1 
-      transition-all duration-200'
+      className='p-5 rounded-2xl shadow-sm border border-gray-100 bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer'
     >
       {/* Header */}
       <div className='flex justify-between items-center mb-3'>
