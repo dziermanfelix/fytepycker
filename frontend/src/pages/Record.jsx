@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useRecord, RecordProvider } from '@/contexts/RecordContext';
 import RecordTabControls from '@/components/RecordTabControls';
 import { FRONTEND_URLS } from '@/common/urls';
@@ -12,6 +13,12 @@ import { FaTrophy } from 'react-icons/fa';
 const RecordContent = () => {
   const navigate = useNavigate();
   const { isLoading, isError, items, selectedUser, setSelectedUser } = useRecord();
+
+  useEffect(() => {
+    return () => {
+      setSelectedUser(null);
+    };
+  }, [setSelectedUser]);
 
   const handleUserClick = async (user) => {
     setSelectedUser(user);
