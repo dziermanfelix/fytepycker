@@ -73,8 +73,8 @@ const MatchupContent = ({ basePath, deletable }) => {
       });
 
       setIsModalOpen(false);
+      await refetchMatchups();
       navigate(FRONTEND_URLS.MATCHUPS);
-      refetchMatchups();
     } catch (error) {
       setError('Failed to delete matchup.');
     } finally {
