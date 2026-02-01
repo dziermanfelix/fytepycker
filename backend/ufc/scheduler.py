@@ -16,44 +16,52 @@ def scrape_until_complete(event_id):
     This replaces the Celery task scrape_until_complete.
     """
     from django.apps import apps
+    from django.db import close_old_connections
     from .scraper import Scraper
 
-    Event = apps.get_model('ufc', 'Event')
-    scraper = Scraper()
+    # Background thread may use a DB connection that was closed (idle timeout, etc).
+    # Force Django to discard stale connections so the next query uses a fresh one.
+    close_old_connections()
 
     try:
-        event = Event.objects.get(id=event_id)
-    except Event.DoesNotExist:
-        print(f"[scrape_until_complete] Event {event_id} not found.")
-        return
+        Event = apps.get_model('ufc', 'Event')
+        scraper = Scraper()
 
-    if not scraper.is_today_in_eastern(event.date):
-        print(f"[scrape_until_complete] Event {event_id} is not today in Eastern Time.")
-        return
-
-    # check if within 6 hours of main card
-    now = datetime.now(pytz.utc)
-    time_diff = event.date - now
-    if time_diff > timedelta(hours=6):
-        print(f"[scrape_until_complete] Too early for event {event_id}. Will retry later.")
-        return
-
-    print(f"[scrape_until_complete] Scraping event {event_id} at {now}")
-    scraper.scrape_fights_from_url(event.url)
-    event.refresh_from_db()
-
-    # If event is complete, stop scheduling
-    if event.complete:
-        print(f"[scrape_until_complete] Event {event_id} is complete.")
-        # Remove this job from scheduler
-        scheduler = get_scheduler()
-        job_id = f'scrape_event_{event_id}'
         try:
-            scheduler.remove_job(job_id)
-        except:
-            pass
-    else:
-        print(f"[scrape_until_complete] Event {event_id} not complete. Will scrape again in 15 mins.")
+            event = Event.objects.get(id=event_id)
+        except Event.DoesNotExist:
+            print(f"[scrape_until_complete] Event {event_id} not found.")
+            return
+
+        if not scraper.is_today_in_eastern(event.date):
+            print(f"[scrape_until_complete] Event {event_id} is not today in Eastern Time.")
+            return
+
+        # check if within 6 hours of main card
+        now = datetime.now(pytz.utc)
+        time_diff = event.date - now
+        if time_diff > timedelta(hours=6):
+            print(f"[scrape_until_complete] Too early for event {event_id}. Will retry later.")
+            return
+
+        print(f"[scrape_until_complete] Scraping event {event_id} at {now}")
+        scraper.scrape_fights_from_url(event.url)
+        event.refresh_from_db()
+
+        # If event is complete, stop scheduling
+        if event.complete:
+            print(f"[scrape_until_complete] Event {event_id} is complete.")
+            # Remove this job from scheduler
+            scheduler = get_scheduler()
+            job_id = f'scrape_event_{event_id}'
+            try:
+                scheduler.remove_job(job_id)
+            except Exception:
+                pass
+        else:
+            print(f"[scrape_until_complete] Event {event_id} not complete. Will scrape again in 15 mins.")
+    finally:
+        close_old_connections()
 
 
 _scheduler = None
