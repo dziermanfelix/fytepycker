@@ -8,8 +8,26 @@ from django.utils import timezone
 
 
 class Scraper:
+    GOTO_TIMEOUT_MS = 60_000
+
     def scrape_fights_for_action(self, action):
-        html_content = self.get_html_content('https://www.ufc.com/events', 200)
+        if action == 'live':
+            now = datetime.now(pytz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+            next_event = Event.objects.filter(date__gte=now).order_by('date').first()
+            if next_event and self.is_today_in_eastern(next_event.date):
+                print(f"[live action] Scheduling scrape_until_complete for event {next_event.id}")
+                from .scheduler import schedule_event_scraping
+                schedule_event_scraping(next_event.id)
+            # rescrape incomplete past events
+            scraped_events = []
+            incomplete_past_fights = Event.objects.filter(complete=False, date__lt=timezone.now())
+            for event in incomplete_past_fights:
+                e = self.scrape_fights_from_url(event.url)
+                if e and e not in scraped_events:
+                    scraped_events.append(e)
+            return scraped_events
+
+        html_content = self.get_html_content('https://www.ufc.com/events', wait_after_ms=200)
         soup = BeautifulSoup(html_content, "html.parser")
         all_fight_divs = soup.select(".c-card-event--result")
         fight_divs = list()
@@ -24,14 +42,6 @@ class Scraper:
                 if self.parse_event_date(main_card_date) < timezone.now():
                     fight_divs.append(fight_div)
                     break
-
-        elif action == 'live':
-            now = datetime.now(pytz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-            next_event = Event.objects.filter(date__gte=now).order_by('date').first()
-            if next_event and self.is_today_in_eastern(next_event.date):
-                print(f"[live action] Scheduling scrape_until_complete for event {next_event.id}")
-                from .scheduler import schedule_event_scraping
-                schedule_event_scraping(next_event.id)
 
         # scrape fights from web page
         scraped_urls = list()
@@ -57,7 +67,7 @@ class Scraper:
 
     def scrape_fights_from_url(self, url):
         print(f"[scraper.scrape_fights_from_url] url={url}.")
-        html_content = self.get_html_content(url, 3000)
+        html_content = self.get_html_content(url, wait_after_ms=3000)
         soup = BeautifulSoup(html_content, "html.parser")
         name = soup.find(
             "div", class_="field field--name-node-title field--type-ds field--label-hidden field__item").find("h1").text.strip()
@@ -148,12 +158,14 @@ class Scraper:
                     print(f"[delete] Fight no longer found: {fight}")
                     fight.delete()
 
-    def get_html_content(self, url, timeout):
+    def get_html_content(self, url, wait_after_ms=0, timeout_ms=None):
+        timeout_ms = timeout_ms or self.GOTO_TIMEOUT_MS
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
             page = browser.new_page()
-            page.goto(url)
-            page.wait_for_timeout(timeout)
+            page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+            if wait_after_ms:
+                page.wait_for_timeout(wait_after_ms)
             html_content = page.content()
             browser.close()
         return html_content
