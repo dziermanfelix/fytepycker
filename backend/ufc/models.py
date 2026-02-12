@@ -15,8 +15,8 @@ class Event(models.Model):
             models.UniqueConstraint(fields=["name", "date"], name="unique_name_and_date_per_event"),
         ]
         indexes = [
-            models.Index(fields=['complete']),
-            models.Index(fields=['date']),
+            models.Index(fields=['complete'], name='ufc_event_complete_idx'),
+            models.Index(fields=['date'], name='ufc_event_date_idx'),
         ]
 
     def __str__(self):
@@ -52,8 +52,8 @@ class Fight(models.Model):
             )
         ]
         indexes = [
-            models.Index(fields=['event']),
-            models.Index(fields=['event', 'order']),
+            models.Index(fields=['event'], name='ufc_fight_event_idx'),
+            models.Index(fields=['event', 'order'], name='ufc_fight_event_order_idx'),
         ]
 
     def get_fighters(self):

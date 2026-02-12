@@ -217,9 +217,8 @@ USE_TZ = True
 # static files
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'backend' / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR / 'frontend' / 'static',
-]
+_frontend_static = BASE_DIR / 'frontend' / 'static'
+STATICFILES_DIRS = [_frontend_static] if _frontend_static.exists() else []
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

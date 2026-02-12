@@ -25,9 +25,9 @@ class Matchup(models.Model):
             )
         ]
         indexes = [
-            models.Index(fields=['user_a']),
-            models.Index(fields=['user_b']),
-            models.Index(fields=['event', 'user_a', 'user_b']),
+            models.Index(fields=['user_a'], name='matchups_ma_user_a_idx'),
+            models.Index(fields=['user_b'], name='matchups_ma_user_b_idx'),
+            models.Index(fields=['event', 'user_a', 'user_b'], name='matchups_ma_event_user_idx'),
         ]
 
     def get_users(self):
@@ -59,12 +59,9 @@ class Selection(models.Model):
             ),
         ]
         indexes = [
-            # Index for filtering selections by matchup (most common query)
-            models.Index(fields=['matchup']),
-            # Index for filtering selections by fight
-            models.Index(fields=['fight']),
-            # Index for winner lookups (used in RecordView and MatchupSerializer)
-            models.Index(fields=['winner']),
+            models.Index(fields=['matchup'], name='matchups_se_matchup_idx'),
+            models.Index(fields=['fight'], name='matchups_se_fight_idx'),
+            models.Index(fields=['winner'], name='matchups_se_winner_idx'),
         ]
 
     def __str__(self):
