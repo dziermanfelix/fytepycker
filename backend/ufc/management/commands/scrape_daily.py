@@ -3,7 +3,7 @@ Management command to run daily scraping tasks.
 Called by GitHub Actions cron job to replace Celery beat.
 """
 from django.core.management.base import BaseCommand
-from ufc.scraper import Scraper
+from backend.ufc.scraper import Scraper
 
 
 class Command(BaseCommand):

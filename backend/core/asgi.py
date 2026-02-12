@@ -12,7 +12,7 @@ django_asgi_app = get_asgi_application()
 # Initialize APScheduler for event scraping (replaces Celery for free hosting)
 # This runs in the web process and handles live event scraping
 try:
-    from ufc.scheduler import get_scheduler
+    from backend.ufc.scheduler import get_scheduler
     # Get scheduler instance to start it
     scheduler = get_scheduler()
     print("[ASGI] APScheduler initialized for event scraping")

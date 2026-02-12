@@ -18,7 +18,7 @@ application = get_wsgi_application()
 # Initialize APScheduler for event scraping (when using runserver)
 # Note: The scheduler is singleton - only initializes once
 try:
-    from ufc.scheduler import get_scheduler
+    from backend.ufc.scheduler import get_scheduler
     scheduler = get_scheduler()
     print("[WSGI] APScheduler initialized")
 except ImportError:
