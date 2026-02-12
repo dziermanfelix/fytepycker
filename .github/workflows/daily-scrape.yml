@@ -23,15 +23,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libnss3 libgdk-pixbuf2.0-0 libglib2.0-0 libx11-xcb1 libxcomposite1 libxrandr2 libasound2t64 libatk-bridge2.0-0 libatk1.0-0 libappindicator3-1 libnspr4 libxss1 libgbm1 libfontconfig1
 
-      - name: Install Playwright
-        run: |
-          pip install playwright
-          playwright install chromium
-          playwright install-deps chromium
-
       - name: Install Python dependencies
         run: |
           pip install -r backend/requirements.txt
+
+      - name: Install Playwright browser
+        run: |
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Create frontend/static (silence staticfiles warning)
+        run: mkdir -p frontend/static
 
       - name: Run daily scrape
         env:
