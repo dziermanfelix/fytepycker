@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useRecord, RecordProvider } from '@/contexts/RecordContext';
-import RecordTabControls from '@/components/RecordTabControls';
 import { FRONTEND_URLS } from '@/common/urls';
 import RecordCard from '@/components/RecordCard';
 import { MatchupsProvider } from '@/contexts/MatchupsContext';
@@ -9,6 +8,7 @@ import RecordMatchupCard from '@/components/RecordMatchupCard';
 import RecordStats from '@/components/RecordStats';
 import LoadingCards from '@/components/LoadingCards';
 import { FaTrophy } from 'react-icons/fa';
+import EventViewCloseButton from '@/components/EventViewCloseButton';
 
 const RecordContent = () => {
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ const RecordContent = () => {
 
       {selectedUser && (
         <div>
-          <RecordTabControls setSelectedUser={setSelectedUser} />
+          <EventViewCloseButton basePath={FRONTEND_URLS.RECORD} selectItem={() => setSelectedUser(null)} />
           <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
             <RecordStats selectedUser={selectedUser} totalWinnings={totalWinnings} totalBets={totalBets} />
             <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>

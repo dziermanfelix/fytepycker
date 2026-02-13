@@ -31,13 +31,15 @@ def create_matchup_related_objects(sender, instance, created, **kwargs):
         fights = Fight.objects.filter(event=instance.event).annotate(
             card_order=Case(
                 When(card='early', then=Value(0)),
-                When(card='prelim', then=Value(1)),
+                When(card='prelims', then=Value(1)),
                 When(card='main', then=Value(2)),
                 output_field=IntegerField()
             )
-        ).order_by('card_order', 'order')
+        ).order_by('card_order', '-order')
+
         for fight in fights:
-            Selection.objects.create(matchup=instance, fight=fight, dibs=next(user_cycle),
+            dibs = next(user_cycle)
+            Selection.objects.create(matchup=instance, fight=fight, dibs=dibs,
                                      bet=determine_default_bet(fight))
 
 

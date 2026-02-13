@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
-import { getFightCards } from '@/utils/fightTabUtils';
+import { getFightCardTypes } from '@/utils/fightTabUtils';
 
-const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, readyFight, processingFightId = null }) => {
+const Fights = ({ fights, user, selections, fighterClicked, readyFight, processingFightId = null }) => {
   const fightRefs = useRef({});
 
   useEffect(() => {
@@ -13,7 +13,7 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     }
   }, [readyFight]);
 
-  const fightCards = getFightCards(activeFightTab);
+  const fightCards = getFightCardTypes();
 
   const Fighter = ({ img, name, url }) => (
     <div className='flex-row items-center text-center justify-between'>
@@ -149,11 +149,13 @@ const Fights = ({ activeFightTab, fights, user, selections, fighterClicked, read
     return borderStyle;
   };
 
-  if (fightCards && fightCards.length > 0) {
+  const populatedFightCards = fightCards?.filter((cardType) => fights[cardType]?.length > 0) || [];
+
+  if (populatedFightCards && populatedFightCards.length > 0) {
     return (
       <div className=''>
-        {fightCards.map((cardType) => (
-          <div key={cardType} className='bg-gray-200 p-4 border border-gray-300 rounded-xl shadow-md'>
+        {populatedFightCards.map((cardType) => (
+          <div key={cardType} className='bg-gray-200 p-4 border border-gray-300 rounded-xl shadow-md mb-4'>
             <div className='capitalize mb-2 text-lg font-bold'>{cardType}</div>
             <ul className='space-y-4'>
               {fights[cardType]?.map((fight) => {

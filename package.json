@@ -12,8 +12,8 @@
     "redis": "redis-server",
     "daphne": "daphne -b 127.0.0.1 -p 8001 backend.core.asgi:application",
     "test": "python manage.py test",
-    "build": "./build.sh",
-    "deploy": "./deploy.sh"
+    "build": "./scripts/build.sh",
+    "deploy": "./scripts/deploy.sh"
   },
   "repository": {
     "type": "git",

@@ -34,7 +34,9 @@ const MatchupsContent = () => {
                   return <MatchupCard key={matchup.id} matchup={matchup} handleClick={handleClick} />;
                 })
               ) : (
-                <p className='text-center text-gray-500 col-span-full'>No Matchups.</p>
+                <div>
+                  <LoadingCards count={1} />
+                </div>
               ))}
           </>
         )}

@@ -107,20 +107,21 @@ class MatchupTests(APITestCase):
 
         # selections
         selections = Selection.objects.filter(matchup=matchup.id)
+        user_cycle = cycle([matchup.first_pick, matchup.user_b if matchup.first_pick ==
+                           matchup.user_a else matchup.user_a])
+        expected_fights = [self.fight2, self.fight]
+        expected_bets = [30, 50]
+        expected_index = 0
         for s in selections:
             self.assertEqual(s.matchup, matchup)
             self.assertEqual(s.user_a_selection, None)
             self.assertEqual(s.user_b_selection, None)
             self.assertEqual(s.winner, None)
             self.assertEqual(s.confirmed, False)
-        user_cycle = cycle([matchup.first_pick, matchup.user_b if matchup.first_pick ==
-                           matchup.user_a else matchup.user_a])
-        self.assertEqual(selections[0].fight, self.fight)
-        self.assertEqual(selections[0].dibs, next(user_cycle))
-        self.assertEqual(selections[0].bet, 50)
-        self.assertEqual(selections[1].fight, self.fight2)
-        self.assertEqual(selections[1].dibs, next(user_cycle))
-        self.assertEqual(selections[1].bet, 30)
+            self.assertEqual(s.dibs, next(user_cycle))
+            self.assertEqual(s.fight, expected_fights[expected_index])
+            self.assertEqual(s.bet, expected_bets[expected_index])
+            expected_index += 1
 
     def test_get_matchup_by_id(self):
         data = {
@@ -278,14 +279,14 @@ class SelectionTests(APITestCase):
             location="the sun",
         )
         self.event = event[0]
-        fight = Fight.objects.update_or_create(
+        fight_main_0 = Fight.objects.update_or_create(
             event_id=self.event.id,
             blue_name="paul",
             red_name="john",
             defaults={
                 "card": "main",
                 "order": 0,
-                "weight_class": "heavyweight",
+                "weight_class": "heavyweight title bout",
                 "blue_img": "https://url.img",
                 "blue_url": "https://url.img",
                 "red_img": "https://url.img",
@@ -295,8 +296,8 @@ class SelectionTests(APITestCase):
                 "round": None,
             }
         )
-        self.fight = fight[0]
-        fight2 = Fight.objects.update_or_create(
+        self.fight_main_0 = fight_main_0[0]
+        fight_main_1 = Fight.objects.update_or_create(
             event_id=self.event.id,
             blue_name="george",
             red_name="ringo",
@@ -313,8 +314,8 @@ class SelectionTests(APITestCase):
                 "round": None,
             }
         )
-        self.fight2 = fight2[0]
-        fight3 = Fight.objects.update_or_create(
+        self.fight_main_1 = fight_main_1[0]
+        fight_pre_0 = Fight.objects.update_or_create(
             event_id=self.event.id,
             blue_name="mick",
             red_name="keith",
@@ -331,8 +332,8 @@ class SelectionTests(APITestCase):
                 "round": None,
             }
         )
-        self.fight3 = fight3[0]
-        fight4 = Fight.objects.update_or_create(
+        self.fight_pre_0 = fight_pre_0[0]
+        fight_pre_1 = Fight.objects.update_or_create(
             event_id=self.event.id,
             blue_name="roger",
             red_name="pete",
@@ -349,7 +350,7 @@ class SelectionTests(APITestCase):
                 "round": None,
             }
         )
-        self.fight4 = fight4[0]
+        self.fight_pre_1 = fight_pre_1[0]
         matchup = Matchup.objects.get_or_create(
             event_id=self.event.id,
             user_a=self.user,
@@ -361,8 +362,8 @@ class SelectionTests(APITestCase):
         selections = Selection.objects.filter(matchup=self.matchup.id)
         user_cycle = cycle([self.matchup.first_pick, self.matchup.user_b if self.matchup.first_pick ==
                            self.matchup.user_a else self.matchup.user_a])
-        expected_fights = [self.fight, self.fight2, self.fight3, self.fight4]
-        expected_bets = [50, 30, 30, 30]
+        expected_fights = [self.fight_pre_1, self.fight_pre_0, self.fight_main_1, self.fight_main_0]
+        expected_bets = [30, 30, 30, 100]
         expected_index = 0
         for s in selections:
             self.assertEqual(s.matchup, self.matchup)
@@ -376,44 +377,26 @@ class SelectionTests(APITestCase):
             expected_index += 1
 
     def test_default_bets(self):
-        Fight.objects.update_or_create(
-            event_id=self.event.id,
-            blue_name="mick jagger",
-            red_name="keith richards",
-            defaults={
-                "card": "main",
-                "order": 1,
-                "weight_class": "bantamweight title bout",
-                "blue_img": "https://url.img",
-                "blue_url": "https://url.img",
-                "red_img": "https://url.img",
-                "red_url": "https://url.img",
-                "winner": None,
-                "method": None,
-                "round": None,
-            }
-        )
         selections = Selection.objects.filter(matchup=self.matchup.id)
-        self.assertEqual(selections[0].bet, 50)
+        self.assertEqual(selections[0].bet, 30)
         self.assertEqual(selections[1].bet, 30)
         self.assertEqual(selections[2].bet, 30)
-        self.assertEqual(selections[3].bet, 30)
-        self.assertEqual(selections[4].bet, 100)
+        self.assertEqual(selections[3].bet, 100)
 
     def test_create_selection(self):
         data = {
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user.id,
-            "fighter": self.fight.blue_name
+            "fighter": self.fight_main_0.blue_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['selection']['matchup'], self.matchup.id)
-        self.assertEqual(response.data['selection']['fight'], self.fight.id)
-        self.assertEqual(response.data['selection']['user_a_selection'], self.fight.blue_name)
-        self.assertEqual(response.data['selection']['user_b_selection'], self.fight.red_name)
-        self.assertEqual(response.data['selection']['bet'], 50)
+        self.assertEqual(response.data['selection']['fight'], self.fight_main_0.id)
+        self.assertEqual(response.data['selection']['user_a_selection'], self.fight_main_0.blue_name)
+        self.assertEqual(response.data['selection']['user_b_selection'], self.fight_main_0.red_name)
+        self.assertEqual(response.data['selection']['bet'], 100)
         self.assertEqual(response.data['selection']['winner'], None)
         self.assertIn(response.data['selection']['dibs'], [self.user.id, self.user2.id])
         self.assertEqual(response.data['selection']['confirmed'], True)
@@ -421,9 +404,9 @@ class SelectionTests(APITestCase):
     def test_create_selection_error_matchup_not_exists(self):
         data = {
             "matchup": 9999,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user.id,
-            "fighter": self.fight.blue_name
+            "fighter": self.fight_main_0.blue_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -433,7 +416,7 @@ class SelectionTests(APITestCase):
             "matchup": self.matchup.id,
             "fight": 9999,
             "user": self.user.id,
-            "fighter": self.fight.blue_name
+            "fighter": self.fight_main_0.blue_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -441,9 +424,9 @@ class SelectionTests(APITestCase):
     def test_create_selection_error_user_not_exists(self):
         data = {
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": 99999,
-            "fighter": self.fight.blue_name
+            "fighter": self.fight_main_0.blue_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -452,9 +435,9 @@ class SelectionTests(APITestCase):
         other_user = get_user_model().objects.create_user(username='otheruser', email='otheruser@gmail.com', password='otherpass1234')
         data = {
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": other_user.id,
-            "fighter": self.fight.blue_name
+            "fighter": self.fight_main_0.blue_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -490,7 +473,7 @@ class SelectionTests(APITestCase):
             "matchup": self.matchup.id,
             "fight": other_fight.id,
             "user": self.user.id,
-            "fighter": self.fight.blue_name
+            "fighter": self.fight_main_0.blue_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -498,7 +481,7 @@ class SelectionTests(APITestCase):
     def test_create_selection_error_invalid_fighter(self):
         data = {
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user.id,
             "fighter": "dingdong"
         }
@@ -508,19 +491,19 @@ class SelectionTests(APITestCase):
     def test_get_selection(self):
         data = {
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user.id,
-            "fighter": self.fight.red_name
+            "fighter": self.fight_main_0.red_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(self.selection_url, {"matchup_id": self.matchup.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['matchup'], self.matchup.id)
-        self.assertEqual(response.data[0]['fight'], self.fight.id)
-        self.assertEqual(response.data[0]['user_a_selection'], self.fight.red_name)
-        self.assertEqual(response.data[0]['user_b_selection'], self.fight.blue_name)
-        self.assertEqual(response.data[0]['bet'], 50)
+        self.assertEqual(response.data[0]['fight'], self.fight_main_0.id)
+        self.assertEqual(response.data[0]['user_a_selection'], self.fight_main_0.red_name)
+        self.assertEqual(response.data[0]['user_b_selection'], self.fight_main_0.blue_name)
+        self.assertEqual(response.data[0]['bet'], 100)
         self.assertEqual(response.data[0]['winner'], None)
         self.assertIn(response.data[0]['dibs'], [self.user.id, self.user2.id])
         self.assertEqual(response.data[0]['confirmed'], True)
@@ -528,9 +511,9 @@ class SelectionTests(APITestCase):
     def test_get_selection_error_matchup_id_not_provided(self):
         data = {
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user.id,
-            "fighter": self.fight.red_name
+            "fighter": self.fight_main_0.red_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -540,75 +523,75 @@ class SelectionTests(APITestCase):
     def test_two_users_select_different_fighters(self):
         response = self.client.post(self.selection_url, data={
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user.id,
-            "fighter": self.fight.blue_name
+            "fighter": self.fight_main_0.blue_name
         }, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.post(self.selection_url, data={
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user2.id,
-            "fighter": self.fight.red_name
+            "fighter": self.fight_main_0.red_name
         }, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_two_users_select_same_fighter(self):
         response = self.client.post(self.selection_url, data={
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user.id,
-            "fighter": self.fight.blue_name
+            "fighter": self.fight_main_0.blue_name
         }, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.post(self.selection_url, data={
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user2.id,
-            "fighter": self.fight.blue_name
+            "fighter": self.fight_main_0.blue_name
         }, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_selection_confirmed(self):
-        selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight.id).first()
+        selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight_main_0.id).first()
         self.assertEqual(selection.confirmed, False)
         data = {
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user.id,
-            "fighter": self.fight.blue_name
+            "fighter": self.fight_main_0.blue_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight.id).first()
+        selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight_main_0.id).first()
         self.assertEqual(selection.confirmed, True)
         data = {
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user2.id,
-            "fighter": self.fight.red_name
+            "fighter": self.fight_main_0.red_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight.id).first()
+        selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight_main_0.id).first()
         self.assertEqual(selection.confirmed, True)
 
     def test_selection_winner_updates_after_fight_win(self):
-        selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight.id).first()
+        selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight_main_0.id).first()
         self.assertEqual(selection.winner, None)
         data = {
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user.id,
-            "fighter": self.fight.blue_name
+            "fighter": self.fight_main_0.blue_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = {
             "matchup": self.matchup.id,
-            "fight": self.fight.id,
+            "fight": self.fight_main_0.id,
             "user": self.user2.id,
-            "fighter": self.fight.red_name
+            "fighter": self.fight_main_0.red_name
         }
         response = self.client.post(self.selection_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -629,13 +612,13 @@ class SelectionTests(APITestCase):
                 "round": 1,
             }
         )
-        self.fight = updated_fight[0]
-        selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight.id).first()
+        self.fight_main_0 = updated_fight[0]
+        selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight_main_0.id).first()
         self.assertEqual(selection.winner, self.user2)
 
     def test_selection_updates_from_fight_change(self):
         # simulate what the scraper does, it will add the new fight before deleting the old
-        newFight1 = Fight.objects.update_or_create(
+        new_main_event = Fight.objects.update_or_create(
             event_id=self.event.id,
             blue_name="paul",
             red_name="ozzy",
@@ -652,35 +635,29 @@ class SelectionTests(APITestCase):
                 "round": None,
             }
         )
-        newFight1 = newFight1[0]
+        new_main_event = new_main_event[0]
 
-        # delete existing fight1
-        fight1 = Fight.objects.filter(id=self.fight.id).first()
-        fight1.delete()
+        # delete existing main event
+        existing_main_event = Fight.objects.filter(id=self.fight_main_0.id).first()
+        existing_main_event.delete()
 
         # verify selection gets added for new fight
         selections = Selection.objects.filter(matchup=self.matchup)
-        first_selection_dibs = selections[0].dibs
-
-        # original fight2
-        self.assertEqual(selections[0].matchup, self.matchup)
-        self.assertEqual(selections[0].fight, self.fight2)
-        self.assertEqual(selections[0].user_a_selection, None)
-        self.assertEqual(selections[0].user_b_selection, None)
-        self.assertEqual(selections[0].bet, 30)
-        self.assertEqual(selections[0].winner, None)
-        self.assertEqual(selections[0].dibs, first_selection_dibs)
-        self.assertEqual(selections[0].confirmed, False)
-
-        # new fight1
-        self.assertEqual(selections[1].matchup, self.matchup)
-        self.assertEqual(selections[1].fight, newFight1)
-        self.assertEqual(selections[1].user_a_selection, None)
-        self.assertEqual(selections[1].user_b_selection, None)
-        self.assertEqual(selections[1].bet, 50)
-        self.assertEqual(selections[1].winner, None)
-        self.assertEqual(selections[1].dibs, self.user if first_selection_dibs == self.user2 else self.user2)
-        self.assertEqual(selections[1].confirmed, False)
+        user_cycle = cycle([self.matchup.first_pick, self.matchup.user_b if self.matchup.first_pick ==
+                           self.matchup.user_a else self.matchup.user_a])
+        expected_fights = [self.fight_pre_1, self.fight_pre_0, self.fight_main_1, new_main_event]
+        expected_bets = [30, 30, 30, 50]
+        expected_index = 0
+        for s in selections:
+            self.assertEqual(s.matchup, self.matchup)
+            self.assertEqual(s.user_a_selection, None)
+            self.assertEqual(s.user_b_selection, None)
+            self.assertEqual(s.winner, None)
+            self.assertEqual(s.confirmed, False)
+            self.assertEqual(s.dibs, next(user_cycle))
+            self.assertEqual(s.fight, expected_fights[expected_index])
+            self.assertEqual(s.bet, expected_bets[expected_index])
+            expected_index += 1
 
 
 class RecordTests(APITestCase):

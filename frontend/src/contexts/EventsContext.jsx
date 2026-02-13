@@ -8,7 +8,6 @@ const EventsContext = createContext({});
 export const EventsProvider = ({ children }) => {
   const { user } = useAuth();
   const [activeEventTab, setActiveEventTab] = useState('upcoming');
-  const [activeFightTab, setActiveFightTab] = useState('all');
 
   const {
     items: events,
@@ -27,8 +26,6 @@ export const EventsProvider = ({ children }) => {
   const contextValue = {
     activeEventTab,
     setActiveEventTab,
-    activeFightTab,
-    setActiveFightTab,
 
     user,
 

@@ -11,7 +11,6 @@ const MatchupsContext = createContext();
 export const MatchupsProvider = ({ children, disableWebSockets = false }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [activeFightTab, setActiveFightTab] = useState('all');
   const socketsRef = useRef({});
 
   const {
@@ -202,9 +201,6 @@ export const MatchupsProvider = ({ children, disableWebSockets = false }) => {
   const fights = selectedMatchup?.event?.fights || {};
 
   const contextValue = {
-    activeFightTab,
-    setActiveFightTab,
-
     user,
 
     matchups,

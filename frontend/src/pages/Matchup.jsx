@@ -3,25 +3,13 @@ import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useMatchups } from '@/contexts/MatchupsContext';
 import client from '@/api/client';
 import { API_URLS, FRONTEND_URLS } from '@/common/urls';
-import FightTabControls from '@/components/FightTabControls';
+import EventViewCloseButton from '@/components/EventViewCloseButton';
 import SelectableFights from '@/components/SelectableFights';
-import { getWinningsBackgroundColor } from '@/utils/winningsDisplayUtils';
 import { IoMdClose } from 'react-icons/io';
 
 const MatchupContent = ({ basePath, deletable }) => {
   const { id } = useParams();
-  const {
-    isLoading,
-    isError,
-    matchups,
-    selectMatchup,
-    selectedMatchup,
-    refetchMatchups,
-    activeFightTab,
-    setActiveFightTab,
-    fights,
-    selections,
-  } = useMatchups();
+  const { isLoading, isError, matchups, selectMatchup, selectedMatchup, refetchMatchups, selections } = useMatchups();
   const navigate = useNavigate();
   const [checkingMatchup, setCheckingMatchup] = useState(true);
   const retryCount = useRef(0);
@@ -82,28 +70,28 @@ const MatchupContent = ({ basePath, deletable }) => {
     }
   };
 
-  const WinningsBanner = () => {
+  const MatchupHeader = () => {
     const winnings = selectedMatchup.winnings;
-    const displayBanner = selections.every((s) => s.confirmed) || selectedMatchup.event.complete;
+    const display = selections.every((s) => s.confirmed) || selectedMatchup.event.complete;
+    if (!display) return null;
 
-    if (!displayBanner) return null;
+    const positive = winnings >= 0;
 
     return (
-      <div
-        className={`sticky top-0 z-30 px-4 py-2 rounded-full 
-                    text-sm font-semibold shadow text-white
-                    backdrop-blur-lg bg-opacity-90 ${getWinningsBackgroundColor(winnings)}
-                    flex justify-between items-center`}
-      >
-        <div>
-          <span className='uppercase tracking-wide text-xs opacity-80 mr-2'>
-            {winnings >= 0 ? 'Winnings' : 'Losings'}
-          </span>
-          <span className='text-lg'>{winnings}</span>
+      <div className='mb-4 px-6 py-5 bg-white rounded-2xl border border-gray-100 shadow-sm'>
+        <div className='flex items-center justify-between'>
+          <div>
+            <p className='text-xs uppercase tracking-wide text-gray-400'>Match Result</p>
+            <p className={`text-3xl font-semibold ${positive ? 'text-green-600' : 'text-red-600'}`}>
+              {positive ? '+' : ''}
+              {winnings}
+            </p>
+          </div>
+
+          <button onClick={() => navigate(basePath)} className='p-2 rounded-lg hover:bg-gray-100'>
+            <IoMdClose className='w-5 h-5 text-gray-500' />
+          </button>
         </div>
-        <button className={`px-4 py-2 rounded-sm hover:text-red-500`} onClick={() => navigate(basePath)}>
-          <IoMdClose />
-        </button>
       </div>
     );
   };
@@ -115,13 +103,8 @@ const MatchupContent = ({ basePath, deletable }) => {
   return (
     <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
       <div>
-        <FightTabControls
-          fights={fights}
-          activeFightTab={activeFightTab}
-          setActiveFightTab={setActiveFightTab}
-          basePath={basePath}
-        />
-        <WinningsBanner />
+        <MatchupHeader />
+        <EventViewCloseButton basePath={basePath} />
         <SelectableFights />
         {deletable && (
           <div>

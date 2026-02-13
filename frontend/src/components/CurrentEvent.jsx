@@ -1,22 +1,13 @@
 import { useState } from 'react';
 import { useEvents, EventsProvider } from '@/contexts/EventsContext';
-import FightTabControls from '@/components/FightTabControls';
+import EventViewCloseButton from '@/components/EventViewCloseButton';
 import EventFights from '@/components/EventFights';
 import CreateMatchupModal from '@/components/CreateMatchupModal';
 import LoadingEvent from './LoadingEvent';
+import { FaExternalLinkSquareAlt } from 'react-icons/fa';
 
 const CurrentEventContent = () => {
-  const {
-    user,
-    isLoading,
-    isError,
-    selectedEvent,
-    selectEvent,
-    activeFightTab,
-    setActiveFightTab,
-    fights,
-    upcomingEvents,
-  } = useEvents();
+  const { user, isLoading, isError, selectedEvent, selectEvent, fights, upcomingEvents } = useEvents();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -35,7 +26,7 @@ const CurrentEventContent = () => {
     <div className=''>
       {!selectedEvent && (
         <div>
-          <div className='grid gap-2'>
+          <div className='grid gap-2 cursor-pointer hover:shadow-lg hover:-translate-y-1'>
             {upcomingEvents.length > 0 ? (
               upcomingEvents.map((event) => (
                 <div
@@ -44,19 +35,23 @@ const CurrentEventContent = () => {
                   onClick={(e) => openEvent(e, event)}
                 >
                   <div className='flex justify-between items-center'>
-                    <div className='flex flex-col justify-center'>
-                      {event?.url && (
-                        <div className='flex items-center space-x-2'>
-                          <a
-                            href={event?.url}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='underline hover:text-gray-700'
-                          >
-                            {event?.name} | {event?.headline} | {new Date(event?.date).toLocaleString()}
-                          </a>
-                        </div>
-                      )}
+                    <div className='flex space-x-2 justify-center'>
+                      <button
+                        className='mr-4 px-2 py-2 text-xs font-semibold rounded-lg shadow-md hover:shadow-lg bg-gray-50 hover:bg-gray-200'
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (event?.url) {
+                            window.open(event.url, '_blank', 'noopener,noreferrer');
+                          }
+                        }}
+                      >
+                        <FaExternalLinkSquareAlt />
+                      </button>
+                      <div className='flex items-center space-x-2'>
+                        <p className=''>
+                          {event?.name} - {event?.headline}
+                        </p>
+                      </div>
                     </div>
                     <button
                       className='px-6 py-2 bg-yellow-900 font-semibold rounded-lg shadow-md hover:bg-yellow-700 hover:text-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200 ease-in-out'
@@ -86,13 +81,7 @@ const CurrentEventContent = () => {
 
       {selectedEvent && !isModalOpen && (
         <div>
-          <FightTabControls
-            selectItem={selectEvent}
-            fights={fights}
-            activeFightTab={activeFightTab}
-            setActiveFightTab={setActiveFightTab}
-            basePath='/dash/matchups'
-          />
+          <EventViewCloseButton selectItem={selectEvent} basePath='/dash/matchups' />
           <div className='mt-2 mb-2 rounded-lg'>
             <div>
               <EventFights />

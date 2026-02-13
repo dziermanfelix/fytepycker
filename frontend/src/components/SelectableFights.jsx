@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { getFightCards } from '@/utils/fightTabUtils';
+import { getFightCardTypes } from '@/utils/fightTabUtils';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 import Fights from '@/components/Fights';
@@ -16,7 +16,6 @@ const SelectableFights = () => {
     refetchSelections,
     isLoading,
     isError,
-    activeFightTab,
     fights,
     ws,
   } = useMatchups();
@@ -24,7 +23,7 @@ const SelectableFights = () => {
   const { user: authUser } = useAuth();
 
   const [selections, setSelections] = useState({});
-  const fightCards = getFightCards(activeFightTab);
+  const fightCards = getFightCardTypes();
   const [readyFight, setReadyFight] = useState(null);
   const [processingFightId, setProcessingFightId] = useState(null);
 
@@ -99,7 +98,7 @@ const SelectableFights = () => {
           JSON.stringify({
             action: 'wsUpdateSelections',
             selections: selections,
-          })
+          }),
         );
       }
     } finally {
@@ -114,7 +113,6 @@ const SelectableFights = () => {
     return (
       <div>
         <Fights
-          activeFightTab={activeFightTab}
           fights={fights}
           user={user}
           selections={selections}
