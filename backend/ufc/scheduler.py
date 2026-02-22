@@ -45,7 +45,7 @@ def scrape_until_complete(event_id):
             return
 
         print(f"[scrape_until_complete] Scraping event {event_id} at {now}")
-        scraper.scrape_fights_from_url(event.url)
+        scraper.scrape_fights_from_url(event.url)  # returns (ev, changes), we only need side effects
         event.refresh_from_db()
 
         # If event is complete, stop scheduling

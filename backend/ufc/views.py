@@ -56,6 +56,15 @@ class ScraperView(APIView):
                 {'error': f'Invalid action. Must be one of: past, upcoming, live'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        scraped_events = scraper.scrape_fights_for_action(action)
-        serializer = EventSerializer(scraped_events, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        scraped_events, changes = scraper.scrape_fights_for_action(action)
+        summary = [
+            {'id': e.id, 'name': e.name, 'headline': e.headline, 'date': e.date.isoformat(), 'fight_count': e.fights.count()}
+            for e in scraped_events
+        ]
+        return Response({
+            'ok': True,
+            'action': action,
+            'events_updated': len(scraped_events),
+            'events': summary,
+            'changes': changes,
+        }, status=status.HTTP_200_OK)

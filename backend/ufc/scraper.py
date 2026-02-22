@@ -7,10 +7,24 @@ from unidecode import unidecode
 from django.utils import timezone
 
 
+def _fight_change_info(fight):
+    return {
+        "id": fight.id,
+        "blue_name": fight.blue_name,
+        "red_name": fight.red_name,
+        "weight_class": fight.weight_class,
+        "card": fight.card,
+        "winner": fight.winner,
+        "method": fight.method,
+        "round": fight.round,
+    }
+
+
 class Scraper:
     GOTO_TIMEOUT_MS = 60_000
 
     def scrape_fights_for_action(self, action):
+        all_changes = []
         if action == 'live':
             now = datetime.now(pytz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
             next_event = Event.objects.filter(date__gte=now).order_by('date').first()
@@ -22,10 +36,13 @@ class Scraper:
             scraped_events = []
             incomplete_past_fights = Event.objects.filter(complete=False, date__lt=timezone.now())
             for event in incomplete_past_fights:
-                e = self.scrape_fights_from_url(event.url)
-                if e and e not in scraped_events:
-                    scraped_events.append(e)
-            return scraped_events
+                result = self.scrape_fights_from_url(event.url)
+                if result:
+                    ev, changes = result
+                    if ev not in scraped_events:
+                        scraped_events.append(ev)
+                    all_changes.extend(changes)
+            return scraped_events, all_changes
 
         html_content = self.get_html_content('https://www.ufc.com/events', wait_after_ms=200)
         soup = BeautifulSoup(html_content, "html.parser")
@@ -50,20 +67,25 @@ class Scraper:
             a_tag = fight.find("a")
             if a_tag and "href" in a_tag.attrs:
                 fight_url = "https://www.ufc.com" + a_tag["href"]
-                event = self.scrape_fights_from_url(fight_url)
+                result = self.scrape_fights_from_url(fight_url)
                 scraped_urls.append(fight_url)
-                if event:
-                    scraped_events.append(event)
+                if result:
+                    ev, changes = result
+                    scraped_events.append(ev)
+                    all_changes.extend(changes)
 
         # rescrape incomplete past fights
         incomplete_past_fights = Event.objects.filter(complete=False, date__lt=timezone.now())
         for fight in incomplete_past_fights:
             if fight.url not in scraped_urls:
-                event = self.scrape_fights_from_url(fight.url)
-                if event and event not in scraped_events:
-                    scraped_events.append(event)
+                result = self.scrape_fights_from_url(fight.url)
+                if result:
+                    ev, changes = result
+                    if ev not in scraped_events:
+                        scraped_events.append(ev)
+                    all_changes.extend(changes)
 
-        return scraped_events
+        return scraped_events, all_changes
 
     def scrape_fights_from_url(self, url):
         print(f"[scraper.scrape_fights_from_url] url={url}.")
@@ -86,14 +108,19 @@ class Scraper:
                 'location': location,
             }
         )
-        self.get_fights_for_card(soup.find("div", class_="main-card"), event[0], FightCard.MAIN)
-        self.get_fights_for_card(soup.find("div", class_="fight-card-prelims"), event[0], FightCard.PRELIM)
-        self.get_fights_for_card(soup.find("div", class_="fight-card-prelims-early"), event[0], FightCard.EARLY_PRELIM)
-        return event[0]
+        ev = event[0]
+        changes = []
+        changes.extend(self.get_fights_for_card(soup.find("div", class_="main-card"), ev, FightCard.MAIN))
+        changes.extend(self.get_fights_for_card(soup.find("div", class_="fight-card-prelims"), ev, FightCard.PRELIM))
+        changes.extend(self.get_fights_for_card(
+            soup.find("div", class_="fight-card-prelims-early"), ev, FightCard.EARLY_PRELIM))
+        return ev, changes
 
     def get_fights_for_card(self, card_listing, event, fight_card):
         existing_fights = list(Fight.objects.filter(event=event, card=fight_card))
+        existing_by_key = {(f.blue_name, f.red_name): f for f in existing_fights}
         newly_scraped_fights = []
+        changes = []
         card_fights = card_listing.select(".c-listing-fight__content") if card_listing else []
         order = 0
         for fight in card_fights:
@@ -140,7 +167,8 @@ class Scraper:
             if red_img is not None:
                 defaults["red_img"] = red_img
 
-            fight = Fight.objects.update_or_create(
+            existing_fight = existing_by_key.get((blue_name, red_name))
+            fight_obj, created = Fight.objects.update_or_create(
                 event_id=event.id,
                 blue_name=blue_name,
                 red_name=red_name,
@@ -148,15 +176,47 @@ class Scraper:
             )
 
             order += 1
-            newly_scraped_fights.append(fight[0])
+            newly_scraped_fights.append(fight_obj)
+
+            if created:
+                changes.append({
+                    "type": "fight_created",
+                    "event_id": event.id,
+                    "event_name": event.headline,
+                    "fight": _fight_change_info(fight_obj),
+                })
+            elif existing_fight:
+                updated_fields = []
+                if existing_fight.winner != winner:
+                    updated_fields.append("winner")
+                if existing_fight.method != method:
+                    updated_fields.append("method")
+                if existing_fight.round != round:
+                    updated_fields.append("round")
+                if updated_fields:
+                    changes.append({
+                        "type": "fight_updated",
+                        "event_id": event.id,
+                        "event_name": event.headline,
+                        "fight": _fight_change_info(fight_obj),
+                        "updated_fields": updated_fields,
+                    })
+
         # clean up fights that have changed or been canceled
         if existing_fights:
             newly_scraped_keys = set((f.blue_name, f.red_name) for f in newly_scraped_fights)
             for fight in existing_fights:
                 key = (fight.blue_name, fight.red_name)
                 if key not in newly_scraped_keys:
-                    print(f"[delete] Fight no longer found: {fight}")
+                    changes.append({
+                        "type": "fight_removed",
+                        "event_id": event.id,
+                        "event_name": event.headline,
+                        "fight": {"blue_name": fight.blue_name, "red_name": fight.red_name, "card": fight.card},
+                    })
                     fight.delete()
+
+        return changes
 
     def get_html_content(self, url, wait_after_ms=0, timeout_ms=None):
         timeout_ms = timeout_ms or self.GOTO_TIMEOUT_MS
