@@ -9,6 +9,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
 
+# Optional: set SCRAPE_SECRET to allow triggering the scraper with ?token=... or X-Scrape-Token header (no admin login)
+SCRAPE_SECRET = config('SCRAPE_SECRET', default='')
+
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 # ALLOWED_HOSTS - Render automatically sets RENDER_EXTERNAL_HOSTNAME

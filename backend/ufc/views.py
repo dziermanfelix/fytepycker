@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.utils import timezone
 from rest_framework.permissions import IsAdminUser
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -32,15 +33,20 @@ class EventView(APIView):
 
 
 class ScraperView(APIView):
-    permission_classes = [IsAdminUser]
-    # Note: authentication_classes override is optional now since SessionAuthentication
-    # is in DEFAULT_AUTHENTICATION_CLASSES, but keeping it explicit for clarity
+    permission_classes = []  # auth checked in get()
     authentication_classes = [SessionAuthentication, BasicAuthentication]
 
     def get(self, request):
-        if not request.user.is_staff:
+        # Allow: admin user, or valid SCRAPE_SECRET (query ?token=... or header X-Scrape-Token)
+        scrape_secret = getattr(settings, 'SCRAPE_SECRET', '') or ''
+        token = request.query_params.get('token') or request.headers.get('X-Scrape-Token') or ''
+        if request.user.is_authenticated and request.user.is_staff:
+            pass  # allowed
+        elif scrape_secret and token and token == scrape_secret:
+            pass  # allowed
+        else:
             return Response(
-                {'error': 'You must be a staff user to access this endpoint'},
+                {'error': 'You must be a staff user or provide a valid token to access this endpoint'},
                 status=status.HTTP_403_FORBIDDEN
             )
         scraper = Scraper()
