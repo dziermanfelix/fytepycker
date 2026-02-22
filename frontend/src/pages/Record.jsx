@@ -50,10 +50,7 @@ const RecordContent = () => {
             filteredItems.map((item) => <RecordCard key={item.user.id} item={item} handleClick={handleUserClick} />)
           ) : (
             <div className='col-span-full flex flex-col items-center justify-center py-12 px-4'>
-              <div className='mb-4 p-4 rounded-full bg-gray-100'>
-                <FaTrophy className='text-4xl text-gray-400' />
-              </div>
-              <h3 className='text-xl font-semibold text-gray-800 mb-2'>No Records Yet</h3>
+              <h3 className='text-xl font-semibold text-gray-800 mb-2'>No Records.</h3>
               <p className='text-gray-500 text-center mb-6 max-w-md'>Completed matchups get recorded here.</p>
               <button
                 onClick={() => navigate(FRONTEND_URLS.MATCHUPS)}

@@ -34,8 +34,9 @@ const MatchupsContent = () => {
                   return <MatchupCard key={matchup.id} matchup={matchup} handleClick={handleClick} />;
                 })
               ) : (
-                <div>
-                  <LoadingCards count={1} />
+                <div className='col-span-full text-center py-12 text-slate-500'>
+                  <p className='text-lg font-medium'>No matchups.</p>
+                  <p className='text-md font-medium'>Create a matchup above.</p>
                 </div>
               ))}
           </>
