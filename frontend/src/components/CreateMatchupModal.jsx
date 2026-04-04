@@ -9,7 +9,7 @@ const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { users, selectedOpponent, setSelectedOpponent, fetchUsers } = useUsers(user.id);
+  const { users, selectedOpponent, setSelectedOpponent, fetchUsers } = useUsers(user.id, selectedEvent?.id);
   const { refetchMatchups } = useMatchups();
 
   useEffect(() => {
