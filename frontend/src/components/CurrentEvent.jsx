@@ -7,7 +7,7 @@ import LoadingEvent from './LoadingEvent';
 import { FaExternalLinkSquareAlt } from 'react-icons/fa';
 
 const CurrentEventContent = () => {
-  const { user, isLoading, isError, selectedEvent, selectEvent, fights, upcomingEvents } = useEvents();
+  const { user, isLoading, isError, selectedEvent, selectEvent, upcomingEvents } = useEvents();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 

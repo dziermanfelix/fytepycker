@@ -14,6 +14,7 @@ const MatchupContent = ({ basePath, deletable }) => {
   const [checkingMatchup, setCheckingMatchup] = useState(true);
   const retryCount = useRef(0);
   const timeoutRef = useRef(null);
+  const fightsRef = useRef(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,6 +43,19 @@ const MatchupContent = ({ basePath, deletable }) => {
 
     return () => clearTimeout(timeoutRef.current);
   }, [id, isLoading, navigate, matchups]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!fightsRef.current.contains(e.target)) {
+        navigate(basePath);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const deleteMatchupClicked = () => {
     setIsModalOpen(true);
@@ -105,7 +119,10 @@ const MatchupContent = ({ basePath, deletable }) => {
       <div>
         <MatchupHeader />
         <EventViewCloseButton basePath={basePath} />
-        <SelectableFights />
+        <div ref={fightsRef}>
+          <SelectableFights />
+        </div>
+
         {deletable && (
           <div>
             <button
