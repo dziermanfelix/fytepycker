@@ -2,12 +2,12 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.authentication import TokenAuthentication
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer
 from .models import User
+from ..matchups.models import Matchup
+from django.db.models import Q
 
 
 class RegisterView(APIView):
@@ -92,4 +92,18 @@ class AccountsView(APIView):
     def get(self, request):
         users = User.objects.all()
         serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AvailableUsersView(APIView):
+    def get(self, request):
+        user_id = request.query_params['user_id']
+        event_id = request.query_params['event_id']
+        user_ids = list(User.objects.values_list('id', flat=True))
+        existing_matchup_users = Matchup.objects.filter((Q(user_a_id=user_id) | Q(user_b_id=user_id))
+                                                        & (Q(event=event_id))).values_list('user_a_id', 'user_b_id')
+        exclude_ids = list(set([uid for row in existing_matchup_users for uid in row]))
+        available_ids = [x for x in user_ids if x not in exclude_ids]
+        available_users = User.objects.filter(id__in=available_ids)
+        serializer = UserSerializer(available_users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

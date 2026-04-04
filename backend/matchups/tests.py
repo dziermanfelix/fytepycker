@@ -7,6 +7,7 @@ from itertools import cycle
 from backend.ufc.models import Event, Fight
 from .models import Matchup, Selection
 from backend.ufc.scraper import Scraper
+from ..accounts.serializers import UserSerializer
 
 
 User = get_user_model()
@@ -21,6 +22,7 @@ class MatchupTests(APITestCase):
         self.scraper = Scraper()
 
         self.matchups_url = reverse('api:matchups:matchups')
+        self.available_users_url = reverse('api:accounts:available-users')
         self.addDummyData()
 
     def addDummyData(self):
@@ -257,6 +259,21 @@ class MatchupTests(APITestCase):
                                       format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data['error'], 'Matchup not found.')
+
+    def test_get_available_users(self):
+        Matchup.objects.create(
+            event_id=self.event.id,
+            user_a_id=self.user.id,
+            user_b_id=self.user2.id,
+        )
+        response = self.client.get(self.available_users_url, {"user_id": self.user.id, "event_id": self.event.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+
+        new_user = get_user_model().objects.create_user(username='testuser3', email='testuser3@gmail.com', password='testpass3')
+        response = self.client.get(self.available_users_url, {"user_id": self.user.id, "event_id": self.event.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [UserSerializer(new_user).data])
 
 
 class SelectionTests(APITestCase):

@@ -9,7 +9,8 @@ export const useUsers = (currentUserId) => {
 
   const fetchUsers = async () => {
     try {
-      const { data } = await client.get(API_URLS.USERS);
+      const { data } = await client.get(API_URLS.AVAILABLE_USERS, { params: { user_id: 1 } });
+      console.log('avail data', data);
       const filteredUsers = data.filter((u) => u.id !== currentUserId);
       setUsers(filteredUsers);
       if (filteredUsers.length > 0) {

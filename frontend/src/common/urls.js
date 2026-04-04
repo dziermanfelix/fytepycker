@@ -19,6 +19,7 @@ export const API_URLS = {
   MATCHUPS: '/matchups/',
   SELECTIONS: '/matchups/selections/',
   USERS: '/auth/users/',
+  AVAILABLE_USERS: '/auth/available-users/',
   RECORD: '/matchups/record/',
   VERSION: '/version',
 };
