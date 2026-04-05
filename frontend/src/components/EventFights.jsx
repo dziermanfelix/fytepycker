@@ -25,12 +25,24 @@ const EventFights = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        navigate('dash/matchups');
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, []);
+
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading selections.</p>;
 
   return (
-    <div className='relative'>
-      <div ref={fightsRef}>
+    <div ref={fightsRef} className='relative'>
+      <div>
         <Fights fights={fights} />
       </div>
       {enableCreateMatchup && (

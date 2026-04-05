@@ -46,7 +46,7 @@ const MatchupContent = ({ basePath, deletable }) => {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!fightsRef.current.contains(e.target)) {
+      if (fightsRef.current && !fightsRef.current.contains(e.target)) {
         navigate(basePath);
       }
     };
@@ -54,6 +54,18 @@ const MatchupContent = ({ basePath, deletable }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [navigate, basePath]);
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        navigate(basePath);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
     };
   }, []);
 
@@ -115,11 +127,11 @@ const MatchupContent = ({ basePath, deletable }) => {
   if (isError) return <p className='text-center text-red-500'>Failed to load matchups.</p>;
 
   return (
-    <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
+    <div ref={fightsRef} className='grid gap-2 max-w-5xl mx-auto mt-2'>
       <div>
         <MatchupHeader />
         <EventViewCloseButton basePath={basePath} />
-        <div ref={fightsRef}>
+        <div>
           <SelectableFights />
         </div>
 
