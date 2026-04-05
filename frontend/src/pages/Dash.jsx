@@ -23,7 +23,7 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
     <div className='bg-white shadow-sm w-75 h-full flex-shrink-0 flex flex-col'>
       <div className='mt-12 flex items-center justify-between'>
         {isMobile && (
-          <button onClick={() => setIsSidebarOpen(false)} className='ml-2 text-gray-400 hover:text-red-500'>
+          <button onClick={() => setIsSidebarOpen(false)} className='danger-btn'>
             <IoMdClose />
           </button>
         )}
@@ -106,7 +106,7 @@ const Header = ({ setIsSidebarOpen }) => {
         <Link to={'/dash/messages'}>
           <button
             onClick={() => handleDropdownSelect()}
-            className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 hover: focus:outline-none'
+            className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 focus:outline-none'
           >
             <FaBell />
           </button>

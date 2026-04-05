@@ -54,7 +54,7 @@ const CurrentEventContent = () => {
                       </div>
                     </div>
                     <button
-                      className='px-6 py-2 bg-yellow-900 font-semibold rounded-lg shadow-md hover:bg-yellow-700 hover:text-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200 ease-in-out'
+                      className='action-btn'
                       onClick={() => {
                         setIsModalOpen(true);
                       }}

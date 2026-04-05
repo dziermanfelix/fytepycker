@@ -74,11 +74,7 @@ const Login = () => {
           />
         </div>
 
-        <button
-          type='submit'
-          disabled={isLoading}
-          className='w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded'
-        >
+        <button type='submit' disabled={isLoading} className='form-btn'>
           {isLoading ? 'Logging in...' : 'Login'}
         </button>
       </form>

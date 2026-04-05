@@ -114,7 +114,7 @@ const MatchupContent = ({ basePath, deletable }) => {
             </p>
           </div>
 
-          <button onClick={() => navigate(basePath)} className='p-2 rounded-lg hover:bg-gray-100'>
+          <button onClick={() => navigate(basePath)} className='danger-btn'>
             <IoMdClose className='w-5 h-5 text-gray-500' />
           </button>
         </div>
@@ -137,10 +137,7 @@ const MatchupContent = ({ basePath, deletable }) => {
 
         {deletable && (
           <div>
-            <button
-              className='mt-2 mb-2 px-6 py-2 bg-yellow-900 font-semibold rounded-lg shadow-md hover:bg-yellow-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200 ease-in-out'
-              onClick={deleteMatchupClicked}
-            >
+            <button className='danger-btn' onClick={deleteMatchupClicked}>
               Delete Matchup
             </button>
           </div>
@@ -158,7 +155,7 @@ const MatchupContent = ({ basePath, deletable }) => {
 
             <div className='flex justify-start mt-6'>
               <button
-                className='px-4 py-2 mr-2 bg-gray-300 rounded hover:bg-gray-400 transition duration-200'
+                className='submit-btn'
                 onClick={() => {
                   setIsModalOpen(false);
                   setError('');
@@ -167,11 +164,7 @@ const MatchupContent = ({ basePath, deletable }) => {
               >
                 Cancel
               </button>
-              <button
-                className='px-4 py-2 bg-yellow-900 text-white rounded hover:bg-yellow-800 transition duration-200 disabled:opacity-50'
-                onClick={handleDeleteMatchup}
-                disabled={isSubmitting}
-              >
+              <button className='submit-btn' onClick={handleDeleteMatchup} disabled={isSubmitting}>
                 {isSubmitting ? 'Deleting...' : 'Delete Matchup'}
               </button>
             </div>

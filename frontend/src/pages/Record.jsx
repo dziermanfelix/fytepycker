@@ -52,10 +52,7 @@ const RecordContent = () => {
             <div className='col-span-full flex flex-col items-center justify-center py-12 px-4'>
               <h3 className='text-xl font-semibold text-gray-800 mb-2'>No Records.</h3>
               <p className='text-gray-500 text-center mb-6 max-w-md'>Completed matchups get recorded here.</p>
-              <button
-                onClick={() => navigate(FRONTEND_URLS.MATCHUPS)}
-                className='px-6 py-2 bg-yellow-900 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 hover:text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-300 transition duration-200 ease-in-out'
-              >
+              <button onClick={() => navigate(FRONTEND_URLS.MATCHUPS)} className='action-btn'>
                 Go To Matchups
               </button>
             </div>

@@ -50,7 +50,7 @@ class Scraper:
         fight_divs = list()
 
         if action == 'upcoming':
-            fight_divs = all_fight_divs[:1]
+            fight_divs = all_fight_divs[:2]
 
         elif action == 'past':
             for fight_div in all_fight_divs:
@@ -67,6 +67,7 @@ class Scraper:
             a_tag = fight.find("a")
             if a_tag and "href" in a_tag.attrs:
                 fight_url = "https://www.ufc.com" + a_tag["href"]
+                print(f'fight_url = {fight_url}')
                 result = self.scrape_fights_from_url(fight_url)
                 scraped_urls.append(fight_url)
                 if result:

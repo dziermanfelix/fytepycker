@@ -82,7 +82,7 @@ const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user 
 
         <div className='flex justify-end mt-6'>
           <button
-            className='px-4 py-2 mr-2 bg-gray-300 rounded hover:bg-gray-400 transition duration-200'
+            className='danger-btn'
             onClick={() => {
               if (selectEvent) selectEvent(null);
               onClose();
@@ -91,11 +91,7 @@ const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user 
           >
             Cancel
           </button>
-          <button
-            className='px-4 py-2 bg-yellow-900 text-white rounded hover:bg-yellow-800 transition duration-200 disabled:opacity-50'
-            onClick={handleSubmitMatchup}
-            disabled={isSubmitting || !selectedOpponent}
-          >
+          <button className='submit-btn' onClick={handleSubmitMatchup} disabled={isSubmitting || !selectedOpponent}>
             {isSubmitting ? 'Creating...' : 'Create Matchup'}
           </button>
         </div>
