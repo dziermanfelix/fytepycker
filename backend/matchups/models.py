@@ -3,6 +3,7 @@ from django.core.validators import MaxValueValidator
 from backend.ufc.models import Event, Fight
 from backend.accounts.models import User
 from .managers import MatchupManager, SelectionManager
+from django.db.models import Case, When, Value, IntegerField
 
 
 class Matchup(models.Model):
@@ -63,6 +64,17 @@ class Selection(models.Model):
             models.Index(fields=['fight'], name='matchups_se_fight_idx'),
             models.Index(fields=['winner'], name='matchups_se_winner_idx'),
         ]
+
+    @classmethod
+    def ordered_for_draft(cls, matchup):
+        return cls.objects.filter(matchup=matchup).annotate(
+            card_order=Case(
+                When(fight__card='early', then=Value(0)),
+                When(fight__card='prelims', then=Value(1)),
+                When(fight__card='main', then=Value(2)),
+                output_field=IntegerField()
+            )
+        ).order_by('card_order', '-fight__order', 'id')
 
     def __str__(self):
         return f"{{Matchup:{self.matchup}|Fight:{self.fight}|UserASelection:{self.user_a_selection}|UserBSelection:{self.user_b_selection}}}"

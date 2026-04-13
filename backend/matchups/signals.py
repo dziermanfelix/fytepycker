@@ -28,14 +28,7 @@ def create_matchup_related_objects(sender, instance, created, **kwargs):
         # create selection for each fight
         user_cycle = cycle([instance.first_pick, instance.user_b if instance.first_pick ==
                            instance.user_a else instance.user_a])
-        fights = Fight.objects.filter(event=instance.event).annotate(
-            card_order=Case(
-                When(card='early', then=Value(0)),
-                When(card='prelims', then=Value(1)),
-                When(card='main', then=Value(2)),
-                output_field=IntegerField()
-            )
-        ).order_by('-card_order', '-order')
+        fights = Fight.ordered_for_draft(instance.event)
 
         for fight in fights:
             dibs = next(user_cycle)

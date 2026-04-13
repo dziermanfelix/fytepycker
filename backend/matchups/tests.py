@@ -8,6 +8,7 @@ from backend.ufc.models import Event, Fight
 from .models import Matchup, Selection
 from backend.ufc.scraper import Scraper
 from ..accounts.serializers import UserSerializer
+from django.db.models import Case, When, IntegerField, Value
 
 
 User = get_user_model()
@@ -298,6 +299,7 @@ class SelectionTests(APITestCase):
         self.event = event[0]
         fight_main_0 = Fight.objects.update_or_create(
             event_id=self.event.id,
+            order=0,
             blue_name="paul",
             red_name="john",
             defaults={
@@ -316,6 +318,7 @@ class SelectionTests(APITestCase):
         self.fight_main_0 = fight_main_0[0]
         fight_main_1 = Fight.objects.update_or_create(
             event_id=self.event.id,
+            order=1,
             blue_name="george",
             red_name="ringo",
             defaults={
@@ -334,6 +337,7 @@ class SelectionTests(APITestCase):
         self.fight_main_1 = fight_main_1[0]
         fight_pre_0 = Fight.objects.update_or_create(
             event_id=self.event.id,
+            order=0,
             blue_name="mick",
             red_name="keith",
             defaults={
@@ -352,6 +356,7 @@ class SelectionTests(APITestCase):
         self.fight_pre_0 = fight_pre_0[0]
         fight_pre_1 = Fight.objects.update_or_create(
             event_id=self.event.id,
+            order=1,
             blue_name="roger",
             red_name="pete",
             defaults={
@@ -376,7 +381,7 @@ class SelectionTests(APITestCase):
         self.matchup = matchup[0]
 
     def test_selections_created_from_matchup(self):
-        selections = Selection.objects.filter(matchup=self.matchup.id)
+        selections = Selection.ordered_for_draft(self.matchup)
         user_cycle = cycle([self.matchup.first_pick, self.matchup.user_b if self.matchup.first_pick ==
                            self.matchup.user_a else self.matchup.user_a])
         expected_fights = [self.fight_pre_1, self.fight_pre_0, self.fight_main_1, self.fight_main_0]

@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Case, When, Value, IntegerField
 
 
 class Event(models.Model):
@@ -55,6 +56,17 @@ class Fight(models.Model):
             models.Index(fields=['event'], name='ufc_fight_event_idx'),
             models.Index(fields=['event', 'order'], name='ufc_fight_event_order_idx'),
         ]
+
+    @classmethod
+    def ordered_for_draft(cls, event):
+        return cls.objects.filter(event=event).annotate(
+            card_order=Case(
+                When(card='early', then=Value(0)),
+                When(card='prelims', then=Value(1)),
+                When(card='main', then=Value(2)),
+                output_field=IntegerField()
+            )
+        ).order_by('card_order', '-order', 'id')
 
     def get_fighters(self):
         return [self.blue_name, self.red_name]
