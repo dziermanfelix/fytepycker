@@ -341,7 +341,7 @@ class SelectionTests(APITestCase):
             blue_name="mick",
             red_name="keith",
             defaults={
-                "card": "prelims",
+                "card": "prelim",
                 "order": 0,
                 "weight_class": "welterweight",
                 "blue_img": "https://url.img",
@@ -360,7 +360,7 @@ class SelectionTests(APITestCase):
             blue_name="roger",
             red_name="pete",
             defaults={
-                "card": "prelims",
+                "card": "prelim",
                 "order": 1,
                 "weight_class": "welterweight",
                 "blue_img": "https://url.img",
@@ -521,14 +521,14 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(self.selection_url, {"matchup_id": self.matchup.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['matchup'], self.matchup.id)
-        self.assertEqual(response.data[0]['fight'], self.fight_main_0.id)
-        self.assertEqual(response.data[0]['user_a_selection'], self.fight_main_0.red_name)
-        self.assertEqual(response.data[0]['user_b_selection'], self.fight_main_0.blue_name)
-        self.assertEqual(response.data[0]['bet'], 100)
-        self.assertEqual(response.data[0]['winner'], None)
-        self.assertIn(response.data[0]['dibs'], [self.user.id, self.user2.id])
-        self.assertEqual(response.data[0]['confirmed'], True)
+        self.assertEqual(response.data[-1]['matchup'], self.matchup.id)
+        self.assertEqual(response.data[-1]['fight'], self.fight_main_0.id)
+        self.assertEqual(response.data[-1]['user_a_selection'], self.fight_main_0.red_name)
+        self.assertEqual(response.data[-1]['user_b_selection'], self.fight_main_0.blue_name)
+        self.assertEqual(response.data[-1]['bet'], 100)
+        self.assertEqual(response.data[-1]['winner'], None)
+        self.assertIn(response.data[-1]['dibs'], [self.user.id, self.user2.id])
+        self.assertEqual(response.data[-1]['confirmed'], True)
 
     def test_get_selection_error_matchup_id_not_provided(self):
         data = {

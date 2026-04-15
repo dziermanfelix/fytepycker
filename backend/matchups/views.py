@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from .serializers import MatchupSerializer, CustomSelectionPostSerializer, SelectionSerializer, RecordSerializer
 from .models import Matchup, Selection
 from backend.accounts.models import User
@@ -32,9 +32,10 @@ class MatchupView(APIView):
         user_a_id = request.GET.get("user_a_id")
         user_b_id = request.GET.get("user_b_id")
         matchups = Matchup.objects.select_related('event', 'user_a', 'user_b').prefetch_related(
-            'matchup_selections',
-            'matchup_selections__winner',
-            'matchup_selections__fight',
+            Prefetch(
+                'matchup_selections',
+                queryset=Selection.with_draft_ordering().select_related('fight', 'winner', 'dibs'),
+            ),
         ).all()
         if matchup_id:
             matchups = matchups.filter(id=matchup_id)
@@ -122,7 +123,7 @@ class SelectionView(APIView):
         if not matchup_id:
             return Response({"error": "matchup_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        selections = Selection.objects.filter(matchup=matchup_id).select_related(
+        selections = Selection.ordered_for_draft(matchup_id).select_related(
             'matchup', 'matchup__event', 'matchup__user_a', 'matchup__user_b',
             'fight', 'fight__event', 'winner', 'dibs'
         )

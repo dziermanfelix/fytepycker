@@ -62,7 +62,7 @@ class Fight(models.Model):
         return cls.objects.filter(event=event).annotate(
             card_order=Case(
                 When(card='early', then=Value(0)),
-                When(card='prelims', then=Value(1)),
+                When(card='prelim', then=Value(1)),
                 When(card='main', then=Value(2)),
                 output_field=IntegerField()
             )
