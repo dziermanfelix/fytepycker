@@ -28,42 +28,40 @@ const CurrentEventContent = () => {
         <div>
           <div className='grid gap-2 cursor-pointer hover:shadow-lg hover:-translate-y-1'>
             {upcomingEvents.length > 0 ? (
-              upcomingEvents.map((event) => (
-                <div
-                  key={event?.id}
-                  className='p-4 shadow-lg rounded-lg border border-gray-200'
-                  onClick={(e) => openEvent(e, event)}
-                >
-                  <div className='flex justify-between items-center'>
-                    <div className='flex space-x-2 justify-center'>
-                      <button
-                        className='mr-4 px-2 py-2 text-xs font-semibold rounded-lg shadow-md hover:shadow-lg bg-gray-50 hover:bg-gray-200'
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (event?.url) {
-                            window.open(event.url, '_blank', 'noopener,noreferrer');
-                          }
-                        }}
-                      >
-                        <FaExternalLinkSquareAlt />
-                      </button>
-                      <div className='flex items-center space-x-2'>
-                        <p className=''>
-                          {event?.name} - {event?.headline}
-                        </p>
-                      </div>
-                    </div>
+              <div
+                key={upcomingEvents[0]?.id}
+                className='p-4 shadow-lg rounded-lg border border-gray-200'
+                onClick={(e) => openEvent(e, upcomingEvents[0])}
+              >
+                <div className='flex justify-between items-center'>
+                  <div className='flex space-x-2 justify-center'>
                     <button
-                      className='action-btn'
-                      onClick={() => {
-                        setIsModalOpen(true);
+                      className='mr-4 px-2 py-2 text-xs font-semibold rounded-lg shadow-md hover:shadow-lg bg-gray-50 hover:bg-gray-200'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (upcomingEvents[0]?.url) {
+                          window.open(upcomingEvents[0].url, '_blank', 'noopener,noreferrer');
+                        }
                       }}
                     >
-                      Matchup
+                      <FaExternalLinkSquareAlt />
                     </button>
+                    <div className='flex items-center space-x-2'>
+                      <p className=''>
+                        {upcomingEvents[0]?.name} - {upcomingEvents[0]?.headline}
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    className='action-btn'
+                    onClick={() => {
+                      setIsModalOpen(true);
+                    }}
+                  >
+                    Matchup
+                  </button>
                 </div>
-              ))
+              </div>
             ) : (
               <p className='text-center text-gray-500'>No events.</p>
             )}
