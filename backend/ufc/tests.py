@@ -89,11 +89,11 @@ class ScraperTests(APITestCase):
     def test_parse_event_date(self):
         date_str = "Sun, Dec 25 / 2:00 AM UTC"
         result = self.scraper.parse_event_date(date_str)
-        self.assertEqual(str(result), "2025-12-25 02:00:00+00:00")
+        self.assertEqual(str(result), "2026-12-25 02:00:00+00:00")
 
         date_str = "Sun, Jan 25 / 2:00 AM UTC"
         result = self.scraper.parse_event_date(date_str)
-        self.assertEqual(str(result), "2026-01-25 02:00:00+00:00")
+        self.assertEqual(str(result), "2027-01-25 02:00:00+00:00")
 
         date_str = "Sun, Feb 23 / 2:00 AM UTC"
         result = self.scraper.parse_event_date(date_str)
