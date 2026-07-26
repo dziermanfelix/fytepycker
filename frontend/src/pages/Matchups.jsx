@@ -18,29 +18,28 @@ const MatchupsContent = () => {
   const currentMatchups = matchups?.filter((matchup) => !matchup.event.complete) || [];
 
   return (
-    <div className='grid gap-2 max-w-5xl mx-auto mt-2'>
+    <div className='mx-auto mt-2 grid max-w-3xl gap-2'>
       <div className='pb-4'>
         <CurrentEvent />
       </div>
-      <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
-        {!id && (
-          <>
-            {isLoading && <LoadingCards />}
-            {isError && <p className='text-center text-red-500 col-span-full'>Failed to load matchups.</p>}
-            {!isLoading &&
-              !isError &&
-              (currentMatchups.length > 0 ? (
-                currentMatchups.map((matchup) => {
-                  return <MatchupCard key={matchup.id} matchup={matchup} handleClick={handleClick} />;
-                })
-              ) : (
-                <div className='col-span-full text-center py-12 text-slate-500'>
-                  <p className='text-lg font-medium'>No matchups.</p>
-                </div>
-              ))}
-          </>
-        )}
-      </div>
+      {!id && (
+        <div className='flex flex-col gap-3'>
+          {isLoading && <LoadingCards />}
+          {isError && <p className='text-center text-rose-500'>Failed to load matchups.</p>}
+          {!isLoading &&
+            !isError &&
+            (currentMatchups.length > 0 ? (
+              currentMatchups.map((matchup) => (
+                <MatchupCard key={matchup.id} matchup={matchup} handleClick={handleClick} />
+              ))
+            ) : (
+              <div className='rounded-xl border border-dashed border-stone-300 bg-white/60 py-14 text-center text-stone-500'>
+                <p className='text-lg font-semibold uppercase tracking-wide'>No matchups</p>
+                <p className='mt-1 text-sm'>Create one from the event card above.</p>
+              </div>
+            ))}
+        </div>
+      )}
     </div>
   );
 };

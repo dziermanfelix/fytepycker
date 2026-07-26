@@ -1,6 +1,24 @@
 import { useMatchups } from '@/contexts/MatchupsContext';
 import { getReadyFight } from '@/common/fight';
-import { getWinningsTextColor } from '@/utils/winningsDisplayUtils';
+import { formatWinnings, getWinningsTextColor } from '@/utils/winningsDisplayUtils';
+
+const statusStyles = {
+  yours: {
+    bar: 'bg-rose-500',
+    badge: 'bg-rose-500/10 text-rose-700 ring-rose-500/20',
+    label: 'Your Move',
+  },
+  waiting: {
+    bar: 'bg-amber-500',
+    badge: 'bg-amber-500/10 text-amber-800 ring-amber-500/20',
+    label: 'Waiting',
+  },
+  complete: {
+    bar: 'bg-stone-400',
+    badge: 'bg-stone-500/10 text-stone-600 ring-stone-500/20',
+    label: 'Locked',
+  },
+};
 
 const MatchupCard = ({ matchup, handleClick }) => {
   const { user } = useMatchups();
@@ -21,57 +39,73 @@ const MatchupCard = ({ matchup, handleClick }) => {
   }
 
   const firstPick = matchup.first_pick === matchup.user_a.id ? matchup.user_a.username : matchup.user_b.username;
+  const statusKey = numUnconfirmed === 0 ? 'complete' : yourTurn ? 'yours' : 'waiting';
+  const status = statusStyles[statusKey];
+  const confirmed = matchup.selections.length - numUnconfirmed;
 
   return (
-    <div
-      key={matchup.id}
+    <button
+      type='button'
       onClick={() => handleClick(matchup)}
-      className='p-5 rounded-2xl shadow-sm border border-gray-100 bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer'
+      className='group relative w-full overflow-hidden rounded-xl border border-stone-200 bg-white text-left transition-colors hover:border-stone-300 hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-800/40'
     >
-      {/* Header */}
-      <div className='flex justify-between items-center mb-3'>
-        <div>
-          <p className='text-xs text-gray-400 uppercase tracking-wide'>Opponent</p>
-          <p className='text-lg font-semibold text-gray-800 capitalize'>{otherUser}</p>
+      <div className={`absolute inset-y-0 left-0 w-1 ${status.bar}`} />
+
+      <div className='flex flex-col gap-4 p-4 pl-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-5 sm:pl-6'>
+        <div className='min-w-0 flex-1'>
+          <div className='mb-3 flex flex-wrap items-center gap-2'>
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-semibold uppercase tracking-wide ring-1 ring-inset ${status.badge}`}
+            >
+              {statusKey !== 'complete' && (
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${status.bar} ${statusKey === 'yours' ? 'animate-pulse' : ''}`}
+                />
+              )}
+              {status.label}
+            </span>
+            <span className='text-xs text-stone-400'>
+              {confirmed}/{matchup.selections.length} locked
+            </span>
+          </div>
+
+          <div className='flex items-center gap-3 sm:gap-4'>
+            <div className='flex min-w-0 flex-1 flex-col items-end text-right'>
+              <span className='text-xs text-stone-400'>You</span>
+              <span className='truncate text-lg font-bold uppercase leading-tight text-stone-900 sm:text-xl'>
+                {user.username}
+              </span>
+            </div>
+
+            <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-stone-800 text-[11px] font-bold tracking-wider text-white'>
+              VS
+            </div>
+
+            <div className='flex min-w-0 flex-1 flex-col'>
+              <span className='text-xs text-stone-400'>Opponent</span>
+              <span className='truncate text-lg font-bold uppercase leading-tight text-stone-900 sm:text-xl'>
+                {otherUser}
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Status Dot */}
-        <div>
-          {numUnconfirmed === 0 ? (
-            <span className='inline-block w-3 h-3 bg-black rounded-full' />
-          ) : yourTurn ? (
-            <span className='inline-block w-3 h-3 bg-red-500 rounded-full animate-pulse' />
-          ) : (
-            <span className='inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse' />
-          )}
+        <div className='flex items-end justify-between gap-4 border-t border-stone-100 pt-3 sm:min-w-[9.5rem] sm:flex-col sm:items-end sm:border-t-0 sm:border-l sm:border-stone-100 sm:pl-6 sm:pt-0'>
+          <div className='sm:text-right'>
+            <p className='text-xs text-stone-400'>On the board</p>
+            <p className={` text-2xl font-bold tabular-nums ${getWinningsTextColor(matchup.winnings)}`}>
+              {formatWinnings(matchup.winnings)}
+            </p>
+          </div>
+          <div className='text-right text-xs text-stone-400'>
+            <p>Bets {matchup.bets}</p>
+            <p className='capitalize'>
+              First: <span className='text-stone-600'>{firstPick}</span>
+            </p>
+          </div>
         </div>
       </div>
-
-      {/* Info grid */}
-      <div className='grid grid-cols-2 gap-3 text-sm'>
-        <div>
-          <p className='text-gray-400'>Winnings</p>
-          <p className={`font-semibold ${getWinningsTextColor(matchup.winnings)}`}>{matchup.winnings}</p>
-        </div>
-
-        <div>
-          <p className='text-gray-400'>Selection Status</p>
-          {yourTurn ? (
-            <p className='font-semibold text-red-500'>Your Move</p>
-          ) : numUnconfirmed === 0 ? (
-            <p className='font-semibold text-gray-500'>Complete</p>
-          ) : (
-            <p className='font-semibold text-green-600'>Waiting</p>
-          )}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className='mt-4 flex justify-between text-xs text-gray-400'>
-        <span>First Pick: {firstPick}</span>
-        <p>Bets: {matchup.bets}</p>
-      </div>
-    </div>
+    </button>
   );
 };
 

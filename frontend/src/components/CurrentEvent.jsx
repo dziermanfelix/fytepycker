@@ -26,46 +26,52 @@ const CurrentEventContent = () => {
     <div className=''>
       {!selectedEvent && (
         <div>
-          <div className='grid gap-2 cursor-pointer hover:shadow-lg hover:-translate-y-1'>
-            {upcomingEvents.length > 0 ? (
-              <div
-                key={upcomingEvents[0]?.id}
-                className='p-4 shadow-lg rounded-lg border border-gray-200'
-                onClick={(e) => openEvent(e, upcomingEvents[0])}
-              >
-                <div className='flex justify-between items-center'>
-                  <div className='flex space-x-2 justify-center'>
-                    <button
-                      className='mr-4 px-2 py-2 text-xs font-semibold rounded-lg shadow-md hover:shadow-lg bg-gray-50 hover:bg-gray-200'
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (upcomingEvents[0]?.url) {
-                          window.open(upcomingEvents[0].url, '_blank', 'noopener,noreferrer');
-                        }
-                      }}
-                    >
-                      <FaExternalLinkSquareAlt />
-                    </button>
-                    <div className='flex items-center space-x-2'>
-                      <p className=''>
-                        {upcomingEvents[0]?.name} - {upcomingEvents[0]?.headline}
-                      </p>
-                    </div>
-                  </div>
+          {upcomingEvents.length > 0 ? (
+            <div
+              key={upcomingEvents[0]?.id}
+              className='cursor-pointer overflow-hidden rounded-xl border border-stone-800 bg-stone-900 transition-colors hover:bg-stone-800'
+              onClick={(e) => openEvent(e, upcomingEvents[0])}
+            >
+              <div className='flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5'>
+                <div className='flex min-w-0 items-start gap-3'>
                   <button
-                    className='action-btn'
-                    onClick={() => {
-                      setIsModalOpen(true);
+                    className='mt-0.5 shrink-0 rounded-lg bg-white/10 p-2.5 text-white transition-colors hover:bg-white/20'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (upcomingEvents[0]?.url) {
+                        window.open(upcomingEvents[0].url, '_blank', 'noopener,noreferrer');
+                      }
                     }}
                   >
-                    Matchup
+                    <FaExternalLinkSquareAlt />
                   </button>
+                  <div className='min-w-0'>
+                    <p className='text-xs font-medium uppercase tracking-wide text-stone-400'>Next event</p>
+                    <p className='truncate text-xl font-bold uppercase tracking-wide text-white'>
+                      {upcomingEvents[0]?.name}
+                    </p>
+                    {upcomingEvents[0]?.headline && (
+                      <p className='mt-0.5 truncate text-sm text-stone-300'>{upcomingEvents[0]?.headline}</p>
+                    )}
+                  </div>
                 </div>
+                <button
+                  className='action-btn shrink-0'
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    selectEvent(upcomingEvents[0]);
+                    setIsModalOpen(true);
+                  }}
+                >
+                  Matchup
+                </button>
               </div>
-            ) : (
-              <p className='text-center text-gray-500'>No events.</p>
-            )}
-          </div>
+            </div>
+          ) : (
+            <p className='rounded-xl border border-dashed border-stone-300 bg-white/60 py-8 text-center text-stone-500'>
+              No events.
+            </p>
+          )}
         </div>
       )}
 
@@ -79,11 +85,22 @@ const CurrentEventContent = () => {
 
       {selectedEvent && !isModalOpen && (
         <div>
-          <EventViewCloseButton selectItem={selectEvent} basePath='/dash/matchups' />
-          <div className='mt-2 mb-2 rounded-lg'>
-            <div>
-              <EventFights />
+          <div className='mb-3 overflow-hidden rounded-xl border border-stone-800 bg-stone-900'>
+            <div className='flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5'>
+              <EventViewCloseButton
+                selectItem={selectEvent}
+                basePath='/dash/matchups'
+                label='Matchups'
+                variant='dark'
+              />
+              <div className='min-w-0 sm:text-right'>
+                <p className='truncate text-lg font-bold uppercase tracking-wide text-white'>{selectedEvent.name}</p>
+                {selectedEvent.headline && <p className='truncate text-sm text-stone-400'>{selectedEvent.headline}</p>}
+              </div>
             </div>
+          </div>
+          <div className='mt-2 mb-2 rounded-lg'>
+            <EventFights />
           </div>
         </div>
       )}

@@ -5,20 +5,24 @@ import client from '@/api/client';
 import { API_URLS, FRONTEND_URLS } from '@/common/urls';
 import EventViewCloseButton from '@/components/EventViewCloseButton';
 import SelectableFights from '@/components/SelectableFights';
-import { IoMdClose } from 'react-icons/io';
+import { formatWinnings, getWinningsTextColor } from '@/utils/winningsDisplayUtils';
 
 const MatchupContent = ({ basePath, deletable }) => {
   const { id } = useParams();
-  const { isLoading, isError, matchups, selectMatchup, selectedMatchup, refetchMatchups, selections } = useMatchups();
+  const { isLoading, isError, matchups, selectMatchup, selectedMatchup, refetchMatchups, selections, user } =
+    useMatchups();
   const navigate = useNavigate();
   const [checkingMatchup, setCheckingMatchup] = useState(true);
   const retryCount = useRef(0);
   const timeoutRef = useRef(null);
-  const fightsRef = useRef(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  const backLabel = basePath?.includes('record') ? 'Record' : 'Matchups';
+  const otherUser =
+    user?.id == selectedMatchup?.user_a?.id ? selectedMatchup?.user_b?.username : selectedMatchup?.user_a?.username;
 
   useEffect(() => {
     const maxRetries = 2;
@@ -44,31 +48,6 @@ const MatchupContent = ({ basePath, deletable }) => {
     return () => clearTimeout(timeoutRef.current);
   }, [id, isLoading, navigate, matchups]);
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (fightsRef.current && !fightsRef.current.contains(e.target)) {
-        navigate(basePath);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [navigate, basePath]);
-
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        navigate(basePath);
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, []);
-
   const deleteMatchupClicked = () => {
     setIsModalOpen(true);
   };
@@ -78,7 +57,7 @@ const MatchupContent = ({ basePath, deletable }) => {
     setError('');
 
     try {
-      const { data } = await client.delete(API_URLS.MATCHUPS, {
+      await client.delete(API_URLS.MATCHUPS, {
         data: {
           event_id: selectedMatchup?.event?.id,
           user_a_id: selectedMatchup?.user_a?.id,
@@ -96,64 +75,68 @@ const MatchupContent = ({ basePath, deletable }) => {
     }
   };
 
-  const MatchupHeader = () => {
-    const winnings = selectedMatchup.winnings;
-    const display = selections.every((s) => s.confirmed) || selectedMatchup.event.complete;
-    if (!display) return null;
+  const showResult = selectedMatchup && (selections.every((s) => s.confirmed) || selectedMatchup.event.complete);
 
-    const positive = winnings >= 0;
-
-    return (
-      <div className='mb-4 px-6 py-5 bg-white rounded-2xl border border-gray-100 shadow-sm'>
-        <div className='flex items-center justify-between'>
-          <div>
-            <p className='text-xs uppercase tracking-wide text-gray-400'>Match Result</p>
-            <p className={`text-3xl font-semibold ${positive ? 'text-green-600' : 'text-red-600'}`}>
-              {positive ? '+' : ''}
-              {winnings}
-            </p>
-          </div>
-
-          <button onClick={() => navigate(basePath)} className='danger-btn'>
-            <IoMdClose className='w-5 h-5 text-gray-500' />
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  if (checkingMatchup) return <p className='text-center text-gray-500'>{`Looking for matchup ${id}...`}</p>;
-  if (isLoading) return <p className='text-center text-gray-500'>Loading matchups...</p>;
-  if (isError) return <p className='text-center text-red-500'>Failed to load matchups.</p>;
+  if (checkingMatchup) return <p className='text-center text-stone-500'>{`Looking for matchup ${id}...`}</p>;
+  if (isLoading) return <p className='text-center text-stone-500'>Loading matchups...</p>;
+  if (isError) return <p className='text-center text-rose-500'>Failed to load matchups.</p>;
 
   return (
-    <div ref={fightsRef} className='grid gap-2 max-w-5xl mx-auto mt-2'>
-      <div>
-        <MatchupHeader />
-        <EventViewCloseButton basePath={basePath} />
-        <div>
-          <SelectableFights />
+    <div className='mx-auto mt-2 grid max-w-3xl gap-3'>
+      <div className='overflow-hidden rounded-xl border border-stone-800 bg-stone-900'>
+        <div className='flex flex-col gap-3 border-b border-white/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5'>
+          <EventViewCloseButton basePath={basePath} label={backLabel} variant='dark' />
+          {selectedMatchup?.event?.name && (
+            <p className='truncate text-sm text-stone-400 sm:text-right'>{selectedMatchup.event.name}</p>
+          )}
         </div>
 
-        {deletable && (
-          <div>
-            <button className='danger-btn' onClick={deleteMatchupClicked}>
-              Delete Matchup
-            </button>
+        <div className='flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6'>
+          <div className='flex min-w-0 items-center gap-3 sm:gap-4'>
+            <div className='min-w-0 text-right'>
+              <p className='text-xs text-stone-400'>You</p>
+              <p className='truncate text-lg font-bold uppercase text-white'>{user?.username}</p>
+            </div>
+            <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold tracking-wider text-white'>
+              VS
+            </div>
+            <div className='min-w-0'>
+              <p className='text-xs text-stone-400'>Opponent</p>
+              <p className='truncate text-lg font-bold uppercase text-white'>{otherUser}</p>
+            </div>
           </div>
-        )}
+
+          {showResult && (
+            <div className='sm:text-right'>
+              <p className='text-xs font-medium uppercase tracking-wide text-stone-400'>Result</p>
+              <p className={` text-3xl font-bold tabular-nums ${getWinningsTextColor(selectedMatchup.winnings)}`}>
+                {formatWinnings(selectedMatchup.winnings)}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
+      <SelectableFights />
+
+      {deletable && (
+        <div>
+          <button className='danger-btn' onClick={deleteMatchupClicked}>
+            Delete Matchup
+          </button>
+        </div>
+      )}
+
       {isModalOpen && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-          <div className='bg-white rounded-lg p-6 w-full max-w-md'>
-            <h2 className='text-xl font-bold mb-4'>Confirm Delete Matchup</h2>
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
+          <div className='w-full max-w-md rounded-lg bg-white p-6'>
+            <h2 className='mb-4 text-xl font-bold'>Confirm Delete Matchup</h2>
 
             {error && (
-              <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4'>{error}</div>
+              <div className='mb-4 rounded border border-red-400 bg-red-100 px-4 py-2 text-red-700'>{error}</div>
             )}
 
-            <div className='flex justify-start mt-6'>
+            <div className='mt-6 flex justify-start'>
               <button
                 className='submit-btn'
                 onClick={() => {

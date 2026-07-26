@@ -1,21 +1,28 @@
 import { useNavigate } from 'react-router-dom';
-import { IoMdClose } from 'react-icons/io';
+import { HiOutlineArrowLeft } from 'react-icons/hi2';
 
-const EventViewCloseButton = ({ selectItem, basePath }) => {
+const EventViewCloseButton = ({ selectItem, basePath, label = 'Back', variant = 'light', className = '' }) => {
   const navigate = useNavigate();
 
+  const handleClick = () => {
+    navigate(basePath);
+    if (selectItem) selectItem(null);
+  };
+
+  const styles =
+    variant === 'dark'
+      ? 'text-stone-300 hover:bg-white/10 hover:text-white'
+      : 'text-stone-600 hover:bg-stone-200/70 hover:text-stone-900';
+
   return (
-    <div className='flex justify-end mb-2'>
-      <button
-        className='px-4 py-2 rounded-sm hover:text-red-500'
-        onClick={() => {
-          navigate(basePath);
-          if (selectItem) selectItem(null);
-        }}
-      >
-        <IoMdClose />
-      </button>
-    </div>
+    <button
+      type='button'
+      onClick={handleClick}
+      className={`inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ${styles} ${className}`}
+    >
+      <HiOutlineArrowLeft className='h-4 w-4 shrink-0' />
+      <span>{label}</span>
+    </button>
   );
 };
 
