@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useEvents } from '@/contexts/EventsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import Fights from '@/components/Fights';
 import CreateMatchupModal from './CreateMatchupModal';
 
 const EventFights = () => {
-  const { activeEventTab, selectedEvent, isLoading, isError, user, fights } = useEvents();
+  const { selectedEvent, isLoading, isError, fights } = useEvents();
+  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const enableCreateMatchup = activeEventTab === 'upcoming';
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading selections.</p>;
@@ -17,11 +17,9 @@ const EventFights = () => {
       <div>
         <Fights fights={fights} />
       </div>
-      {enableCreateMatchup && (
-        <button className='action-btn' onClick={() => setIsModalOpen(true)}>
-          Create Matchup
-        </button>
-      )}
+      <button className='action-btn' onClick={() => setIsModalOpen(true)}>
+        Create Matchup
+      </button>
 
       <CreateMatchupModal
         isOpen={isModalOpen}

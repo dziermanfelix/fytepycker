@@ -201,8 +201,6 @@ export const MatchupsProvider = ({ children, disableWebSockets = false }) => {
   const fights = selectedMatchup?.event?.fights || {};
 
   const contextValue = {
-    user,
-
     matchups,
     selectedMatchup,
     selectMatchup,

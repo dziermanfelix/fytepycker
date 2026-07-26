@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useMatchups } from '@/contexts/MatchupsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import client from '@/api/client';
 import { API_URLS, FRONTEND_URLS } from '@/common/urls';
 import EventViewCloseButton from '@/components/EventViewCloseButton';
@@ -9,8 +10,8 @@ import { formatWinnings, getWinningsTextColor } from '@/utils/winningsDisplayUti
 
 const MatchupContent = ({ basePath, deletable }) => {
   const { id } = useParams();
-  const { isLoading, isError, matchups, selectMatchup, selectedMatchup, refetchMatchups, selections, user } =
-    useMatchups();
+  const { isLoading, isError, matchups, selectMatchup, selectedMatchup, refetchMatchups, selections } = useMatchups();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [checkingMatchup, setCheckingMatchup] = useState(true);
   const retryCount = useRef(0);

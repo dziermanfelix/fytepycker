@@ -1,15 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { useRecord, RecordProvider } from '@/contexts/RecordContext';
+import { useRecord } from '@/contexts/RecordContext';
 import { FRONTEND_URLS } from '@/common/urls';
 import RecordCard from '@/components/RecordCard';
-import { MatchupsProvider } from '@/contexts/MatchupsContext';
 import RecordMatchupCard from '@/components/RecordMatchupCard';
 import RecordStats from '@/components/RecordStats';
 import LoadingCards from '@/components/LoadingCards';
 import { FaTrophy } from 'react-icons/fa';
 
-const RecordContent = () => {
+const Record = () => {
   const navigate = useNavigate();
   const { isLoading, isError, items, selectedUser, setSelectedUser } = useRecord();
 
@@ -97,13 +96,5 @@ const RecordContent = () => {
     </div>
   );
 };
-
-const Record = () => (
-  <MatchupsProvider disableWebSockets>
-    <RecordProvider>
-      <RecordContent />
-    </RecordProvider>
-  </MatchupsProvider>
-);
 
 export default Record;

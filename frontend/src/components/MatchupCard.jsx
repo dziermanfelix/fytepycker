@@ -1,4 +1,4 @@
-import { useMatchups } from '@/contexts/MatchupsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { getReadyFight } from '@/common/fight';
 import { formatWinnings, getWinningsTextColor } from '@/utils/winningsDisplayUtils';
 
@@ -21,7 +21,7 @@ const statusStyles = {
 };
 
 const MatchupCard = ({ matchup, handleClick }) => {
-  const { user } = useMatchups();
+  const { user } = useAuth();
 
   const otherUser = user.id == matchup?.user_a.id ? matchup?.user_b?.username : matchup?.user_a?.username;
   const numUnconfirmed = matchup.selections.filter((selection) => !selection.confirmed).length;

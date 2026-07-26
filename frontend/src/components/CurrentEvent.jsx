@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useEvents, EventsProvider } from '@/contexts/EventsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import EventViewCloseButton from '@/components/EventViewCloseButton';
 import EventFights from '@/components/EventFights';
 import CreateMatchupModal from '@/components/CreateMatchupModal';
@@ -7,7 +8,8 @@ import LoadingEvent from './LoadingEvent';
 import { FaExternalLinkSquareAlt } from 'react-icons/fa';
 
 const CurrentEventContent = () => {
-  const { user, isLoading, isError, selectedEvent, selectEvent, upcomingEvents } = useEvents();
+  const { isLoading, isError, selectedEvent, selectEvent, upcomingEvents } = useEvents();
+  const { user } = useAuth();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 

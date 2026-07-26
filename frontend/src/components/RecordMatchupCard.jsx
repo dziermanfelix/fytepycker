@@ -1,8 +1,8 @@
-import { useMatchups } from '@/contexts/MatchupsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { formatWinnings, getWinningsTextColor } from '@/utils/winningsDisplayUtils';
 
 const RecordMatchupCard = ({ matchup, handleClick }) => {
-  const { user } = useMatchups();
+  const { user } = useAuth();
 
   const otherUser = user.id == matchup?.user_a.id ? matchup?.user_b?.username : matchup?.user_a?.username;
   const firstPick = matchup.first_pick === matchup.user_a.id ? matchup.user_a.username : matchup.user_b.username;

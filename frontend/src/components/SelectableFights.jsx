@@ -10,7 +10,6 @@ import { getReadyFight } from '@/common/fight';
 
 const SelectableFights = () => {
   const {
-    user,
     selectedMatchup,
     selections: initialSelections,
     refetchSelections,
@@ -20,7 +19,7 @@ const SelectableFights = () => {
     ws,
   } = useMatchups();
   const queryClient = useQueryClient();
-  const { user: authUser } = useAuth();
+  const { user } = useAuth();
 
   const [selections, setSelections] = useState({});
   const fightCards = getFightCardTypes();
@@ -89,7 +88,7 @@ const SelectableFights = () => {
       queryClient.invalidateQueries({
         predicate: (query) => {
           const [endpoint, userId] = query.queryKey;
-          return endpoint === API_URLS.MATCHUPS && userId === authUser?.id;
+          return endpoint === API_URLS.MATCHUPS && userId === user?.id;
         },
       });
 
