@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useEvents, EventsProvider } from '@/contexts/EventsContext';
+import { useMatchups } from '@/contexts/MatchupsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import EventViewCloseButton from '@/components/EventViewCloseButton';
 import EventFights from '@/components/EventFights';
@@ -10,10 +11,14 @@ import { FaExternalLinkSquareAlt } from 'react-icons/fa';
 const CurrentEventContent = () => {
   const { isLoading, isError, selectedEvent, selectEvent, upcomingEvents } = useEvents();
   const { user } = useAuth();
+  const { matchups } = useMatchups();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const hasCurrentMatchups = (matchups?.filter((m) => !m.event.complete) || []).length > 0;
+
   const openEvent = async (e, event) => {
+    if (hasCurrentMatchups) return;
     if (e.target.tagName === 'A') {
       e.stopPropagation();
       return;
@@ -31,8 +36,10 @@ const CurrentEventContent = () => {
           {upcomingEvents.length > 0 ? (
             <div
               key={upcomingEvents[0]?.id}
-              className='cursor-pointer overflow-hidden rounded-xl border border-stone-800 bg-stone-900 transition-colors hover:bg-stone-800'
-              onClick={(e) => openEvent(e, upcomingEvents[0])}
+              className={`overflow-hidden rounded-xl border border-stone-800 bg-stone-900 transition-colors${
+                hasCurrentMatchups ? '' : ' cursor-pointer hover:bg-stone-800'
+              }`}
+              onClick={hasCurrentMatchups ? undefined : (e) => openEvent(e, upcomingEvents[0])}
             >
               <div className='flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5'>
                 <div className='flex min-w-0 items-start gap-3'>
