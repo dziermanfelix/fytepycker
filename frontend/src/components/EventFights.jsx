@@ -5,12 +5,12 @@ import Fights from '@/components/Fights';
 import CreateMatchupModal from './CreateMatchupModal';
 
 const EventFights = () => {
-  const { selectedEvent, isLoading, isError, fights } = useEvents();
+  const { selectedEvent, isLoading, isError, isLoadingDetail, isDetailError, fights } = useEvents();
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Error loading selections.</p>;
+  if (isLoading || isLoadingDetail) return <p className='text-center text-stone-500'>Loading fights...</p>;
+  if (isError || isDetailError) return <p className='text-center text-rose-500'>Error loading fights.</p>;
 
   return (
     <div className='relative'>

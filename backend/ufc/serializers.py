@@ -32,8 +32,16 @@ class EventSerializer(serializers.ModelSerializer):
         return fights_by_card
 
 
+class EventCardSerializer(serializers.ModelSerializer):
+    """Event metadata only — for list/card views without fight payloads."""
+
+    class Meta:
+        model = Event
+        fields = ("id", "name", "headline", "url", "date", "location", "complete")
+
+
 class EventSummarySerializer(serializers.ModelSerializer):
-    """Event without full fight payloads — for matchup list responses."""
+    """Event with slim fights — for matchup list responses."""
 
     fights = serializers.SerializerMethodField()
 

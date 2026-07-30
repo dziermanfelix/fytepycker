@@ -1,6 +1,7 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 import { API_URLS } from '@/common/urls';
 import useDataFetching from '@/hooks/useDataFetching';
+import client from '@/api/client';
 
 const EventsContext = createContext({});
 
@@ -8,12 +9,47 @@ export const EventsProvider = ({ children }) => {
   const {
     items: events,
     selectedItem: selectedEvent,
-    selectItem: selectEvent,
+    selectItem,
     isLoading,
     isError,
   } = useDataFetching(API_URLS.EVENTS);
 
-  const upcomingEvents = events.upcoming || [];
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [isDetailError, setIsDetailError] = useState(false);
+
+  const selectEvent = useCallback(
+    async (event) => {
+      if (!event) {
+        selectItem(null);
+        setIsDetailError(false);
+        setIsLoadingDetail(false);
+        return;
+      }
+
+      selectItem(event);
+      if (!event.id) return;
+
+      // Already have full fights payload (e.g. re-select after detail fetch)
+      if (event.fights) {
+        setIsDetailError(false);
+        return;
+      }
+
+      setIsLoadingDetail(true);
+      setIsDetailError(false);
+      try {
+        const { data } = await client.get(`${API_URLS.EVENTS}${event.id}/`);
+        selectItem(data.event);
+      } catch {
+        setIsDetailError(true);
+      } finally {
+        setIsLoadingDetail(false);
+      }
+    },
+    [selectItem],
+  );
+
+  const upcomingEvents = events?.upcoming || [];
   const fights = selectedEvent?.fights || {};
 
   const contextValue = {
@@ -21,6 +57,8 @@ export const EventsProvider = ({ children }) => {
     selectEvent,
     isLoading,
     isError,
+    isLoadingDetail,
+    isDetailError,
     upcomingEvents,
     fights,
   };

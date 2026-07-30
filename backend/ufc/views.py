@@ -7,9 +7,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from playwright.sync_api import sync_playwright
 from rest_framework import status
-from .serializers import EventSerializer
+from django.db.models import Prefetch
+from .serializers import EventSerializer, EventCardSerializer
 from bs4 import BeautifulSoup
-from .models import Event
+from .models import Event, Fight
 from datetime import datetime
 import pytz
 from django.shortcuts import get_object_or_404
@@ -22,13 +23,22 @@ class EventView(APIView):
     def get(self, request, *args, **kwargs):
         event_id = kwargs.get("event_id")
         if not event_id:
-            past_events = Event.objects.prefetch_related('fights').filter(complete=True).order_by('-date')
-            upcoming_events = Event.objects.prefetch_related('fights').filter(complete=False).order_by('date')
-            return Response({
-                'past': EventSerializer(past_events, many=True).data,
-                'upcoming': EventSerializer(upcoming_events, many=True).data
-            })
-        event = get_object_or_404(Event.objects.prefetch_related('fights'), id=event_id)
+            include_past = request.GET.get("include_past") in ("1", "true", "True")
+            upcoming_events = Event.objects.exclude(complete=True).order_by('date')
+            response_data = {
+                'upcoming': EventCardSerializer(upcoming_events, many=True).data,
+            }
+            if include_past:
+                past_events = Event.objects.filter(complete=True).order_by('-date')
+                response_data['past'] = EventCardSerializer(past_events, many=True).data
+            return Response(response_data)
+
+        event = get_object_or_404(
+            Event.objects.prefetch_related(
+                Prefetch('fights', queryset=Fight.objects.order_by('order')),
+            ),
+            id=event_id,
+        )
         return Response({'event': EventSerializer(event).data})
 
 

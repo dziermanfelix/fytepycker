@@ -1,10 +1,12 @@
 from django.urls import reverse
+from django.utils import timezone
+from datetime import timedelta
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Event, Fight
-from .serializers import EventSerializer
+from .serializers import EventSerializer, EventCardSerializer
 from .scraper import Scraper
 
 
@@ -49,25 +51,68 @@ class EventTests(APITestCase):
         )
         self.fight = fight[0]
 
-    def test_get_events(self):
+    def test_get_events_returns_upcoming_cards_only(self):
+        future_event = Event.objects.create(
+            name="UFC Future",
+            headline="Next",
+            url="https://ufc.com/future",
+            date=timezone.now() + timedelta(days=14),
+            location="vegas",
+            complete=False,
+        )
+        Fight.objects.create(
+            event=future_event,
+            blue_name="a",
+            red_name="b",
+            card="main",
+            order=0,
+            weight_class="heavyweight",
+        )
+
         response = self.client.get(self.events_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn('past', response.data)
+        self.assertEqual(len(response.data['upcoming']), 1)
+        self.assertEqual(response.data['upcoming'][0], EventCardSerializer(future_event).data)
+        self.assertNotIn('fights', response.data['upcoming'][0])
+
+    def test_get_events_include_past(self):
+        response = self.client.get(self.events_url, {'include_past': 1})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['past']), 1)
-        self.assertEqual(len(response.data['upcoming']), 0)
-        self.assertEqual(response.data['past'][0], EventSerializer(self.event).data)
+        self.assertEqual(response.data['past'][0], EventCardSerializer(self.event).data)
+        self.assertNotIn('fights', response.data['past'][0])
 
     def test_get_event_by_id(self):
         response = self.client.get(f'{self.events_url}{self.event.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['event']['id'], self.event.id)
+        self.assertIn('fights', response.data['event'])
+        self.assertIn('blue_name', response.data['event']['fights']['main'][0])
 
     def test_event_complete(self):
+        future_event = Event.objects.create(
+            name="UFC Live",
+            headline="Tonight",
+            url="https://ufc.com/live",
+            date=timezone.now() + timedelta(hours=2),
+            location="vegas",
+            complete=False,
+        )
+        fight = Fight.objects.create(
+            event=future_event,
+            blue_name="paul",
+            red_name="john",
+            card="main",
+            order=0,
+            weight_class="heavyweight",
+        )
+
         response = self.client.get(self.events_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['past']), 1)
-        self.assertEqual(len(response.data['upcoming']), 0)
-        self.assertEqual(response.data['past'][0], EventSerializer(self.event).data)
+        self.assertEqual(len(response.data['upcoming']), 1)
+        self.assertEqual(response.data['upcoming'][0]['id'], future_event.id)
 
-        fight = Fight.objects.filter(id=self.fight.id).first()
         fight.winner = "paul"
         fight.method = "RNC"
         fight.round = 1
@@ -76,10 +121,10 @@ class EventTests(APITestCase):
         response = self.client.get(self.events_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['upcoming'], [])
-        self.assertEqual(len(response.data['past']), 1)
-        expected = EventSerializer(self.event).data
-        expected['complete'] = True
-        self.assertEqual(response.data['past'][0], expected)
+
+        response = self.client.get(self.events_url, {'include_past': 1})
+        past_ids = [e['id'] for e in response.data['past']]
+        self.assertIn(future_event.id, past_ids)
 
 
 class ScraperTests(APITestCase):
