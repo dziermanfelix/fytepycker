@@ -1,5 +1,6 @@
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useMatchups } from '@/contexts/MatchupsContext';
+import { EventsProvider, useEvents } from '@/contexts/EventsContext';
 import CurrentEvent from '@/components/CurrentEvent';
 import MatchupCard from '@/components/MatchupCard';
 import Spinner from '@/components/Spinner';
@@ -7,7 +8,8 @@ import { FRONTEND_URLS } from '@/common/urls';
 
 const MatchupsContent = () => {
   const { id } = useParams();
-  const { isLoading, isError, matchups, selectMatchup } = useMatchups();
+  const { isLoading: isLoadingMatchups, isError, matchups, selectMatchup } = useMatchups();
+  const { isLoading: isLoadingEvents } = useEvents();
   const navigate = useNavigate();
 
   const handleClick = async (matchup) => {
@@ -17,7 +19,7 @@ const MatchupsContent = () => {
 
   const currentMatchups = matchups || [];
 
-  if (isLoading) return <Spinner />;
+  if (isLoadingMatchups || isLoadingEvents) return <Spinner />;
   if (isError) return <p className='text-center text-rose-500'>Failed to load matchups.</p>;
 
   return (
@@ -44,10 +46,10 @@ const MatchupsContent = () => {
 };
 
 const Matchups = () => (
-  <>
+  <EventsProvider>
     <MatchupsContent />
     <Outlet />
-  </>
+  </EventsProvider>
 );
 
 export default Matchups;

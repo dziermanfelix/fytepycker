@@ -1,15 +1,14 @@
 import { useState } from 'react';
-import { useEvents, EventsProvider } from '@/contexts/EventsContext';
+import { useEvents } from '@/contexts/EventsContext';
 import { useMatchups } from '@/contexts/MatchupsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import EventViewCloseButton from '@/components/EventViewCloseButton';
 import EventFights from '@/components/EventFights';
 import CreateMatchupModal from '@/components/CreateMatchupModal';
-import Spinner from '@/components/Spinner';
 import { FaExternalLinkSquareAlt } from 'react-icons/fa';
 
-const CurrentEventContent = () => {
-  const { isLoading, isError, selectedEvent, selectEvent, upcomingEvents } = useEvents();
+const CurrentEvent = () => {
+  const { isError, selectedEvent, selectEvent, upcomingEvents } = useEvents();
   const { user } = useAuth();
   const { matchups } = useMatchups();
 
@@ -26,7 +25,6 @@ const CurrentEventContent = () => {
     selectEvent(event);
   };
 
-  if (isLoading) return <Spinner />;
   if (isError) return <p className='text-center text-red-500'>Failed to load events.</p>;
 
   return (
@@ -116,11 +114,5 @@ const CurrentEventContent = () => {
     </div>
   );
 };
-
-const CurrentEvent = () => (
-  <EventsProvider>
-    <CurrentEventContent />
-  </EventsProvider>
-);
 
 export default CurrentEvent;
