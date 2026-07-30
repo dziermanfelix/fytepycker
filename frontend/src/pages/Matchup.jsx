@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useMatchups } from '@/contexts/MatchupsContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,9 +9,31 @@ import SelectableFights from '@/components/SelectableFights';
 import Spinner from '@/components/Spinner';
 import { formatWinnings, getWinningsTextColor } from '@/utils/winningsDisplayUtils';
 
+const getFirstFight = (event) => Object.values(event?.fights || {}).flat()[0];
+
+const hasFighterNames = (event) => {
+  const fight = getFirstFight(event);
+  return Boolean(fight?.red_name || fight?.blue_name);
+};
+
+const findCachedMatchup = (matchupId, selectedMatchup, matchupsList) => {
+  if (selectedMatchup?.id == matchupId) return selectedMatchup;
+  return matchupsList?.find((matchup) => String(matchup.id) === String(matchupId)) ?? null;
+};
+
+const fetchEventWithFights = async (eventId) => {
+  const { data } = await client.get(`${API_URLS.EVENTS}${eventId}/`);
+  return data.event;
+};
+
+const fetchMatchupById = async (matchupId) => {
+  const { data } = await client.get(API_URLS.MATCHUPS, { params: { id: matchupId } });
+  return data?.[0] ?? null;
+};
+
 const MatchupContent = ({ basePath, deletable }) => {
   const { id } = useParams();
-  const { selectedMatchup, selectMatchup, clearSelectedMatchup, refetchMatchups, selections } = useMatchups();
+  const { matchups, selectedMatchup, selectMatchup, clearSelectedMatchup, refetchMatchups, selections } = useMatchups();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [checkingMatchup, setCheckingMatchup] = useState(true);
@@ -20,6 +42,11 @@ const MatchupContent = ({ basePath, deletable }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  const matchupsRef = useRef(matchups);
+  const selectedMatchupRef = useRef(selectedMatchup);
+  matchupsRef.current = matchups;
+  selectedMatchupRef.current = selectedMatchup;
 
   const backLabel = basePath?.includes('record') ? 'Record' : 'Matchups';
   const otherUser =
@@ -34,15 +61,31 @@ const MatchupContent = ({ basePath, deletable }) => {
       setCheckingMatchup(true);
       setIsError(false);
       try {
-        const { data } = await client.get(API_URLS.MATCHUPS, { params: { id } });
-        const found = data?.[0];
-        if (cancelled) return;
-        if (found) {
-          selectMatchup(found);
+        const cachedMatchup = findCachedMatchup(id, selectedMatchupRef.current, matchupsRef.current);
+
+        if (cachedMatchup && hasFighterNames(cachedMatchup.event)) {
+          if (cancelled) return;
+          selectMatchup(cachedMatchup);
           setCheckingMatchup(false);
-        } else {
-          navigate(basePath?.includes('record') ? FRONTEND_URLS.RECORD : FRONTEND_URLS.MATCHUPS, { replace: true });
+          return;
         }
+
+        if (cachedMatchup?.event?.id) {
+          const eventWithFights = await fetchEventWithFights(cachedMatchup.event.id);
+          if (cancelled) return;
+          selectMatchup({ ...cachedMatchup, event: eventWithFights });
+          setCheckingMatchup(false);
+          return;
+        }
+
+        const matchup = await fetchMatchupById(id);
+        if (cancelled) return;
+        if (!matchup) {
+          navigate(basePath?.includes('record') ? FRONTEND_URLS.RECORD : FRONTEND_URLS.MATCHUPS, { replace: true });
+          return;
+        }
+        selectMatchup(matchup);
+        setCheckingMatchup(false);
       } catch {
         if (cancelled) return;
         setIsError(true);
@@ -56,7 +99,6 @@ const MatchupContent = ({ basePath, deletable }) => {
       cancelled = true;
       clearSelectedMatchup();
     };
-    // Intentionally only re-fetch when route id changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 

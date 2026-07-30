@@ -14,8 +14,8 @@ const SelectableFights = () => {
     selectedMatchup,
     selections: initialSelections,
     refetchSelections,
-    isLoading,
-    isError,
+    isLoadingSelections,
+    isErrorSelections,
     fights,
     ws,
   } = useMatchups();
@@ -106,8 +106,8 @@ const SelectableFights = () => {
     }
   };
 
-  if (isLoading) return <Spinner />;
-  if (isError) return <p>Error loading selections.</p>;
+  if (isLoadingSelections) return <Spinner />;
+  if (isErrorSelections) return <p>Error loading selections.</p>;
 
   if (fightCards && fightCards.length > 0) {
     return (
