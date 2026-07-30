@@ -6,6 +6,7 @@ import client from '@/api/client';
 import { API_URLS, FRONTEND_URLS } from '@/common/urls';
 import EventViewCloseButton from '@/components/EventViewCloseButton';
 import SelectableFights from '@/components/SelectableFights';
+import Spinner from '@/components/Spinner';
 import { formatWinnings, getWinningsTextColor } from '@/utils/winningsDisplayUtils';
 
 const MatchupContent = ({ basePath, deletable }) => {
@@ -88,7 +89,7 @@ const MatchupContent = ({ basePath, deletable }) => {
 
   const showResult = selectedMatchup && (selections.every((s) => s.confirmed) || selectedMatchup.event.complete);
 
-  if (checkingMatchup) return <p className='text-center text-stone-500'>{`Looking for matchup ${id}...`}</p>;
+  if (checkingMatchup) return <Spinner />;
   if (isError) return <p className='text-center text-rose-500'>Failed to load matchup.</p>;
 
   return (

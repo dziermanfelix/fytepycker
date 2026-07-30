@@ -4,6 +4,7 @@ import { getFightCardTypes } from '@/utils/fightTabUtils';
 import client from '@/api/client';
 import { API_URLS } from '@/common/urls';
 import Fights from '@/components/Fights';
+import Spinner from '@/components/Spinner';
 import { useMatchups } from '@/contexts/MatchupsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getReadyFight } from '@/common/fight';
@@ -105,7 +106,7 @@ const SelectableFights = () => {
     }
   };
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <Spinner />;
   if (isError) return <p>Error loading selections.</p>;
 
   if (fightCards && fightCards.length > 0) {

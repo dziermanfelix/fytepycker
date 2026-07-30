@@ -5,7 +5,7 @@ import { FRONTEND_URLS } from '@/common/urls';
 import RecordCard from '@/components/RecordCard';
 import RecordMatchupCard from '@/components/RecordMatchupCard';
 import RecordStats from '@/components/RecordStats';
-import LoadingCards from '@/components/LoadingCards';
+import Spinner from '@/components/Spinner';
 import { FaTrophy } from 'react-icons/fa';
 
 const Record = () => {
@@ -27,12 +27,7 @@ const Record = () => {
     navigate(FRONTEND_URLS.RECORD_DETAILS(matchup.id));
   };
 
-  if (isLoading)
-    return (
-      <div className='mx-auto mt-2 flex max-w-3xl flex-col gap-3'>
-        <LoadingCards />
-      </div>
-    );
+  if (isLoading) return <Spinner />;
   if (isError) return <p className='text-center text-rose-500'>Failed to load Record.</p>;
 
   const filteredMatchups = items.flatMap((item) => (item.user.id === selectedUser?.id ? item.matchups : []));

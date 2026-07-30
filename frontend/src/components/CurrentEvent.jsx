@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import EventViewCloseButton from '@/components/EventViewCloseButton';
 import EventFights from '@/components/EventFights';
 import CreateMatchupModal from '@/components/CreateMatchupModal';
-import LoadingEvent from './LoadingEvent';
+import Spinner from '@/components/Spinner';
 import { FaExternalLinkSquareAlt } from 'react-icons/fa';
 
 const CurrentEventContent = () => {
@@ -26,7 +26,7 @@ const CurrentEventContent = () => {
     selectEvent(event);
   };
 
-  if (isLoading) return <LoadingEvent />;
+  if (isLoading) return <Spinner />;
   if (isError) return <p className='text-center text-red-500'>Failed to load events.</p>;
 
   return (

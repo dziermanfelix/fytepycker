@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import Spinner from '@/components/Spinner';
 import { FRONTEND_URLS } from '@/common/urls';
 
 const ProtectedRoute = ({ children }) => {
@@ -7,7 +8,7 @@ const ProtectedRoute = ({ children }) => {
   const location = useLocation();
 
   if (loading || !initialized) {
-    return <div>Loading...</div>;
+    return <Spinner />;
   }
 
   if (!user) {

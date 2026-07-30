@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useEvents } from '@/contexts/EventsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Fights from '@/components/Fights';
+import Spinner from '@/components/Spinner';
 import CreateMatchupModal from './CreateMatchupModal';
 
 const EventFights = () => {
@@ -9,7 +10,7 @@ const EventFights = () => {
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  if (isLoading || isLoadingDetail) return <p className='text-center text-stone-500'>Loading fights...</p>;
+  if (isLoading || isLoadingDetail) return <Spinner />;
   if (isError || isDetailError) return <p className='text-center text-rose-500'>Error loading fights.</p>;
 
   return (
