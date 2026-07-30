@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useMatchups } from '@/contexts/MatchupsContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,12 +10,11 @@ import { formatWinnings, getWinningsTextColor } from '@/utils/winningsDisplayUti
 
 const MatchupContent = ({ basePath, deletable }) => {
   const { id } = useParams();
-  const { isLoading, isError, matchups, selectMatchup, selectedMatchup, refetchMatchups, selections } = useMatchups();
+  const { selectedMatchup, selectMatchup, clearSelectedMatchup, refetchMatchups, selections } = useMatchups();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [checkingMatchup, setCheckingMatchup] = useState(true);
-  const retryCount = useRef(0);
-  const timeoutRef = useRef(null);
+  const [isError, setIsError] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,28 +25,39 @@ const MatchupContent = ({ basePath, deletable }) => {
     user?.id == selectedMatchup?.user_a?.id ? selectedMatchup?.user_b?.username : selectedMatchup?.user_a?.username;
 
   useEffect(() => {
-    const maxRetries = 2;
-    const retryDelay = 500;
-    const findMatchup = () => {
-      const found = matchups.find((m) => String(m.id) === id);
-      if (found) {
-        selectMatchup(found);
+    if (!id) return undefined;
+
+    let cancelled = false;
+
+    const loadMatchup = async () => {
+      setCheckingMatchup(true);
+      setIsError(false);
+      try {
+        const { data } = await client.get(API_URLS.MATCHUPS, { params: { id } });
+        const found = data?.[0];
+        if (cancelled) return;
+        if (found) {
+          selectMatchup(found);
+          setCheckingMatchup(false);
+        } else {
+          navigate(basePath?.includes('record') ? FRONTEND_URLS.RECORD : FRONTEND_URLS.MATCHUPS, { replace: true });
+        }
+      } catch {
+        if (cancelled) return;
+        setIsError(true);
         setCheckingMatchup(false);
-      } else if (!isLoading && retryCount.current < maxRetries) {
-        retryCount.current += 1;
-        timeoutRef.current = setTimeout(() => {
-          refetchMatchups();
-          findMatchup();
-        }, retryDelay);
-      } else if (retryCount.current >= maxRetries) {
-        navigate('/dash/matchups', { replace: true });
       }
     };
 
-    findMatchup();
+    loadMatchup();
 
-    return () => clearTimeout(timeoutRef.current);
-  }, [id, isLoading, navigate, matchups]);
+    return () => {
+      cancelled = true;
+      clearSelectedMatchup();
+    };
+    // Intentionally only re-fetch when route id changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const deleteMatchupClicked = () => {
     setIsModalOpen(true);
@@ -79,8 +89,7 @@ const MatchupContent = ({ basePath, deletable }) => {
   const showResult = selectedMatchup && (selections.every((s) => s.confirmed) || selectedMatchup.event.complete);
 
   if (checkingMatchup) return <p className='text-center text-stone-500'>{`Looking for matchup ${id}...`}</p>;
-  if (isLoading) return <p className='text-center text-stone-500'>Loading matchups...</p>;
-  if (isError) return <p className='text-center text-rose-500'>Failed to load matchups.</p>;
+  if (isError) return <p className='text-center text-rose-500'>Failed to load matchup.</p>;
 
   return (
     <div className='mx-auto mt-2 grid max-w-3xl gap-3'>

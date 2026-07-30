@@ -17,7 +17,7 @@ export const MatchupsProvider = ({ children, disableWebSockets = false }) => {
     isLoading,
     isError,
     refetch: refetchMatchups,
-  } = useMatchupsHook({ userAId: user?.id });
+  } = useMatchupsHook({ userAId: user?.id, incomplete: true });
 
   const {
     items: selections,

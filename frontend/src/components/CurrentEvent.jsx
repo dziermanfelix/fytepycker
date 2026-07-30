@@ -15,7 +15,7 @@ const CurrentEventContent = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const hasCurrentMatchups = (matchups?.filter((m) => !m.event.complete) || []).length > 0;
+  const hasCurrentMatchups = (matchups || []).length > 0;
 
   const openEvent = async (e, event) => {
     if (hasCurrentMatchups) return;

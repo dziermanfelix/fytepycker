@@ -141,6 +141,67 @@ class MatchupTests(APITestCase):
         self.assertEqual(response.data[0]['user_a']['id'], self.user.id)
         self.assertEqual(response.data[0]['user_b']['id'], self.user2.id)
         self.assertIn(response.data[0]['first_pick'], [self.user.id, self.user2.id])
+        # Detail payload includes full fight fields
+        main_fights = response.data[0]['event']['fights']['main']
+        self.assertIn('blue_name', main_fights[0])
+        self.assertIn('red_name', main_fights[0])
+
+    def test_list_matchups_uses_summary_fights(self):
+        data = {
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
+        }
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.get(self.matchups_url, {'user_a_id': self.user.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        main_fights = response.data[0]['event']['fights']['main']
+        self.assertEqual(set(main_fights[0].keys()), {'id', 'card', 'order', 'winner'})
+
+    def test_list_incomplete_excludes_completed_events(self):
+        from django.utils import timezone
+        from datetime import timedelta
+
+        future_event = Event.objects.create(
+            name="UFC Future",
+            headline="upcoming",
+            url="https://ufc.com/future",
+            date=timezone.now() + timedelta(days=14),
+            location="somewhere",
+            complete=False,
+        )
+        Fight.objects.create(
+            event=future_event,
+            blue_name="a",
+            red_name="b",
+            card="main",
+            order=0,
+            weight_class="heavyweight",
+        )
+        data = {
+            "event_id": future_event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
+        }
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        completed_event = Event.objects.create(
+            name="UFC Done",
+            headline="finished",
+            url="https://ufc.com/done",
+            date=timezone.now() - timedelta(days=14),
+            location="somewhere",
+            complete=True,
+        )
+        Matchup.objects.create(event=completed_event, user_a=self.user, user_b=self.user2)
+
+        response = self.client.get(self.matchups_url, {'user_a_id': self.user.id, 'incomplete': 1})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['event']['id'], future_event.id)
+        self.assertFalse(response.data[0]['event']['complete'])
 
     def test_get_matchup_by_user_a_id(self):
         data = {

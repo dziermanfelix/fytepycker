@@ -15,7 +15,7 @@ const MatchupsContent = () => {
     navigate(FRONTEND_URLS.MATCHUP_DETAILS(matchup.id));
   };
 
-  const currentMatchups = matchups?.filter((matchup) => !matchup.event.complete) || [];
+  const currentMatchups = matchups || [];
 
   return (
     <div className='mx-auto mt-2 grid max-w-3xl gap-2'>

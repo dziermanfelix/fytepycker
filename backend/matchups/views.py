@@ -2,9 +2,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q, Prefetch
-from .serializers import MatchupSerializer, CustomSelectionPostSerializer, SelectionSerializer, RecordSerializer
+from .serializers import (
+    MatchupSerializer,
+    MatchupListSerializer,
+    CustomSelectionPostSerializer,
+    SelectionSerializer,
+    RecordSerializer,
+)
 from .models import Matchup, Selection
 from backend.accounts.models import User
+from backend.ufc.models import Fight
 
 
 class MatchupView(APIView):
@@ -31,22 +38,32 @@ class MatchupView(APIView):
         matchup_id = request.GET.get("id")
         user_a_id = request.GET.get("user_a_id")
         user_b_id = request.GET.get("user_b_id")
+        incomplete = request.GET.get("incomplete") in ("1", "true", "True")
+
         matchups = Matchup.objects.select_related('event', 'user_a', 'user_b').prefetch_related(
             Prefetch(
                 'matchup_selections',
                 queryset=Selection.with_draft_ordering().select_related('fight', 'winner', 'dibs'),
             ),
-        ).all()
+            Prefetch('event__fights', queryset=Fight.objects.order_by('order')),
+        )
+
         if matchup_id:
             matchups = matchups.filter(id=matchup_id)
-        elif user_a_id and user_b_id:
-            matchups = matchups.filter(
-                (Q(user_a_id=user_a_id) & Q(user_b_id=user_b_id)) |
-                (Q(user_a_id=user_b_id) & Q(user_b_id=user_a_id))
-            )
-        elif user_a_id:
-            matchups = matchups.filter(Q(user_a_id=user_a_id) | Q(user_b_id=user_a_id))
-        serializer = MatchupSerializer(matchups, many=True, context={'request': request})
+            serializer_class = MatchupSerializer
+        else:
+            if incomplete:
+                matchups = matchups.exclude(event__complete=True)
+            if user_a_id and user_b_id:
+                matchups = matchups.filter(
+                    (Q(user_a_id=user_a_id) & Q(user_b_id=user_b_id)) |
+                    (Q(user_a_id=user_b_id) & Q(user_b_id=user_a_id))
+                )
+            elif user_a_id:
+                matchups = matchups.filter(Q(user_a_id=user_a_id) | Q(user_b_id=user_a_id))
+            serializer_class = MatchupListSerializer
+
+        serializer = serializer_class(matchups, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request):

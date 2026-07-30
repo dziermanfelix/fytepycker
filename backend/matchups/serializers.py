@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Matchup, Selection
-from backend.ufc.serializers import EventSerializer
+from backend.ufc.serializers import EventSerializer, EventSummarySerializer
 from backend.accounts.serializers import UserSerializer
 from backend.ufc.models import Event, Fight
 from backend.accounts.models import User
@@ -39,8 +39,7 @@ class SelectionSerializer(serializers.ModelSerializer):
         validators = []
 
 
-class MatchupSerializer(serializers.ModelSerializer):
-    event = EventSerializer(read_only=True)
+class MatchupSerializerBase(serializers.ModelSerializer):
     user_a = UserSerializer(read_only=True)
     user_b = UserSerializer(read_only=True)
     selections = SelectionSerializer(many=True, read_only=True, source='matchup_selections')
@@ -78,6 +77,18 @@ class MatchupSerializer(serializers.ModelSerializer):
         model = Matchup
         fields = "__all__"
         validators = []
+
+
+class MatchupSerializer(MatchupSerializerBase):
+    """Full matchup including event fights — for detail/create responses."""
+
+    event = EventSerializer(read_only=True)
+
+
+class MatchupListSerializer(MatchupSerializerBase):
+    """Slim matchup for list views — event fights are id/card/order/winner only."""
+
+    event = EventSummarySerializer(read_only=True)
 
 
 class RecordSerializer(serializers.Serializer):
