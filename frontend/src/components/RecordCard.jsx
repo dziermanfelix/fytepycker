@@ -31,7 +31,7 @@ const RecordCard = ({ item, handleClick }) => {
             >
               {label}
             </span>
-            <span className='text-xs text-stone-400'>{item.matchups?.length || 0} events</span>
+            <span className='text-xs text-stone-400'>{item.matchup_count || 0} events</span>
           </div>
           <p className='truncate text-xl font-bold uppercase text-stone-900'>{item.user.username}</p>
           <p className='mt-0.5 text-xs text-stone-400'>{item.bets} bets settled</p>

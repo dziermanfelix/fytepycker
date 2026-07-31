@@ -7,7 +7,8 @@ from .serializers import (
     MatchupListSerializer,
     CustomSelectionPostSerializer,
     SelectionSerializer,
-    RecordSerializer,
+    RecordListSerializer,
+    RecordDetailSerializer,
 )
 from .models import Matchup, Selection
 from backend.accounts.models import User
@@ -151,43 +152,73 @@ class SelectionView(APIView):
 class RecordView(APIView):
     def get(self, request, *args, **kwargs):
         user_id = request.GET.get("user_id")
+        opponent_id = request.GET.get("opponent_id")
 
         if not user_id:
             return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            username = User.objects.get(id=user_id)
+            current_user = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        all_users = User.objects.exclude(id=user_id)
-
         matchups = Matchup.objects.filter(
-            ((Q(user_a_id=user_id) & Q(user_b__in=all_users)) |
-             (Q(user_b_id=user_id) & Q(user_a__in=all_users))) &
-            Q(event__complete=True)
+            (Q(user_a_id=user_id) | Q(user_b_id=user_id)) & Q(event__complete=True)
         ).select_related(
             'event', 'user_a', 'user_b'
         ).prefetch_related(
             'matchup_selections',
             'matchup_selections__winner',
-            'matchup_selections__fight',
         )
 
-        user_map = {user.id: {"user": user, "matchups": [], "bets": 0, "winnings": 0} for user in all_users}
-        for m in matchups:
-            opponent = m.user_b if str(m.user_a.id) == user_id else m.user_a
-            if opponent.id in user_map:
-                user_map[opponent.id]["matchups"].append(m)
+        if opponent_id:
+            try:
+                opponent = User.objects.get(id=opponent_id)
+            except User.DoesNotExist:
+                return Response({"error": "Opponent not found"}, status=status.HTTP_404_NOT_FOUND)
 
-                selections = m.matchup_selections.all()
-                user_map[opponent.id]["bets"] += sum(s.bet or 0 for s in selections)
-                for s in selections:
-                    if s.winner == username:
-                        user_map[opponent.id]["winnings"] += s.bet
-                    elif s.winner == opponent:
-                        user_map[opponent.id]["winnings"] -= s.bet
+            matchups = matchups.filter(
+                (Q(user_a_id=user_id) & Q(user_b_id=opponent_id)) |
+                (Q(user_a_id=opponent_id) & Q(user_b_id=user_id))
+            )
+            bets, winnings = self._aggregate_stats(matchups, current_user, opponent)
+            record_data = {
+                'user': opponent,
+                'bets': bets,
+                'winnings': winnings,
+                'matchups': list(matchups),
+            }
+            serialized_data = RecordDetailSerializer(record_data, context={'request': request}).data
+            return Response(serialized_data, status=status.HTTP_200_OK)
 
-        record_data = list(user_map.values())
-        serialized_data = RecordSerializer(record_data, many=True, context={'request': request}).data
+        opponent_map = {}
+        for matchup in matchups:
+            opponent = matchup.user_b if str(matchup.user_a_id) == str(user_id) else matchup.user_a
+            entry = opponent_map.setdefault(
+                opponent.id,
+                {'user': opponent, 'bets': 0, 'winnings': 0, 'matchup_count': 0},
+            )
+            entry['matchup_count'] += 1
+            selections = matchup.matchup_selections.all()
+            entry['bets'] += sum(s.bet or 0 for s in selections)
+            for selection in selections:
+                if selection.winner == current_user:
+                    entry['winnings'] += selection.bet or 0
+                elif selection.winner == opponent:
+                    entry['winnings'] -= selection.bet or 0
+
+        serialized_data = RecordListSerializer(list(opponent_map.values()), many=True).data
         return Response(serialized_data, status=status.HTTP_200_OK)
+
+    def _aggregate_stats(self, matchups, current_user, opponent):
+        bets = 0
+        winnings = 0
+        for matchup in matchups:
+            selections = matchup.matchup_selections.all()
+            bets += sum(s.bet or 0 for s in selections)
+            for selection in selections:
+                if selection.winner == current_user:
+                    winnings += selection.bet or 0
+                elif selection.winner == opponent:
+                    winnings -= selection.bet or 0
+        return bets, winnings

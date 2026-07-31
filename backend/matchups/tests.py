@@ -857,13 +857,23 @@ class RecordTests(APITestCase):
         self.assertEqual(response.data[0]['bets'], 80)
         self.assertEqual(response.data[0]['winnings'], 80)
 
-        # verify record
+        # verify record list (summary only)
         response = self.client.get(self.record_url, {'user_id': self.user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['user']['id'], self.user2.id)
-        self.assertEqual(response.data[0]['matchups'][0]['id'], self.matchup.id)
-        self.assertEqual(response.data[0]['matchups'][0]['bets'], 80)
-        self.assertEqual(response.data[0]['matchups'][0]['winnings'], 80)
+        self.assertEqual(response.data[0]['matchup_count'], 1)
+        self.assertEqual(response.data[0]['bets'], 80)
+        self.assertEqual(response.data[0]['winnings'], 80)
+        self.assertNotIn('matchups', response.data[0])
+
+        # verify record detail for opponent
+        response = self.client.get(self.record_url, {'user_id': self.user.id, 'opponent_id': self.user2.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['user']['id'], self.user2.id)
+        self.assertEqual(response.data['matchups'][0]['id'], self.matchup.id)
+        self.assertEqual(response.data['matchups'][0]['bets'], 80)
+        self.assertEqual(response.data['matchups'][0]['winnings'], 80)
+        self.assertNotIn('fights', response.data['matchups'][0]['event'])
 
     def test_get_record2(self):
         # user makes selections
@@ -914,13 +924,23 @@ class RecordTests(APITestCase):
         self.assertEqual(response.data[0]['bets'], 80)
         self.assertEqual(response.data[0]['winnings'], -80)
 
-        # verify record
+        # verify record list (summary only)
         response = self.client.get(self.record_url, {'user_id': self.user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['user']['id'], self.user2.id)
-        self.assertEqual(response.data[0]['matchups'][0]['id'], self.matchup.id)
-        self.assertEqual(response.data[0]['matchups'][0]['bets'], 80)
-        self.assertEqual(response.data[0]['matchups'][0]['winnings'], -80)
+        self.assertEqual(response.data[0]['matchup_count'], 1)
+        self.assertEqual(response.data[0]['bets'], 80)
+        self.assertEqual(response.data[0]['winnings'], -80)
+        self.assertNotIn('matchups', response.data[0])
+
+        # verify record detail for opponent
+        response = self.client.get(self.record_url, {'user_id': self.user.id, 'opponent_id': self.user2.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['user']['id'], self.user2.id)
+        self.assertEqual(response.data['matchups'][0]['id'], self.matchup.id)
+        self.assertEqual(response.data['matchups'][0]['bets'], 80)
+        self.assertEqual(response.data['matchups'][0]['winnings'], -80)
+        self.assertNotIn('fights', response.data['matchups'][0]['event'])
 
     def test_get_record3(self):
         # user makes selections
@@ -971,14 +991,28 @@ class RecordTests(APITestCase):
         self.assertEqual(response.data[0]['bets'], 80)
         self.assertEqual(response.data[0]['winnings'], 20)
 
-        # verify record
+        # verify record list (summary only)
         response = self.client.get(self.record_url, {'user_id': self.user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['user']['id'], self.user2.id)
-        self.assertEqual(response.data[0]['matchups'][0]['id'], self.matchup.id)
-        self.assertEqual(response.data[0]['matchups'][0]['bets'], 80)
-        self.assertEqual(response.data[0]['matchups'][0]['winnings'], 20)
+        self.assertEqual(response.data[0]['matchup_count'], 1)
+        self.assertEqual(response.data[0]['bets'], 80)
+        self.assertEqual(response.data[0]['winnings'], 20)
+        self.assertNotIn('matchups', response.data[0])
+
+        # verify record detail for opponent
+        response = self.client.get(self.record_url, {'user_id': self.user.id, 'opponent_id': self.user2.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['user']['id'], self.user2.id)
+        self.assertEqual(response.data['matchups'][0]['id'], self.matchup.id)
+        self.assertEqual(response.data['matchups'][0]['bets'], 80)
+        self.assertEqual(response.data['matchups'][0]['winnings'], 20)
+        self.assertNotIn('fights', response.data['matchups'][0]['event'])
 
     def test_get_record_error_missing_user_id(self):
         response = self.client.get(self.record_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_record_error_opponent_not_found(self):
+        response = self.client.get(self.record_url, {'user_id': self.user.id, 'opponent_id': 99999})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

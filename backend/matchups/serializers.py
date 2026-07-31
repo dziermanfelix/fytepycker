@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Matchup, Selection
-from backend.ufc.serializers import EventSerializer, EventSummarySerializer
+from backend.ufc.serializers import EventSerializer, EventSummarySerializer, EventCardSerializer
 from backend.accounts.serializers import UserSerializer
 from backend.ufc.models import Event, Fight
 from backend.accounts.models import User
@@ -91,24 +91,51 @@ class MatchupListSerializer(MatchupSerializerBase):
     event = EventSummarySerializer(read_only=True)
 
 
-class RecordSerializer(serializers.Serializer):
+class RecordMatchupSerializer(serializers.ModelSerializer):
+    user_a = UserSerializer(read_only=True)
+    user_b = UserSerializer(read_only=True)
+    event = EventCardSerializer(read_only=True)
+    bets = serializers.SerializerMethodField()
+    winnings = serializers.SerializerMethodField()
+
+    def get_bets(self, obj):
+        return sum(s.bet or 0 for s in obj.matchup_selections.all())
+
+    def get_winnings(self, obj):
+        request = self.context.get('request')
+        if not request or not hasattr(request, 'user'):
+            return 0
+        username = request.user
+        winnings = 0
+        for s in obj.matchup_selections.all():
+            if s.winner == username:
+                winnings += s.bet
+            elif s.winner in [obj.user_a, obj.user_b]:
+                winnings -= s.bet
+        return winnings
+
+    class Meta:
+        model = Matchup
+        fields = (
+            'id',
+            'event',
+            'user_a',
+            'user_b',
+            'first_pick',
+            'bets',
+            'winnings',
+        )
+
+
+class RecordListSerializer(serializers.Serializer):
     user = UserSerializer(read_only=True)
-    matchups = MatchupSerializer(many=True, read_only=True)
     bets = serializers.FloatField(read_only=True)
     winnings = serializers.FloatField(read_only=True)
+    matchup_count = serializers.IntegerField(read_only=True)
 
 
-class RecordStatsSerializer(serializers.Serializer):
-    opponent = serializers.SerializerMethodField()
-    wins = serializers.IntegerField()
-    losses = serializers.IntegerField()
-    win_percentage = serializers.SerializerMethodField()
-
-    def get_opponent(self, obj):
-        from .models import User
-        user = User.objects.filter(id=obj["opponent_id"]).first()
-        return {"id": user.id, "username": user.username} if user else None
-
-    def get_win_percentage(self, obj):
-        total = obj["wins"] + obj["losses"]
-        return round((obj["wins"] / total) * 100, 2) if total > 0 else 0
+class RecordDetailSerializer(serializers.Serializer):
+    user = UserSerializer(read_only=True)
+    bets = serializers.FloatField(read_only=True)
+    winnings = serializers.FloatField(read_only=True)
+    matchups = RecordMatchupSerializer(many=True, read_only=True)

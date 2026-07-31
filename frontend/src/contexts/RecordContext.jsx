@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRecord as useRecordHook } from '@/hooks/useRecord';
+import { useRecord as useRecordHook, useRecordDetail } from '@/hooks/useRecord';
 
 const RecordContext = createContext({});
 
@@ -21,6 +21,11 @@ export const RecordProvider = ({ children }) => {
   }, [selectedUser]);
 
   const { items, isLoading, isError, refetch } = useRecordHook({ userId: user?.id });
+  const {
+    detail,
+    isLoading: isLoadingDetail,
+    isError: isDetailError,
+  } = useRecordDetail({ userId: user?.id, opponentId: selectedUser?.id });
 
   const contextValue = {
     user,
@@ -28,12 +33,15 @@ export const RecordProvider = ({ children }) => {
     items,
     selectedUser,
     setSelectedUser,
+    selectedMatchups: detail?.matchups || [],
 
     activeUserTab,
     setActiveUserTab,
 
     isLoading,
     isError,
+    isLoadingDetail,
+    isDetailError,
     refetch,
   };
 
