@@ -5,6 +5,7 @@ import { FRONTEND_URLS } from '@/common/urls';
 import RecordCard from '@/components/RecordCard';
 import RecordMatchupCard from '@/components/RecordMatchupCard';
 import RecordStats from '@/components/RecordStats';
+import RecordSummary from '@/components/RecordSummary';
 import Spinner from '@/components/Spinner';
 import { FaTrophy } from 'react-icons/fa';
 
@@ -35,12 +36,21 @@ const Record = () => {
   const totalWinnings = selectedItem?.winnings ?? 0;
   const totalBets = selectedItem?.bets ?? 0;
 
+  const summaryWins = items.reduce((sum, item) => sum + (item.wins || 0), 0);
+  const summaryLosses = items.reduce((sum, item) => sum + (item.losses || 0), 0);
+  const summaryTotal = items.reduce((sum, item) => sum + (item.winnings || 0), 0);
+
   return (
     <div className='mx-auto mt-2 grid max-w-3xl gap-2'>
       {!selectedUser && (
         <div className='flex flex-col gap-3'>
           {items.length > 0 ? (
-            items.map((item) => <RecordCard key={item.user.id} item={item} handleClick={handleUserClick} />)
+            <>
+              <RecordSummary wins={summaryWins} losses={summaryLosses} total={summaryTotal} />
+              {items.map((item) => (
+                <RecordCard key={item.user.id} item={item} handleClick={handleUserClick} />
+              ))}
+            </>
           ) : (
             <div className='flex flex-col items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white/60 px-4 py-14'>
               <h3 className='mb-2 text-xl font-bold uppercase tracking-wide text-stone-800'>No records</h3>

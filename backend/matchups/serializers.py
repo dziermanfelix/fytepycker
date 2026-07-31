@@ -132,6 +132,8 @@ class RecordListSerializer(serializers.Serializer):
     bets = serializers.FloatField(read_only=True)
     winnings = serializers.FloatField(read_only=True)
     matchup_count = serializers.IntegerField(read_only=True)
+    wins = serializers.IntegerField(read_only=True)
+    losses = serializers.IntegerField(read_only=True)
 
 
 class RecordDetailSerializer(serializers.Serializer):

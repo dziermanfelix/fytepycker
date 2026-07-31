@@ -864,6 +864,8 @@ class RecordTests(APITestCase):
         self.assertEqual(response.data[0]['matchup_count'], 1)
         self.assertEqual(response.data[0]['bets'], 80)
         self.assertEqual(response.data[0]['winnings'], 80)
+        self.assertEqual(response.data[0]['wins'], 1)
+        self.assertEqual(response.data[0]['losses'], 0)
         self.assertNotIn('matchups', response.data[0])
 
         # verify record detail for opponent
@@ -931,6 +933,8 @@ class RecordTests(APITestCase):
         self.assertEqual(response.data[0]['matchup_count'], 1)
         self.assertEqual(response.data[0]['bets'], 80)
         self.assertEqual(response.data[0]['winnings'], -80)
+        self.assertEqual(response.data[0]['wins'], 0)
+        self.assertEqual(response.data[0]['losses'], 1)
         self.assertNotIn('matchups', response.data[0])
 
         # verify record detail for opponent
@@ -998,6 +1002,8 @@ class RecordTests(APITestCase):
         self.assertEqual(response.data[0]['matchup_count'], 1)
         self.assertEqual(response.data[0]['bets'], 80)
         self.assertEqual(response.data[0]['winnings'], 20)
+        self.assertEqual(response.data[0]['wins'], 1)
+        self.assertEqual(response.data[0]['losses'], 0)
         self.assertNotIn('matchups', response.data[0])
 
         # verify record detail for opponent

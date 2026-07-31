@@ -196,18 +196,27 @@ class RecordView(APIView):
             opponent = matchup.user_b if str(matchup.user_a_id) == str(user_id) else matchup.user_a
             entry = opponent_map.setdefault(
                 opponent.id,
-                {'user': opponent, 'bets': 0, 'winnings': 0, 'matchup_count': 0},
+                {'user': opponent, 'bets': 0, 'winnings': 0, 'matchup_count': 0, 'wins': 0, 'losses': 0},
             )
             entry['matchup_count'] += 1
             selections = matchup.matchup_selections.all()
             entry['bets'] += sum(s.bet or 0 for s in selections)
+            matchup_winnings = 0
             for selection in selections:
                 if selection.winner == current_user:
-                    entry['winnings'] += selection.bet or 0
+                    matchup_winnings += selection.bet or 0
                 elif selection.winner == opponent:
-                    entry['winnings'] -= selection.bet or 0
+                    matchup_winnings -= selection.bet or 0
+            entry['winnings'] += matchup_winnings
+            if matchup_winnings > 0:
+                entry['wins'] += 1
+            elif matchup_winnings < 0:
+                entry['losses'] += 1
 
-        serialized_data = RecordListSerializer(list(opponent_map.values()), many=True).data
+        serialized_data = RecordListSerializer(
+            sorted(opponent_map.values(), key=lambda entry: entry['user'].username.lower()),
+            many=True,
+        ).data
         return Response(serialized_data, status=status.HTTP_200_OK)
 
     def _aggregate_stats(self, matchups, current_user, opponent):
