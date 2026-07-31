@@ -180,7 +180,7 @@ class RecordView(APIView):
             matchups = matchups.filter(
                 (Q(user_a_id=user_id) & Q(user_b_id=opponent_id)) |
                 (Q(user_a_id=opponent_id) & Q(user_b_id=user_id))
-            )
+            ).order_by('-event__date')
             bets, winnings = self._aggregate_stats(matchups, current_user, opponent)
             record_data = {
                 'user': opponent,
