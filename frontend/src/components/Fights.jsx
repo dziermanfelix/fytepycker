@@ -24,7 +24,7 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
 
   const fightCards = getFightCardTypes();
 
-  const Fighter = ({ img, name, url }) => (
+  const Fighter = ({ img, name }) => (
     <div className='flex h-full w-full flex-col items-center text-center gap-1'>
       {img ? (
         <img src={img} alt={name} className='h-16 w-16 shrink-0 object-cover object-top' />
@@ -33,26 +33,16 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
           {getInitials(name)}
         </div>
       )}
-      <a
-        href={url}
-        target='_blank'
-        rel='noopener noreferrer'
-        onClick={(e) => e.stopPropagation()}
-        className='block h-8 w-full font-semibold text-xs leading-4 text-stone-800 line-clamp-2 hover:underline'
-      >
-        {name}
-      </a>
+      <span className='block h-8 w-full font-semibold text-xs leading-4 text-stone-800 line-clamp-2'>{name}</span>
     </div>
   );
 
   const FighterButton = ({ fight, selection, color }) => {
     let name = fight.blue_name;
     let img = fight.blue_img;
-    let url = fight.blue_url;
     if (color === 'red') {
       name = fight.red_name;
       img = fight.red_img;
-      url = fight.red_url;
     }
     const isProcessing = processingFightId !== null;
     const selectable =
@@ -66,9 +56,9 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
     return (
       <button
         type='button'
-        className={`flex h-28 w-28 shrink-0 flex-col items-center justify-start rounded-lg p-1.5 transition-all duration-300 ${
-          fight?.winner === name ? 'ring-2 ring-amber-400 ring-offset-1' : ''
-        } ${!selectable ? 'cursor-not-allowed' : ''} ${selections ? getFighterButtonColor(fight, name) : ''}`}
+        className={`flex h-28 w-28 shrink-0 flex-col items-center justify-start rounded-lg p-1.5 transition-all duration-300 
+          ${fight?.winner === name ? 'ring-2 ring-amber-400 ring-offset-1' : ''} 
+          ${selections ? getFighterButtonColor(fight, name) : ''}`}
         onClick={
           selectable
             ? (e) => {
@@ -78,7 +68,7 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
         }
         disabled={isProcessing || !selectable}
       >
-        <Fighter img={img} name={name} url={url} />
+        <Fighter img={img} name={name} />
       </button>
     );
   };
