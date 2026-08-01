@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRecord as useRecordHook, useRecordDetail } from '@/hooks/useRecord';
 
@@ -9,16 +9,10 @@ export const RecordProvider = ({ children }) => {
   const [activeUserTab, setActiveUserTab] = useState(null);
   const [selectedUser, setSelectedUser] = useState(() => {
     const savedSelectedUser = sessionStorage.getItem('selectedUser');
-    return savedSelectedUser ? JSON.parse(savedSelectedUser) : null;
+    if (!savedSelectedUser) return null;
+    sessionStorage.removeItem('selectedUser');
+    return JSON.parse(savedSelectedUser);
   });
-
-  useEffect(() => {
-    if (selectedUser) {
-      sessionStorage.setItem('selectedUser', JSON.stringify(selectedUser));
-    } else {
-      sessionStorage.removeItem('selectedUser');
-    }
-  }, [selectedUser]);
 
   const { items, isLoading, isError, refetch } = useRecordHook({ userId: user?.id });
   const {

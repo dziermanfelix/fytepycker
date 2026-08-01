@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 import { useRecord } from '@/contexts/RecordContext';
 import { FRONTEND_URLS } from '@/common/urls';
 import RecordCard from '@/components/RecordCard';
@@ -13,12 +12,6 @@ const Record = () => {
   const navigate = useNavigate();
   const { isLoading, isError, isLoadingDetail, isDetailError, items, selectedUser, setSelectedUser, selectedMatchups } =
     useRecord();
-
-  useEffect(() => {
-    return () => {
-      setSelectedUser(null);
-    };
-  }, [setSelectedUser]);
 
   const handleUserClick = (user) => {
     setSelectedUser(user);
