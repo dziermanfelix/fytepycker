@@ -6,8 +6,8 @@ const statusBadgeStyles = {
   action: 'bg-rose-500/10 text-rose-700 ring-rose-500/20',
   waiting: 'bg-amber-500/10 text-amber-800 ring-amber-500/20',
   confirmed: 'bg-stone-500/10 text-stone-600 ring-stone-500/20',
-  win: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20',
-  lose: 'bg-rose-500/10 text-rose-700 ring-rose-500/20',
+  win: 'bg-rose-500/10 text-rose-700 ring-rose-500/20',
+  lose: 'bg-sky-500/10 text-sky-700 ring-sky-500/20',
 };
 
 const Fights = ({ fights, user, selections, fighterClicked, readyFight, processingFightId = null }) => {
@@ -51,6 +51,8 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
       img = fight.red_img;
     }
     const isProcessing = processingFightId !== null;
+    const isWinner = fight?.winner === name;
+    const isLoser = Boolean(fight?.winner && !isWinner);
     const selectable =
       !isProcessing &&
       !fight.winner &&
@@ -62,9 +64,9 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
     return (
       <button
         type='button'
-        className={`flex h-28 w-28 shrink-0 flex-col items-center justify-start rounded-lg p-1.5 transition-all duration-300
-          ${fight?.winner === name ? 'ring-2 ring-amber-400 ring-offset-1' : ''}
-          ${selections ? getFighterButtonColor(fight, name, yourTurn && selectable) : ''}
+        className={`relative flex h-28 w-28 shrink-0 flex-col items-center justify-start rounded-lg p-1.5 transition-all duration-300
+          ${getFighterButtonColor(fight, name, yourTurn && selectable)}
+          ${isLoser ? 'opacity-40' : ''}
           ${yourTurn && selectable ? 'pick-ready-ring' : ''}
           ${yourTurn && !selectable ? 'opacity-40' : ''}`}
         onClick={
@@ -76,14 +78,23 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
         }
         disabled={isProcessing || !selectable}
       >
+        {isWinner && (
+          <span className='absolute -top-1.5 left-1/2 z-10 -translate-x-1/2 rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-950 shadow-sm'>
+            Win
+          </span>
+        )}
         <Fighter img={img} name={name} />
       </button>
     );
   };
 
   const getFighterButtonColor = (fight, fighterName, highlightSelectable) => {
-    if (selections[fight.id]?.userSelection === fighterName) return 'bg-rose-500/15 ring-1 ring-inset ring-rose-400';
-    if (selections[fight.id]?.otherSelection === fighterName) return 'bg-sky-500/15 ring-1 ring-inset ring-sky-400';
+    if (selections?.[fight.id]?.userSelection === fighterName) {
+      return 'bg-rose-500/15 ring-1 ring-inset ring-rose-400';
+    }
+    if (selections?.[fight.id]?.otherSelection === fighterName) {
+      return 'bg-sky-500/15 ring-1 ring-inset ring-sky-400';
+    }
     if (highlightSelectable) return 'bg-white ring-2 ring-inset ring-rose-400';
     return 'bg-stone-100';
   };
@@ -113,9 +124,9 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
     if (user && selections?.[fight.id]) {
       const selection = selections[fight.id];
       if (selection.winner && selection.winner === user.id) {
-        result = { label: `Won ${selection.bet}`, tone: 'win' };
+        result = { label: `+${selection.bet}`, tone: 'win' };
       } else if (selection.winner && selection.winner !== user.id) {
-        result = { label: `Lost ${selection.bet}`, tone: 'lose' };
+        result = { label: `-${selection.bet}`, tone: 'lose' };
       }
     }
 
