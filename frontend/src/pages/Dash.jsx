@@ -167,14 +167,6 @@ const MobileSidebarOverlay = ({ isSidebarOpen, setIsSidebarOpen, children }) => 
   );
 };
 
-const DashboardContent = () => {
-  return (
-    <div className='p-6'>
-      <Outlet />
-    </div>
-  );
-};
-
 const Dash = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
@@ -188,8 +180,8 @@ const Dash = () => {
 
         <div className='flex-1 flex flex-col overflow-hidden'>
           <Header setIsSidebarOpen={setIsSidebarOpen} />
-          <main className='flex-1 overflow-y-auto p-4'>
-            <DashboardContent />
+          <main className='flex-1 overflow-y-auto p-4 sm:p-6'>
+            <Outlet />
           </main>
         </div>
       </div>
