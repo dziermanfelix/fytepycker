@@ -189,9 +189,9 @@ const MatchupContent = ({ basePath, deletable }) => {
               <div className='mb-4 rounded border border-red-400 bg-red-100 px-4 py-2 text-red-700'>{error}</div>
             )}
 
-            <div className='mt-6 flex justify-start'>
+            <div className='mt-4 flex justify-start gap-2'>
               <button
-                className='submit-btn'
+                className='danger-btn'
                 onClick={() => {
                   setIsModalOpen(false);
                   setError('');
@@ -201,7 +201,7 @@ const MatchupContent = ({ basePath, deletable }) => {
                 Cancel
               </button>
               <button className='submit-btn' onClick={handleDeleteMatchup} disabled={isSubmitting}>
-                {isSubmitting ? 'Deleting...' : 'Delete Matchup'}
+                {isSubmitting ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>

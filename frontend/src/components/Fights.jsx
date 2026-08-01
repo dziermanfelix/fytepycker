@@ -1,5 +1,14 @@
 import { useRef, useEffect } from 'react';
 import { getFightCardTypes } from '@/utils/fightTabUtils';
+import { getInitials } from '@/utils/winningsDisplayUtils';
+
+const statusBadgeStyles = {
+  action: 'bg-rose-500/10 text-rose-700 ring-rose-500/20',
+  waiting: 'bg-amber-500/10 text-amber-800 ring-amber-500/20',
+  confirmed: 'bg-stone-500/10 text-stone-600 ring-stone-500/20',
+  win: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20',
+  lose: 'bg-rose-500/10 text-rose-700 ring-rose-500/20',
+};
 
 const Fights = ({ fights, user, selections, fighterClicked, readyFight, processingFightId = null }) => {
   const fightRefs = useRef({});
@@ -16,9 +25,21 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
   const fightCards = getFightCardTypes();
 
   const Fighter = ({ img, name, url }) => (
-    <div className='flex-row items-center text-center justify-between'>
-      <img src={img} alt={name} className='w-50 h-50 object-contain mb-2' />
-      <a href={url} target='_blank' rel='noopener noreferrer' className='underline font-semibold'>
+    <div className='flex h-full w-full flex-col items-center text-center gap-1'>
+      {img ? (
+        <img src={img} alt={name} className='h-16 w-16 shrink-0 object-cover object-top' />
+      ) : (
+        <div className='flex h-16 w-16 shrink-0 items-center justify-center bg-stone-800 text-sm font-bold tracking-wider text-white'>
+          {getInitials(name)}
+        </div>
+      )}
+      <a
+        href={url}
+        target='_blank'
+        rel='noopener noreferrer'
+        onClick={(e) => e.stopPropagation()}
+        className='block h-8 w-full font-semibold text-xs leading-4 text-stone-800 line-clamp-2 hover:underline'
+      >
         {name}
       </a>
     </div>
@@ -44,9 +65,10 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
 
     return (
       <button
-        className={`${fight?.winner === name && 'border-6 border-yellow-500'} p-2 rounded transition-all duration-300 ${
-          !selectable && 'cursor-not-allowed'
-        } ${selections && getFighterButtonColor(fight, name)}`}
+        type='button'
+        className={`flex h-28 w-28 shrink-0 flex-col items-center justify-start rounded-lg p-1.5 transition-all duration-300 ${
+          fight?.winner === name ? 'ring-2 ring-amber-400 ring-offset-1' : ''
+        } ${!selectable ? 'cursor-not-allowed' : ''} ${selections ? getFighterButtonColor(fight, name) : ''}`}
         onClick={
           selectable
             ? (e) => {
@@ -62,128 +84,149 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
   };
 
   const getFighterButtonColor = (fight, fighterName) => {
-    if (selections[fight.id]?.userSelection === fighterName) return 'bg-red-500';
-    if (selections[fight.id]?.otherSelection === fighterName) return 'bg-blue-500';
-    return 'bg-gray-200';
+    if (selections[fight.id]?.userSelection === fighterName) return 'bg-rose-500/15 ring-1 ring-inset ring-rose-400';
+    if (selections[fight.id]?.otherSelection === fighterName) return 'bg-sky-500/15 ring-1 ring-inset ring-sky-400';
+    return 'bg-stone-100';
   };
 
-  const InfoSection = ({ fight }) => {
-    return (
-      <div className='flex flex-col text-center'>
-        <p className='text-gray-600 mb-4'>{fight?.weight_class}</p>
-      </div>
-    );
+  const getSelectionStatus = (fight) => {
+    if (!user || !selections) return null;
+    const selection = selections[fight.id];
+    if (!selection || fight.winner) return null;
+
+    if (selection.confirmed) {
+      return { label: 'Confirmed', tone: 'confirmed', bet: selection.bet };
+    }
+    if (selection.ready) {
+      if (selection.dibs == user?.id && !selection.userSelection) {
+        return { label: 'Your pick', tone: 'action', bet: selection.bet, pulse: true };
+      }
+      if (selection.dibs != user?.id && !selection.userSelection && selection.otherSelection) {
+        return { label: 'Confirm pick', tone: 'action', bet: selection.bet, pulse: true };
+      }
+      return { label: 'Waiting', tone: 'waiting', bet: selection.bet };
+    }
+    return selection.bet ? { label: null, tone: null, bet: selection.bet } : null;
   };
 
-  const SelectionStatusSection = ({ fight }) => {
-    let selection;
-    let selectionStatusText;
-    if (user && selections) {
-      selection = selections[fight.id];
-      if (!selection || fight.winner) return null;
-      if (selection.confirmed) {
-        selectionStatusText = 'Selections Confirmed.';
-      } else if (selection.ready) {
-        if (selection.dibs == user?.id && !selection.userSelection) {
-          selectionStatusText = 'Select a Fighter!';
-        } else if (selection.dibs != user?.id && !selection.userSelection && selection.otherSelection) {
-          selectionStatusText = 'Confirm Your Selection...';
-        } else {
-          selectionStatusText = 'Waiting For Opponent...';
-        }
-      } else {
-        selectionStatusText = '';
+  const getResultStatus = (fight) => {
+    if (!fight.winner) return null;
+    const method =
+      fight.round != null && fight.method
+        ? `R${fight.round} · ${fight.method}`
+        : fight.method || (fight.round != null ? `Round ${fight.round}` : null);
+
+    let result = null;
+    if (user && selections?.[fight.id]) {
+      const selection = selections[fight.id];
+      if (selection.winner && selection.winner === user.id) {
+        result = { label: `Won ${selection.bet}`, tone: 'win' };
+      } else if (selection.winner && selection.winner !== user.id) {
+        result = { label: `Lost ${selection.bet}`, tone: 'lose' };
       }
     }
+
+    return { method, result };
+  };
+
+  const CenterMeta = ({ fight }) => {
+    const status = getSelectionStatus(fight);
+    const outcome = getResultStatus(fight);
+
     return (
-      <div className='flex flex-col text-center'>
-        {selectionStatusText && (
-          <div className='flex flex-col text-center gap-3'>
-            <p className='text-lg'>{selection.bet}</p>
-            <p className='font-bold capitalize'>{selectionStatusText}</p>
-          </div>
+      <div className='flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 px-2 text-center'>
+        <p className='text-[10px] font-semibold uppercase tracking-wider text-stone-400'>{fight?.weight_class}</p>
+
+        <div className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-stone-800 text-[9px] font-bold tracking-wider text-white'>
+          VS
+        </div>
+
+        {status?.bet != null && !outcome && (
+          <p className='text-sm font-bold tabular-nums text-stone-900'>{status.bet}</p>
+        )}
+
+        {status?.label && (
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset ${
+              statusBadgeStyles[status.tone]
+            }`}
+          >
+            {status.pulse && <span className='h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500' />}
+            {status.label}
+          </span>
+        )}
+
+        {outcome?.method && (
+          <p className='text-[11px] font-medium uppercase tracking-wide text-amber-700'>{outcome.method}</p>
+        )}
+
+        {outcome?.result && (
+          <span
+            className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset ${
+              statusBadgeStyles[outcome.result.tone]
+            }`}
+          >
+            {outcome.result.label}
+          </span>
         )}
       </div>
     );
   };
 
-  const WinnerSection = ({ fight }) => {
-    let userResultText;
-    if (user && selections) {
-      const selection = selections[fight.id];
-      if (!selection) return null;
-      if (selection.winner && selection.winner === user.id) userResultText = `You Win ${selection.bet}`;
-      else if (selection.winner && selection.winner !== user.id) userResultText = `You lose ${selection.bet}`;
-    }
-    return (
-      <div className='flex flex-col text-center'>
-        {fight.winner && (
-          <div className='flex flex-col text-center gap-3'>
-            <p className='text-yellow-500 font-bold capitalize'>
-              Round {fight.round} | {fight.method}
-            </p>
-            {userResultText && <p className='font-bold capitalize text-lg'>{userResultText}</p>}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const getFightBorder = (fight) => {
+  const getFightAccent = (fight) => {
+    if (!selections) return { bar: '', pulse: false };
     const userDibs = selections?.[fight?.id]?.['dibs'] === user?.id;
     const ready = selections?.[fight?.id]?.['ready'];
     const userSelection = selections?.[fight?.id]?.['userSelection'];
     const otherSelection = selections?.[fight?.id]?.['otherSelection'];
     const yourTurn = (ready && !userDibs && otherSelection !== null) || (ready && userDibs && !userSelection);
-    let borderStyle = '';
-    if (ready && userDibs) {
-      borderStyle = 'border-10 border-red-500';
-    } else if (ready && !userDibs) {
-      borderStyle = 'border-10 border-blue-500';
-    } else if (selections && userDibs) {
-      borderStyle = 'border-1 border-red-500';
-    } else if (selections && !userDibs) {
-      borderStyle = 'border-1 border-blue-500';
-    }
-    if (yourTurn) borderStyle += ' animate-pulse';
-    return borderStyle;
+
+    let bar = '';
+    if (ready && userDibs) bar = 'bg-rose-500';
+    else if (ready && !userDibs) bar = 'bg-sky-500';
+    else if (selections && userDibs) bar = 'bg-rose-300';
+    else if (selections && !userDibs) bar = 'bg-sky-300';
+
+    return { bar, pulse: yourTurn };
   };
 
   const populatedFightCards = fightCards?.filter((cardType) => fights[cardType]?.length > 0) || [];
 
   if (populatedFightCards && populatedFightCards.length > 0) {
     return (
-      <div className=''>
+      <div className='space-y-4'>
         {populatedFightCards.map((cardType) => (
-          <div key={cardType} className='bg-gray-200 p-4 border border-gray-300 rounded-xl shadow-md mb-4'>
-            <div className='capitalize mb-2 text-lg font-bold'>{cardType}</div>
-            <ul className='space-y-4'>
+          <section key={cardType} className='overflow-hidden rounded-xl border border-stone-200 bg-white'>
+            <div className='border-b border-stone-100 bg-stone-50 px-3 py-2'>
+              <h3 className='text-xs font-bold uppercase tracking-wider text-stone-500'>{cardType}</h3>
+            </div>
+            <ul className='divide-y divide-stone-100'>
               {fights[cardType]?.map((fight) => {
+                const accent = getFightAccent(fight);
                 return (
                   <li
                     key={fight?.id}
                     ref={(el) => (fightRefs.current[fight?.id] = el)}
-                    className={`relative p-4 bg-white shadow rounded ${getFightBorder(fight)} ${
+                    className={`relative px-2 py-2 sm:px-3 ${
                       processingFightId === fight?.id ? 'pointer-events-none' : ''
                     }`}
                   >
-                    {processingFightId === fight?.id && (
-                      <div className='absolute inset-0 backdrop-blur-sm rounded z-10' />
+                    {accent.bar && (
+                      <div
+                        className={`absolute inset-y-0 left-0 w-1 ${accent.bar} ${accent.pulse ? 'animate-pulse' : ''}`}
+                      />
                     )}
-                    <div className='flex items-center justify-between w-full'>
+                    {processingFightId === fight?.id && <div className='absolute inset-0 z-10 backdrop-blur-sm' />}
+                    <div className='flex w-full items-center justify-between gap-1'>
                       <FighterButton fight={fight} selection={selections?.[fight?.id]} color='red' />
-                      <div className='flex flex-col justify-between'>
-                        <InfoSection fight={fight} />
-                        <SelectionStatusSection fight={fight} />
-                        <WinnerSection fight={fight} />
-                      </div>
+                      <CenterMeta fight={fight} />
                       <FighterButton fight={fight} selection={selections?.[fight?.id]} color='blue' />
                     </div>
                   </li>
                 );
               })}
             </ul>
-          </div>
+          </section>
         ))}
       </div>
     );

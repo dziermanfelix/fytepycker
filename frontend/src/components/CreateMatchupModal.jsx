@@ -80,7 +80,7 @@ const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user 
           )}
         </div>
 
-        <div className='flex justify-end mt-6'>
+        <div className='flex justify-end mt-4 gap-2'>
           <button
             className='danger-btn'
             onClick={() => {
@@ -92,7 +92,7 @@ const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user 
             Cancel
           </button>
           <button className='submit-btn' onClick={handleSubmitMatchup} disabled={isSubmitting || !selectedOpponent}>
-            {isSubmitting ? 'Creating...' : 'Create Matchup'}
+            {isSubmitting ? 'Creating...' : 'Create'}
           </button>
         </div>
       </div>
