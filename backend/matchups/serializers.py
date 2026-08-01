@@ -20,14 +20,20 @@ class CustomSelectionPostSerializer(serializers.Serializer):
         other_fighter = next(f for f in fight.get_fighters() if f != fighter)
         data['other_fighter'] = other_fighter
 
-        # Check if the selection is already taken by another user for the same fight
         existing_selection = Selection.objects.filter(matchup=matchup, fight=fight).first()
+        if not existing_selection:
+            raise serializers.ValidationError("No selection exists for this fight in the matchup.")
+
+        if existing_selection.confirmed:
+            raise serializers.ValidationError("This fight has already been picked.")
+
+        if existing_selection.dibs_id != user.id:
+            raise serializers.ValidationError("You do not have dibs on this fight.")
 
         k = 'user_a_selection' if user == matchup.user_b else 'user_b_selection'
-        if existing_selection:
-            existing_fighter = getattr(existing_selection, k, "Attribute not found")
-            if existing_fighter == fighter:
-                raise serializers.ValidationError(f"The fighter {fighter} has already been selected for this fight.")
+        existing_fighter = getattr(existing_selection, k, None)
+        if existing_fighter == fighter:
+            raise serializers.ValidationError(f"The fighter {fighter} has already been selected for this fight.")
 
         return data
 

@@ -30,19 +30,12 @@ const SelectableFights = () => {
   useEffect(() => {
     if (Object.keys(initialSelections).length > 0) {
       if (selectedMatchup) {
-        const readyFight = getReadyFight(initialSelections, selectedMatchup);
-        setReadyFight(readyFight);
+        setReadyFight(getReadyFight(initialSelections, selectedMatchup, user?.id));
         const selectionsMap = initialSelections.reduce((acc, selection) => {
           const fight = selection.fight;
 
           if (!acc[fight]) {
             acc[fight] = { ...selection };
-          }
-
-          if (fight === readyFight) {
-            acc[fight].ready = true;
-          } else {
-            acc[fight].ready = false;
           }
 
           if (selectedMatchup.user_a.id === user.id) {

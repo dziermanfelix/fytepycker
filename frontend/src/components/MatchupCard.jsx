@@ -1,22 +1,21 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { getReadyFight } from '@/common/fight';
 import { formatWinnings, getWinningsTextColor } from '@/utils/winningsDisplayUtils';
 
 const statusStyles = {
   yours: {
     bar: 'bg-rose-500',
     badge: 'bg-rose-500/10 text-rose-700 ring-rose-500/20',
-    label: 'Your Move',
+    label: 'Your Picks',
   },
   waiting: {
     bar: 'bg-amber-500',
     badge: 'bg-amber-500/10 text-amber-800 ring-amber-500/20',
-    label: 'Waiting',
+    label: 'Their Picks',
   },
   complete: {
     bar: 'bg-stone-400',
     badge: 'bg-stone-500/10 text-stone-600 ring-stone-500/20',
-    label: 'Locked',
+    label: 'Complete',
   },
 };
 
@@ -24,24 +23,11 @@ const MatchupCard = ({ matchup, handleClick }) => {
   const { user } = useAuth();
 
   const otherUser = user.id == matchup?.user_a.id ? matchup?.user_b?.username : matchup?.user_a?.username;
-  const numUnconfirmed = matchup.selections.filter((selection) => !selection.confirmed).length;
-  const readyFight = getReadyFight(matchup.selections, matchup);
-
-  let yourTurn = false;
-  if (readyFight) {
-    const readyFightSelections = matchup.selections.filter((selection) => selection.fight === readyFight)[0];
-    const userDibs = readyFightSelections.dibs == user.id;
-    const userSelection =
-      matchup.user_a.id === user.id ? readyFightSelections.user_a_selection : readyFightSelections.user_b_selection;
-    const otherSelection =
-      matchup.user_a.id === user.id ? readyFightSelections.user_b_selection : readyFightSelections.user_a_selection;
-    yourTurn = (!userDibs && otherSelection !== null) || (userDibs && !userSelection);
-  }
-
-  const firstPick = matchup.first_pick === matchup.user_a.id ? matchup.user_a.username : matchup.user_b.username;
-  const statusKey = numUnconfirmed === 0 ? 'complete' : yourTurn ? 'yours' : 'waiting';
+  const openSelections = matchup.selections.filter((selection) => !selection.confirmed);
+  const yourOpenPicks = openSelections.filter((selection) => selection.dibs === user.id).length;
+  const statusKey = openSelections.length === 0 ? 'complete' : yourOpenPicks > 0 ? 'yours' : 'waiting';
   const status = statusStyles[statusKey];
-  const confirmed = matchup.selections.length - numUnconfirmed;
+  const confirmed = matchup.selections.length - openSelections.length;
 
   return (
     <button
@@ -65,7 +51,7 @@ const MatchupCard = ({ matchup, handleClick }) => {
               {status.label}
             </span>
             <span className='text-xs text-stone-400'>
-              {confirmed}/{matchup.selections.length} locked
+              {confirmed}/{matchup.selections.length} picked
             </span>
           </div>
 
@@ -99,9 +85,6 @@ const MatchupCard = ({ matchup, handleClick }) => {
           </div>
           <div className='text-right text-xs text-stone-400'>
             <p>Bets {matchup.bets}</p>
-            <p className='capitalize'>
-              First: <span className='text-stone-600'>{firstPick}</span>
-            </p>
           </div>
         </div>
       </div>

@@ -58,10 +58,10 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
     const selectable =
       !isProcessing &&
       !fight.winner &&
-      selection?.ready &&
-      (selection?.dibs === user?.id || selection?.otherSelection) &&
-      selection?.otherSelection !== name &&
-      !selection?.confirmed;
+      selection &&
+      !selection.confirmed &&
+      selection.dibs === user?.id &&
+      selection.otherSelection !== name;
 
     return (
       <button
@@ -95,18 +95,12 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
     if (!selection || fight.winner) return null;
 
     if (selection.confirmed) {
-      return { label: 'Confirmed', tone: 'confirmed', bet: selection.bet };
+      return { label: 'Picked', tone: 'confirmed', bet: selection.bet };
     }
-    if (selection.ready) {
-      if (selection.dibs == user?.id && !selection.userSelection) {
-        return { label: 'Your pick', tone: 'action', bet: selection.bet, pulse: true };
-      }
-      if (selection.dibs != user?.id && !selection.userSelection && selection.otherSelection) {
-        return { label: 'Confirm pick', tone: 'action', bet: selection.bet, pulse: true };
-      }
-      return { label: 'Waiting', tone: 'waiting', bet: selection.bet };
+    if (selection.dibs === user.id) {
+      return { label: 'Your pick', tone: 'action', bet: selection.bet, pulse: true };
     }
-    return selection.bet ? { label: null, tone: null, bet: selection.bet } : null;
+    return { label: 'Their pick', tone: 'waiting', bet: selection.bet };
   };
 
   const getResultStatus = (fight) => {
@@ -175,19 +169,11 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
 
   const getFightAccent = (fight) => {
     if (!selections) return { bar: '', pulse: false };
-    const userDibs = selections?.[fight?.id]?.['dibs'] === user?.id;
-    const ready = selections?.[fight?.id]?.['ready'];
-    const userSelection = selections?.[fight?.id]?.['userSelection'];
-    const otherSelection = selections?.[fight?.id]?.['otherSelection'];
-    const yourTurn = (ready && !userDibs && otherSelection !== null) || (ready && userDibs && !userSelection);
-
-    let bar = '';
-    if (ready && userDibs) bar = 'bg-rose-500';
-    else if (ready && !userDibs) bar = 'bg-sky-500';
-    else if (selections && userDibs) bar = 'bg-rose-300';
-    else if (selections && !userDibs) bar = 'bg-sky-300';
-
-    return { bar, pulse: yourTurn };
+    const selection = selections[fight?.id];
+    if (!selection || fight.winner) return { bar: '', pulse: false };
+    if (selection.confirmed) return { bar: 'bg-stone-300', pulse: false };
+    if (selection.dibs === user?.id) return { bar: 'bg-rose-500', pulse: true };
+    return { bar: 'bg-sky-500', pulse: false };
   };
 
   const populatedFightCards = fightCards?.filter((cardType) => fights[cardType]?.length > 0) || [];

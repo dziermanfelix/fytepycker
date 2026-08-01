@@ -5,7 +5,6 @@ const RecordMatchupCard = ({ matchup, handleClick }) => {
   const { user } = useAuth();
 
   const otherUser = user.id == matchup?.user_a.id ? matchup?.user_b?.username : matchup?.user_a?.username;
-  const firstPick = matchup.first_pick === matchup.user_a.id ? matchup.user_a.username : matchup.user_b.username;
   const isUp = matchup.winnings > 0;
   const isDown = matchup.winnings < 0;
   const accent = isUp ? 'bg-emerald-500' : isDown ? 'bg-rose-500' : 'bg-stone-400';
@@ -65,9 +64,6 @@ const RecordMatchupCard = ({ matchup, handleClick }) => {
           </div>
           <div className='text-right text-xs text-stone-400'>
             <p>Bets {matchup.bets}</p>
-            <p className='capitalize'>
-              First: <span className='text-stone-600'>{firstPick}</span>
-            </p>
           </div>
         </div>
       </div>

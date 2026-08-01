@@ -1,4 +1,4 @@
-export const getReadyFight = (selections, matchup) => {
+export const getReadyFight = (selections, matchup, userId = null) => {
   if (matchup.event.complete) return null;
   const cardPriority = { early: 0, prelim: 1, main: 2 };
   const allFights = [
@@ -10,7 +10,9 @@ export const getReadyFight = (selections, matchup) => {
     selections
       .map((selection) => {
         const fight = allFights.find((f) => f.id === selection.fight);
-        return !selection.confirmed && !fight?.winner ? { ...selection, _fight: fight } : null;
+        const isOpen = !selection.confirmed && !fight?.winner;
+        const hasDibs = userId == null || selection.dibs === userId;
+        return isOpen && hasDibs ? { ...selection, _fight: fight } : null;
       })
       .filter(Boolean)
       .sort((a, b) => {
