@@ -24,8 +24,14 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
 
   const fightCards = getFightCardTypes();
 
+  const isYourTurn = (fight) => {
+    if (!user || !selections) return false;
+    const selection = selections[fight?.id];
+    return Boolean(selection && !selection.confirmed && !fight?.winner && selection.dibs === user.id);
+  };
+
   const Fighter = ({ img, name }) => (
-    <div className='flex h-full w-full flex-col items-center text-center gap-1'>
+    <div className='flex h-full w-full flex-col items-center gap-1 text-center'>
       {img ? (
         <img src={img} alt={name} className='h-16 w-16 shrink-0 object-cover object-top' />
       ) : (
@@ -33,11 +39,11 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
           {getInitials(name)}
         </div>
       )}
-      <span className='block h-8 w-full font-semibold text-xs leading-4 text-stone-800 line-clamp-2'>{name}</span>
+      <span className='line-clamp-2 block h-8 w-full text-xs font-semibold leading-4 text-stone-800'>{name}</span>
     </div>
   );
 
-  const FighterButton = ({ fight, selection, color }) => {
+  const FighterButton = ({ fight, selection, color, yourTurn }) => {
     let name = fight.blue_name;
     let img = fight.blue_img;
     if (color === 'red') {
@@ -56,9 +62,11 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
     return (
       <button
         type='button'
-        className={`flex h-28 w-28 shrink-0 flex-col items-center justify-start rounded-lg p-1.5 transition-all duration-300 
-          ${fight?.winner === name ? 'ring-2 ring-amber-400 ring-offset-1' : ''} 
-          ${selections ? getFighterButtonColor(fight, name) : ''}`}
+        className={`flex h-28 w-28 shrink-0 flex-col items-center justify-start rounded-lg p-1.5 transition-all duration-300
+          ${fight?.winner === name ? 'ring-2 ring-amber-400 ring-offset-1' : ''}
+          ${selections ? getFighterButtonColor(fight, name, yourTurn && selectable) : ''}
+          ${yourTurn && selectable ? 'pick-ready-ring' : ''}
+          ${yourTurn && !selectable ? 'opacity-40' : ''}`}
         onClick={
           selectable
             ? (e) => {
@@ -73,9 +81,10 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
     );
   };
 
-  const getFighterButtonColor = (fight, fighterName) => {
+  const getFighterButtonColor = (fight, fighterName, highlightSelectable) => {
     if (selections[fight.id]?.userSelection === fighterName) return 'bg-rose-500/15 ring-1 ring-inset ring-rose-400';
     if (selections[fight.id]?.otherSelection === fighterName) return 'bg-sky-500/15 ring-1 ring-inset ring-sky-400';
+    if (highlightSelectable) return 'bg-white ring-2 ring-inset ring-rose-400';
     return 'bg-stone-100';
   };
 
@@ -175,24 +184,41 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
             <ul className='divide-y divide-stone-100'>
               {fights[cardType]?.map((fight) => {
                 const accent = getFightAccent(fight);
+                const yourTurn = isYourTurn(fight);
+                const waiting = Boolean(
+                  selections?.[fight?.id] && !selections[fight.id].confirmed && !yourTurn && !fight.winner,
+                );
+
                 return (
                   <li
                     key={fight?.id}
                     ref={(el) => (fightRefs.current[fight?.id] = el)}
                     className={`relative px-2 py-2 sm:px-3 ${
                       processingFightId === fight?.id ? 'pointer-events-none' : ''
-                    }`}
+                    } ${yourTurn ? 'pick-ready' : ''} ${waiting ? 'opacity-60' : ''}`}
                   >
                     {accent.bar && (
                       <div
-                        className={`absolute inset-y-0 left-0 w-1 ${accent.bar} ${accent.pulse ? 'animate-pulse' : ''}`}
+                        className={`absolute inset-y-0 left-0 w-1.5 ${accent.bar} ${
+                          accent.pulse ? 'animate-pulse' : ''
+                        }`}
                       />
                     )}
                     {processingFightId === fight?.id && <div className='absolute inset-0 z-10 backdrop-blur-sm' />}
                     <div className='flex w-full items-center justify-between gap-1'>
-                      <FighterButton fight={fight} selection={selections?.[fight?.id]} color='red' />
+                      <FighterButton
+                        fight={fight}
+                        selection={selections?.[fight?.id]}
+                        color='red'
+                        yourTurn={yourTurn}
+                      />
                       <CenterMeta fight={fight} />
-                      <FighterButton fight={fight} selection={selections?.[fight?.id]} color='blue' />
+                      <FighterButton
+                        fight={fight}
+                        selection={selections?.[fight?.id]}
+                        color='blue'
+                        yourTurn={yourTurn}
+                      />
                     </div>
                   </li>
                 );

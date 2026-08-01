@@ -22,4 +22,32 @@
   .form-btn {
     @apply w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded;
   }
+
+  .pick-ready {
+    animation: pick-ready-pulse 1.8s ease-in-out infinite;
+  }
+
+  .pick-ready-ring {
+    animation: pick-ready-ring 1.8s ease-in-out infinite;
+  }
+}
+
+@keyframes pick-ready-pulse {
+  0%,
+  100% {
+    background-color: rgb(255 241 242);
+  }
+  50% {
+    background-color: rgb(254 226 226);
+  }
+}
+
+@keyframes pick-ready-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(244 63 94 / 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgb(244 63 94 / 0.15);
+  }
 }
