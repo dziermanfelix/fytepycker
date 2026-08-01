@@ -7,6 +7,15 @@ import EventFights from '@/components/EventFights';
 import CreateMatchupModal from '@/components/CreateMatchupModal';
 import { FaExternalLinkSquareAlt } from 'react-icons/fa';
 
+const formatEventDate = (date) =>
+  date
+    ? new Date(date).toLocaleDateString(undefined, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      })
+    : '';
+
 const CurrentEvent = () => {
   const { isError, selectedEvent, selectEvent, upcomingEvents } = useEvents();
   const { user } = useAuth();
@@ -15,6 +24,9 @@ const CurrentEvent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const hasCurrentMatchups = (matchups || []).length > 0;
+  const nextEvent = upcomingEvents[0];
+  const nextEventDate = formatEventDate(nextEvent?.date);
+  const selectedEventDate = formatEventDate(selectedEvent?.date);
 
   const openEvent = async (e, event) => {
     if (hasCurrentMatchups) return;
@@ -33,49 +45,55 @@ const CurrentEvent = () => {
         <div>
           {upcomingEvents.length > 0 ? (
             <div
-              key={upcomingEvents[0]?.id}
-              className={`overflow-hidden rounded-xl border border-stone-800 bg-stone-900 transition-colors${
+              key={nextEvent?.id}
+              className={`overflow-hidden rounded-lg border border-stone-800 bg-stone-900 transition-colors${
                 hasCurrentMatchups ? '' : ' cursor-pointer hover:bg-stone-800'
               }`}
-              onClick={hasCurrentMatchups ? undefined : (e) => openEvent(e, upcomingEvents[0])}
+              onClick={hasCurrentMatchups ? undefined : (e) => openEvent(e, nextEvent)}
             >
-              <div className='flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5'>
-                <div className='flex min-w-0 items-start gap-3'>
+              <div className='flex min-w-0 items-center justify-between gap-2 px-2.5 py-2 sm:gap-3 sm:px-3'>
+                <div className='flex min-w-0 items-center gap-2'>
                   <button
-                    className='mt-0.5 shrink-0 rounded-lg bg-white/10 p-2.5 text-white transition-colors hover:bg-white/20'
+                    className='shrink-0 rounded-md bg-white/10 p-1.5 text-sm text-white transition-colors hover:bg-white/20'
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (upcomingEvents[0]?.url) {
-                        window.open(upcomingEvents[0].url, '_blank', 'noopener,noreferrer');
+                      if (nextEvent?.url) {
+                        window.open(nextEvent.url, '_blank', 'noopener,noreferrer');
                       }
                     }}
                   >
                     <FaExternalLinkSquareAlt />
                   </button>
                   <div className='min-w-0'>
-                    <p className='text-xs font-medium uppercase tracking-wide text-stone-400'>Next event</p>
-                    <p className='truncate text-xl font-bold uppercase tracking-wide text-white'>
-                      {upcomingEvents[0]?.name}
+                    <p className='truncate text-sm font-bold uppercase tracking-wide text-white'>
+                      {nextEvent?.name}
+                      {nextEvent?.headline && (
+                        <span className='font-normal normal-case tracking-normal text-stone-400'>
+                          {' · '}
+                          {nextEvent?.headline}
+                        </span>
+                      )}
                     </p>
-                    {upcomingEvents[0]?.headline && (
-                      <p className='mt-0.5 truncate text-sm text-stone-300'>{upcomingEvents[0]?.headline}</p>
-                    )}
+                    {nextEventDate && <p className='truncate text-[10px] text-stone-400 sm:hidden'>{nextEventDate}</p>}
                   </div>
                 </div>
-                <button
-                  className='action-btn shrink-0'
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    selectEvent(upcomingEvents[0]);
-                    setIsModalOpen(true);
-                  }}
-                >
-                  Matchup
-                </button>
+                <div className='flex shrink-0 items-center gap-2'>
+                  {nextEventDate && <p className='hidden text-xs text-stone-400 sm:block'>{nextEventDate}</p>}
+                  <button
+                    className='action-btn !px-2.5 !py-1 !text-xs'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      selectEvent(nextEvent);
+                      setIsModalOpen(true);
+                    }}
+                  >
+                    Matchup
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
-            <p className='rounded-xl border border-dashed border-stone-300 bg-white/60 py-8 text-center text-stone-500'>
+            <p className='rounded-lg border border-dashed border-stone-300 bg-white/60 py-8 text-center text-stone-500'>
               No events.
             </p>
           )}
@@ -92,17 +110,26 @@ const CurrentEvent = () => {
 
       {selectedEvent && !isModalOpen && (
         <div>
-          <div className='mb-3 overflow-hidden rounded-xl border border-stone-800 bg-stone-900'>
-            <div className='flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5'>
+          <div className='mb-3 overflow-hidden rounded-lg border border-stone-800 bg-stone-900'>
+            <div className='flex min-w-0 items-center justify-between gap-2 px-2.5 py-2 sm:gap-3 sm:px-3'>
               <EventViewCloseButton
                 selectItem={selectEvent}
                 basePath='/dash/matchups'
                 label='Matchups'
                 variant='dark'
+                className='!px-1.5 !py-1 !text-xs'
               />
-              <div className='min-w-0 sm:text-right'>
-                <p className='truncate text-lg font-bold uppercase tracking-wide text-white'>{selectedEvent.name}</p>
-                {selectedEvent.headline && <p className='truncate text-sm text-stone-400'>{selectedEvent.headline}</p>}
+              <div className='min-w-0 text-right'>
+                <p className='truncate text-sm font-bold uppercase tracking-wide text-white'>
+                  {selectedEvent.name}
+                  {selectedEvent.headline && (
+                    <span className='font-normal normal-case tracking-normal text-stone-400'>
+                      {' · '}
+                      {selectedEvent.headline}
+                    </span>
+                  )}
+                </p>
+                {selectedEventDate && <p className='truncate text-[10px] text-stone-400'>{selectedEventDate}</p>}
               </div>
             </div>
           </div>

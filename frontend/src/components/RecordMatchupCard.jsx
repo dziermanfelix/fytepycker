@@ -12,7 +12,6 @@ const RecordMatchupCard = ({ matchup, handleClick }) => {
     ? new Date(matchup.event.date).toLocaleDateString(undefined, {
         month: 'short',
         day: 'numeric',
-        year: 'numeric',
       })
     : '';
 
@@ -20,51 +19,30 @@ const RecordMatchupCard = ({ matchup, handleClick }) => {
     <button
       type='button'
       onClick={() => handleClick(matchup)}
-      className='group relative w-full overflow-hidden rounded-xl border border-stone-200 bg-white text-left transition-colors hover:border-stone-300 hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-800/40'
+      className='group relative w-full overflow-hidden rounded-lg border border-stone-200 bg-white text-left transition-colors hover:border-stone-300 hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-800/40'
     >
       <div className={`absolute inset-y-0 left-0 w-1 ${accent}`} />
 
-      <div className='border-b border-stone-800 bg-stone-900 px-4 py-3 pl-5 sm:px-5 sm:pl-6'>
-        <div className='flex items-start justify-between gap-3'>
-          <div className='min-w-0'>
-            <p className='truncate text-sm font-bold uppercase tracking-wide text-white'>{matchup.event.name}</p>
-            {matchup.event.headline && (
-              <p className='mt-0.5 truncate text-xs text-stone-400'>{matchup.event.headline}</p>
-            )}
-          </div>
-          <p className='shrink-0 text-xs text-stone-400'>{eventDate}</p>
-        </div>
-      </div>
-
-      <div className='flex flex-col gap-4 p-4 pl-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-5 sm:pl-6'>
+      <div className='flex items-center gap-3 px-3 py-2 pl-4'>
         <div className='min-w-0 flex-1'>
-          <div className='flex items-center gap-3 sm:gap-4'>
-            <div className='flex min-w-0 flex-1 flex-col items-end text-right'>
-              <span className='text-xs text-stone-400'>You</span>
-              <span className='truncate text-lg font-bold uppercase leading-tight text-stone-900'>{user.username}</span>
-            </div>
-
-            <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-800 text-[10px] font-bold tracking-wider text-white'>
-              VS
-            </div>
-
-            <div className='flex min-w-0 flex-1 flex-col'>
-              <span className='text-xs text-stone-400'>Opponent</span>
-              <span className='truncate text-lg font-bold uppercase leading-tight text-stone-900'>{otherUser}</span>
-            </div>
+          <div className='mb-0.5 flex min-w-0 items-center gap-1.5'>
+            <p className='truncate text-xs font-semibold uppercase tracking-wide text-stone-500'>
+              {matchup.event.name}
+            </p>
+            {eventDate && <span className='shrink-0 text-[10px] text-stone-400'>{eventDate}</span>}
+          </div>
+          <div className='flex min-w-0 items-center gap-2'>
+            <span className='truncate text-sm font-bold uppercase leading-tight text-stone-900'>{user.username}</span>
+            <span className='shrink-0 text-[10px] font-bold tracking-wider text-stone-400'>VS</span>
+            <span className='truncate text-sm font-bold uppercase leading-tight text-stone-900'>{otherUser}</span>
           </div>
         </div>
 
-        <div className='flex items-end justify-between gap-4 border-t border-stone-100 pt-3 sm:min-w-[9rem] sm:flex-col sm:items-end sm:border-t-0 sm:border-l sm:border-stone-100 sm:pl-6 sm:pt-0'>
-          <div className='sm:text-right'>
-            <p className='text-xs text-stone-400'>Result</p>
-            <p className={` text-2xl font-bold tabular-nums ${getWinningsTextColor(matchup.winnings)}`}>
-              {formatWinnings(matchup.winnings)}
-            </p>
-          </div>
-          <div className='text-right text-xs text-stone-400'>
-            <p>Bets {matchup.bets}</p>
-          </div>
+        <div className='shrink-0 text-right'>
+          <p className={`text-base font-bold tabular-nums leading-tight ${getWinningsTextColor(matchup.winnings)}`}>
+            {formatWinnings(matchup.winnings)}
+          </p>
+          <p className='text-[10px] text-stone-400'>Bets {matchup.bets}</p>
         </div>
       </div>
     </button>

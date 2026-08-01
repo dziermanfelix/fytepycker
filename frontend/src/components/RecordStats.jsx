@@ -4,32 +4,32 @@ import { FRONTEND_URLS } from '@/common/urls';
 
 const RecordStats = ({ selectedUser, totalWinnings, totalBets, onBack }) => {
   return (
-    <div className='mb-4 overflow-hidden rounded-xl border border-stone-800 bg-stone-900'>
-      <div className='flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5'>
-        <EventViewCloseButton basePath={FRONTEND_URLS.RECORD} selectItem={onBack} label='All records' variant='dark' />
-      </div>
-
-      <div className='flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6'>
-        <div className='flex items-center gap-4'>
-          <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-bold tracking-wider text-white'>
+    <div className='mb-2 overflow-hidden rounded-lg border border-stone-800 bg-stone-900'>
+      <div className='flex items-center justify-between gap-3 px-3 py-2'>
+        <div className='flex min-w-0 items-center gap-2'>
+          <EventViewCloseButton
+            basePath={FRONTEND_URLS.RECORD}
+            selectItem={onBack}
+            label='All records'
+            variant='dark'
+            className='!px-1.5 !py-1 !text-xs'
+          />
+          <div className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold tracking-wider text-white'>
             {getInitials(selectedUser.username)}
           </div>
-          <div>
-            <p className='text-xs font-medium uppercase tracking-wide text-stone-400'>Head to head</p>
-            <h2 className='text-2xl font-bold uppercase tracking-wide text-white'>{selectedUser.username}</h2>
-          </div>
+          <p className='truncate text-sm font-bold uppercase tracking-wide text-white'>{selectedUser.username}</p>
         </div>
 
-        <div className='grid grid-cols-2 gap-6 sm:gap-10'>
-          <div>
-            <p className='text-xs font-medium uppercase tracking-wide text-stone-400'>Net</p>
-            <p className={` text-3xl font-bold tabular-nums ${getWinningsTextColor(totalWinnings)}`}>
+        <div className='flex shrink-0 items-center gap-4'>
+          <div className='text-right'>
+            <p className='text-[10px] font-medium uppercase tracking-wide text-stone-400'>Net</p>
+            <p className={`text-base font-bold tabular-nums leading-tight ${getWinningsTextColor(totalWinnings)}`}>
               {formatWinnings(totalWinnings)}
             </p>
           </div>
-          <div>
-            <p className='text-xs font-medium uppercase tracking-wide text-stone-400'>Bets</p>
-            <p className='text-3xl font-bold tabular-nums text-white'>{totalBets}</p>
+          <div className='text-right'>
+            <p className='text-[10px] font-medium uppercase tracking-wide text-stone-400'>Bets</p>
+            <p className='text-base font-bold tabular-nums leading-tight text-white'>{totalBets}</p>
           </div>
         </div>
       </div>

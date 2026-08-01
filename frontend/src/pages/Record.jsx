@@ -43,7 +43,7 @@ const Record = () => {
   return (
     <div className='mx-auto mt-2 grid max-w-3xl gap-2'>
       {!selectedUser && (
-        <div className='flex flex-col gap-3'>
+        <div className='flex flex-col gap-2'>
           {items.length > 0 ? (
             <>
               <RecordSummary wins={summaryWins} losses={summaryLosses} total={summaryTotal} />
@@ -52,9 +52,9 @@ const Record = () => {
               ))}
             </>
           ) : (
-            <div className='flex flex-col items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white/60 px-4 py-14'>
-              <h3 className='mb-2 text-xl font-bold uppercase tracking-wide text-stone-800'>No records</h3>
-              <p className='mb-6 max-w-md text-center text-stone-500'>Completed matchups get recorded here.</p>
+            <div className='flex flex-col items-center justify-center rounded-lg border border-dashed border-stone-300 bg-white/60 px-4 py-10'>
+              <h3 className='mb-1 text-lg font-bold uppercase tracking-wide text-stone-800'>No records</h3>
+              <p className='mb-4 max-w-md text-center text-sm text-stone-500'>Completed matchups get recorded here.</p>
               <button onClick={() => navigate(FRONTEND_URLS.MATCHUPS)} className='action-btn'>
                 Go To Matchups
               </button>
@@ -65,7 +65,7 @@ const Record = () => {
 
       {selectedUser && (
         <div>
-          <div className='mt-2 grid gap-3'>
+          <div className='mt-1 grid gap-2'>
             <RecordStats
               selectedUser={selectedUser}
               totalWinnings={totalWinnings}
@@ -75,7 +75,7 @@ const Record = () => {
             {isLoadingDetail && <Spinner />}
             {isDetailError && <p className='text-center text-rose-500'>Failed to load matchups.</p>}
             {!isLoadingDetail && !isDetailError && (
-              <div className='flex flex-col gap-3'>
+              <div className='flex flex-col gap-2'>
                 {selectedMatchups.length > 0 ? (
                   selectedMatchups.map((matchup) => (
                     <RecordMatchupCard
@@ -85,14 +85,14 @@ const Record = () => {
                     />
                   ))
                 ) : (
-                  <div className='flex flex-col items-center justify-center rounded-xl border border-dashed border-stone-300 bg-white/60 px-4 py-14'>
-                    <div className='mb-4 rounded-full bg-stone-100 p-4'>
-                      <FaTrophy className='text-3xl text-stone-400' />
+                  <div className='flex flex-col items-center justify-center rounded-lg border border-dashed border-stone-300 bg-white/60 px-4 py-10'>
+                    <div className='mb-3 rounded-full bg-stone-100 p-3'>
+                      <FaTrophy className='text-2xl text-stone-400' />
                     </div>
-                    <h3 className='mb-2 text-xl font-bold uppercase tracking-wide text-stone-800'>
+                    <h3 className='mb-1 text-lg font-bold uppercase tracking-wide text-stone-800'>
                       No completed matchups
                     </h3>
-                    <p className='max-w-md text-center text-stone-500'>
+                    <p className='max-w-md text-center text-sm text-stone-500'>
                       Once you complete matchups with {selectedUser?.username}, they'll appear here.
                     </p>
                   </div>

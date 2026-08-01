@@ -33,15 +33,15 @@ const MatchupCard = ({ matchup, handleClick }) => {
     <button
       type='button'
       onClick={() => handleClick(matchup)}
-      className='group relative w-full overflow-hidden rounded-xl border border-stone-200 bg-white text-left transition-colors hover:border-stone-300 hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-800/40'
+      className='group relative w-full min-w-0 overflow-hidden rounded-lg border border-stone-200 bg-white text-left transition-colors hover:border-stone-300 hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-800/40'
     >
       <div className={`absolute inset-y-0 left-0 w-1 ${status.bar}`} />
 
-      <div className='flex flex-col gap-4 p-4 pl-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-5 sm:pl-6'>
+      <div className='flex min-w-0 items-center gap-2 px-2.5 py-2 pl-3.5 sm:gap-3 sm:px-3 sm:pl-4'>
         <div className='min-w-0 flex-1'>
-          <div className='mb-3 flex flex-wrap items-center gap-2'>
+          <div className='mb-1 flex flex-wrap items-center gap-1.5'>
             <span
-              className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-semibold uppercase tracking-wide ring-1 ring-inset ${status.badge}`}
+              className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset ${status.badge}`}
             >
               {statusKey !== 'complete' && (
                 <span
@@ -50,42 +50,27 @@ const MatchupCard = ({ matchup, handleClick }) => {
               )}
               {status.label}
             </span>
-            <span className='text-xs text-stone-400'>
+            <span className='text-[10px] text-stone-400'>
               {confirmed}/{matchup.selections.length} picked
             </span>
           </div>
 
-          <div className='flex items-center gap-3 sm:gap-4'>
-            <div className='flex min-w-0 flex-1 flex-col items-end text-right'>
-              <span className='text-xs text-stone-400'>You</span>
-              <span className='truncate text-lg font-bold uppercase leading-tight text-stone-900 sm:text-xl'>
-                {user.username}
-              </span>
-            </div>
-
-            <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-stone-800 text-[11px] font-bold tracking-wider text-white'>
-              VS
-            </div>
-
-            <div className='flex min-w-0 flex-1 flex-col'>
-              <span className='text-xs text-stone-400'>Opponent</span>
-              <span className='truncate text-lg font-bold uppercase leading-tight text-stone-900 sm:text-xl'>
-                {otherUser}
-              </span>
-            </div>
+          <div className='flex min-w-0 items-center gap-1.5'>
+            <span className='min-w-0 truncate text-sm font-bold uppercase leading-tight text-stone-900'>
+              {user.username}
+            </span>
+            <span className='shrink-0 text-[10px] font-bold tracking-wider text-stone-400'>VS</span>
+            <span className='min-w-0 truncate text-sm font-bold uppercase leading-tight text-stone-900'>
+              {otherUser}
+            </span>
           </div>
         </div>
 
-        <div className='flex items-end justify-between gap-4 border-t border-stone-100 pt-3 sm:min-w-[9.5rem] sm:flex-col sm:items-end sm:border-t-0 sm:border-l sm:border-stone-100 sm:pl-6 sm:pt-0'>
-          <div className='sm:text-right'>
-            <p className='text-xs text-stone-400'>On the board</p>
-            <p className={` text-2xl font-bold tabular-nums ${getWinningsTextColor(matchup.winnings)}`}>
-              {formatWinnings(matchup.winnings)}
-            </p>
-          </div>
-          <div className='text-right text-xs text-stone-400'>
-            <p>Bets {matchup.bets}</p>
-          </div>
+        <div className='shrink-0 text-right'>
+          <p className={`text-sm font-bold tabular-nums leading-tight sm:text-base ${getWinningsTextColor(matchup.winnings)}`}>
+            {formatWinnings(matchup.winnings)}
+          </p>
+          <p className='text-[10px] text-stone-400'>Bets {matchup.bets}</p>
         </div>
       </div>
     </button>

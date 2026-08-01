@@ -135,37 +135,26 @@ const MatchupContent = ({ basePath, deletable }) => {
   if (isError) return <p className='text-center text-rose-500'>Failed to load matchup.</p>;
 
   return (
-    <div className='mx-auto mt-2 grid max-w-3xl gap-3'>
-      <div className='overflow-hidden rounded-xl border border-stone-800 bg-stone-900'>
-        <div className='flex flex-col gap-3 border-b border-white/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5'>
-          <EventViewCloseButton basePath={basePath} label={backLabel} variant='dark' />
+    <div className='mx-auto mt-2 grid max-w-3xl gap-2'>
+      <div className='overflow-hidden rounded-lg border border-stone-800 bg-stone-900'>
+        <div className='flex items-center justify-between gap-3 px-3 py-2'>
+          <EventViewCloseButton basePath={basePath} label={backLabel} variant='dark' className='!px-1.5 !py-1 !text-xs' />
           {selectedMatchup?.event?.name && (
-            <p className='truncate text-sm text-stone-400 sm:text-right'>{selectedMatchup.event.name}</p>
+            <p className='truncate text-xs text-stone-400'>{selectedMatchup.event.name}</p>
           )}
         </div>
 
-        <div className='flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6'>
-          <div className='flex min-w-0 items-center gap-3 sm:gap-4'>
-            <div className='min-w-0 text-right'>
-              <p className='text-xs text-stone-400'>You</p>
-              <p className='truncate text-lg font-bold uppercase text-white'>{user?.username}</p>
-            </div>
-            <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold tracking-wider text-white'>
-              VS
-            </div>
-            <div className='min-w-0'>
-              <p className='text-xs text-stone-400'>Opponent</p>
-              <p className='truncate text-lg font-bold uppercase text-white'>{otherUser}</p>
-            </div>
+        <div className='flex items-center justify-between gap-3 border-t border-white/10 px-3 py-2'>
+          <div className='flex min-w-0 items-center gap-2'>
+            <span className='truncate text-sm font-bold uppercase text-white'>{user?.username}</span>
+            <span className='shrink-0 text-[10px] font-bold tracking-wider text-stone-400'>VS</span>
+            <span className='truncate text-sm font-bold uppercase text-white'>{otherUser}</span>
           </div>
 
           {showResult && (
-            <div className='sm:text-right'>
-              <p className='text-xs font-medium uppercase tracking-wide text-stone-400'>Result</p>
-              <p className={` text-3xl font-bold tabular-nums ${getWinningsTextColor(selectedMatchup.winnings)}`}>
-                {formatWinnings(selectedMatchup.winnings)}
-              </p>
-            </div>
+            <p className={`shrink-0 text-base font-bold tabular-nums ${getWinningsTextColor(selectedMatchup.winnings)}`}>
+              {formatWinnings(selectedMatchup.winnings)}
+            </p>
           )}
         </div>
       </div>

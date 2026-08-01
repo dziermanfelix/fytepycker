@@ -121,10 +121,6 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
       <div className='flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 px-2 text-center'>
         <p className='text-[10px] font-semibold uppercase tracking-wider text-stone-400'>{fight?.weight_class}</p>
 
-        <div className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-stone-800 text-[9px] font-bold tracking-wider text-white'>
-          VS
-        </div>
-
         {status?.bet != null && !outcome && (
           <p className='text-sm font-bold tabular-nums text-stone-900'>{status.bet}</p>
         )}
