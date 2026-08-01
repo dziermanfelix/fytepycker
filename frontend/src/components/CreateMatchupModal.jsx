@@ -4,6 +4,7 @@ import { useUsers } from '@/hooks/useUsers';
 import { useMatchups } from '@/contexts/MatchupsContext';
 import client from '@/api/client';
 import { API_URLS, FRONTEND_URLS } from '@/common/urls';
+import Spinner from '@/components/Spinner';
 
 const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -91,8 +92,12 @@ const CreateMatchupModal = ({ isOpen, onClose, selectEvent, selectedEvent, user 
           >
             Cancel
           </button>
-          <button className='submit-btn' onClick={handleSubmitMatchup} disabled={isSubmitting || !selectedOpponent}>
-            {isSubmitting ? 'Creating...' : 'Create'}
+          <button
+            className='submit-btn inline-flex items-center justify-center min-w-24'
+            onClick={handleSubmitMatchup}
+            disabled={isSubmitting || !selectedOpponent}
+          >
+            {isSubmitting ? <Spinner size='sm' className='border-white/30 border-t-white' /> : 'Create'}
           </button>
         </div>
       </div>

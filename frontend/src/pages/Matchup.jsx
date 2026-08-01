@@ -200,8 +200,12 @@ const MatchupContent = ({ basePath, deletable }) => {
               >
                 Cancel
               </button>
-              <button className='submit-btn' onClick={handleDeleteMatchup} disabled={isSubmitting}>
-                {isSubmitting ? 'Deleting...' : 'Delete'}
+              <button
+                className='submit-btn inline-flex items-center justify-center min-w-24'
+                onClick={handleDeleteMatchup}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? <Spinner size='sm' className='border-white/30 border-t-white' /> : 'Delete'}
               </button>
             </div>
           </div>

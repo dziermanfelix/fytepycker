@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { FRONTEND_URLS } from '@/common/urls';
+import Spinner from '@/components/Spinner';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -74,8 +75,8 @@ const Login = () => {
           />
         </div>
 
-        <button type='submit' disabled={isLoading} className='form-btn'>
-          {isLoading ? 'Logging in...' : 'Login'}
+        <button type='submit' disabled={isLoading} className='form-btn inline-flex items-center justify-center'>
+          {isLoading ? <Spinner size='sm' className='border-white/30 border-t-white' /> : 'Login'}
         </button>
       </form>
 
