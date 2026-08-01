@@ -165,10 +165,13 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
   const getFightAccent = (fight) => {
     if (!selections) return { bar: '', pulse: false };
     const selection = selections[fight?.id];
-    if (!selection || fight.winner) return { bar: '', pulse: false };
-    if (selection.confirmed) return { bar: 'bg-stone-300', pulse: false };
-    if (selection.dibs === user?.id) return { bar: 'bg-rose-500', pulse: true };
-    return { bar: 'bg-sky-500', pulse: false };
+    if (!selection) return { bar: '', pulse: false };
+    const yourDibs = selection.dibs === user?.id;
+    const awaitingYourPick = yourDibs && !selection.confirmed && !fight.winner;
+    return {
+      bar: yourDibs ? 'bg-rose-500' : 'bg-sky-500',
+      pulse: awaitingYourPick,
+    };
   };
 
   const populatedFightCards = fightCards?.filter((cardType) => fights[cardType]?.length > 0) || [];
