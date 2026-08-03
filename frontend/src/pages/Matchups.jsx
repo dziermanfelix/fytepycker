@@ -9,7 +9,7 @@ import { FRONTEND_URLS } from '@/common/urls';
 const MatchupsContent = () => {
   const { id } = useParams();
   const { isLoading: isLoadingMatchups, isError, matchups, selectMatchup } = useMatchups();
-  const { isLoading: isLoadingEvents } = useEvents();
+  const { isLoading: isLoadingEvents, selectedEvent } = useEvents();
   const navigate = useNavigate();
 
   const handleClick = async (matchup) => {
@@ -18,6 +18,7 @@ const MatchupsContent = () => {
   };
 
   const currentMatchups = matchups || [];
+  const browsingEvent = Boolean(selectedEvent);
 
   if (isLoadingMatchups || isLoadingEvents) return <Spinner />;
   if (isError) return <p className='text-center text-rose-500'>Failed to load matchups.</p>;
@@ -27,7 +28,7 @@ const MatchupsContent = () => {
       <div className='min-w-0 pb-2'>
         <CurrentEvent />
       </div>
-      {!id && (
+      {!id && !browsingEvent && (
         <div className='flex min-w-0 flex-col gap-2'>
           {currentMatchups.length > 0 ? (
             currentMatchups.map((matchup) => (

@@ -35,9 +35,14 @@ class EventSerializer(serializers.ModelSerializer):
 class EventCardSerializer(serializers.ModelSerializer):
     """Event metadata only — for list/card views without fight payloads."""
 
+    has_fights = serializers.SerializerMethodField()
+
     class Meta:
         model = Event
-        fields = ("id", "name", "headline", "url", "date", "location", "complete")
+        fields = ("id", "name", "headline", "url", "date", "location", "complete", "has_fights")
+
+    def get_has_fights(self, event):
+        return event.fights.exists()
 
 
 class EventSummarySerializer(serializers.ModelSerializer):

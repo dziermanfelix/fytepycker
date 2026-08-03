@@ -75,6 +75,7 @@ class EventTests(APITestCase):
         self.assertEqual(len(response.data['upcoming']), 1)
         self.assertEqual(response.data['upcoming'][0], EventCardSerializer(future_event).data)
         self.assertNotIn('fights', response.data['upcoming'][0])
+        self.assertTrue(response.data['upcoming'][0]['has_fights'])
 
     def test_get_events_include_past(self):
         response = self.client.get(self.events_url, {'include_past': 1})

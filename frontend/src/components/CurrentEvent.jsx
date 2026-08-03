@@ -79,16 +79,18 @@ const CurrentEvent = () => {
                 </div>
                 <div className='flex shrink-0 items-center gap-2'>
                   {nextEventDate && <p className='hidden text-xs text-stone-400 sm:block'>{nextEventDate}</p>}
-                  <button
-                    className='action-btn !px-2.5 !py-1 !text-xs'
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      selectEvent(nextEvent);
-                      setIsModalOpen(true);
-                    }}
-                  >
-                    Matchup
-                  </button>
+                  {nextEvent?.has_fights && (
+                    <button
+                      className='action-btn !px-2.5 !py-1 !text-xs'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        selectEvent(nextEvent);
+                        setIsModalOpen(true);
+                      }}
+                    >
+                      Matchup
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
