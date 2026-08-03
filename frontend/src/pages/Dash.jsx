@@ -147,8 +147,8 @@ const Header = ({ setIsSidebarOpen }) => {
   };
 
   return (
-    <header className='flex h-14 shrink-0 items-center justify-between bg-white px-4 shadow-sm sm:px-6'>
-      <div className='flex min-w-0 items-center gap-3'>
+    <header className='relative flex h-14 shrink-0 items-center justify-between bg-white px-4 shadow-sm sm:px-6'>
+      <div className='flex w-8 items-center md:w-auto'>
         <button onClick={() => setIsSidebarOpen(true)} className='text-gray-500 hover:text-gray-700 md:hidden'>
           <RxHamburgerMenu />
         </button>
@@ -161,6 +161,15 @@ const Header = ({ setIsSidebarOpen }) => {
           <span className='text-sm font-bold uppercase tracking-wide text-stone-800'>fytepycker</span>
         </Link>
       </div>
+
+      <Link
+        to={FRONTEND_URLS.MATCHUPS}
+        className='absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-amber-800/40 md:hidden'
+        aria-label='Fytepycker home'
+      >
+        <img src='/icons/icon-192.png' alt='' className='h-8 w-8 rounded object-cover' />
+        <span className='text-sm font-bold uppercase tracking-wide text-stone-800'>fytepycker</span>
+      </Link>
 
       <div className='hidden items-center md:flex'>
         <div className='relative' ref={dropdownRef}>
@@ -204,6 +213,8 @@ const Header = ({ setIsSidebarOpen }) => {
           )}
         </div>
       </div>
+
+      <div className='w-8 md:hidden' aria-hidden='true' />
     </header>
   );
 };
