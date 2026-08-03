@@ -1,9 +1,13 @@
 import os
+import mimetypes
 from pathlib import Path
 import dj_database_url
 from urllib.parse import urlparse
 from decouple import config
 from datetime import timedelta
+
+# Android/Chrome expect this MIME for Add to Home Screen installability checks
+mimetypes.add_type('application/manifest+json', '.webmanifest')
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -223,6 +227,9 @@ STATIC_ROOT = BASE_DIR / 'backend' / 'staticfiles'
 _frontend_static = BASE_DIR / 'frontend' / 'static'
 STATICFILES_DIRS = [_frontend_static] if _frontend_static.exists() else []
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_MIMETYPES = {
+    '.webmanifest': 'application/manifest+json',
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

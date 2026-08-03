@@ -36,64 +36,66 @@ const Login = () => {
   };
 
   return (
-    <div className='max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md'>
-      <h2 className='text-2xl font-bold mb-6'>Login</h2>
+    <div className='app-shell box-border'>
+      <div className='max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md'>
+        <h2 className='text-2xl font-bold mb-6'>Login</h2>
 
-      {error && <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>{error}</div>}
+        {error && <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>{error}</div>}
 
-      <form onSubmit={handleSubmit}>
-        <div className='mb-4'>
-          <label className='block text-gray-700 mb-2' htmlFor='username'>
-            Username
-          </label>
-          <input
-            id='username'
-            type='text'
-            name='username'
-            value={formData.username}
-            onChange={handleChange}
-            className='w-full px-3 py-2 border border-gray-300 rounded-md lowercase'
-            required
-            autoCapitalize='off'
-            spellCheck={false}
-            autoComplete='off'
-          />
+        <form onSubmit={handleSubmit}>
+          <div className='mb-4'>
+            <label className='block text-gray-700 mb-2' htmlFor='username'>
+              Username
+            </label>
+            <input
+              id='username'
+              type='text'
+              name='username'
+              value={formData.username}
+              onChange={handleChange}
+              className='w-full px-3 py-2 border border-gray-300 rounded-md lowercase'
+              required
+              autoCapitalize='off'
+              spellCheck={false}
+              autoComplete='off'
+            />
+          </div>
+
+          <div className='mb-6'>
+            <label className='block text-gray-700 mb-2' htmlFor='password'>
+              Password
+            </label>
+            <input
+              id='password'
+              type='password'
+              name='password'
+              value={formData.password}
+              onChange={handleChange}
+              className='w-full px-3 py-2 border border-gray-300 rounded-md'
+              required
+            />
+          </div>
+
+          <button type='submit' disabled={isLoading} className='form-btn inline-flex items-center justify-center'>
+            {isLoading ? <Spinner size='sm' className='border-white/30 border-t-white' /> : 'Login'}
+          </button>
+        </form>
+
+        <div className='mt-4 text-center'>
+          <p>
+            Don't have an account?{' '}
+            <a
+              href={FRONTEND_URLS.REGISTER}
+              className='text-blue-500 hover:text-blue-700'
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(FRONTEND_URLS.REGISTER);
+              }}
+            >
+              Register
+            </a>
+          </p>
         </div>
-
-        <div className='mb-6'>
-          <label className='block text-gray-700 mb-2' htmlFor='password'>
-            Password
-          </label>
-          <input
-            id='password'
-            type='password'
-            name='password'
-            value={formData.password}
-            onChange={handleChange}
-            className='w-full px-3 py-2 border border-gray-300 rounded-md'
-            required
-          />
-        </div>
-
-        <button type='submit' disabled={isLoading} className='form-btn inline-flex items-center justify-center'>
-          {isLoading ? <Spinner size='sm' className='border-white/30 border-t-white' /> : 'Login'}
-        </button>
-      </form>
-
-      <div className='mt-4 text-center'>
-        <p>
-          Don't have an account?{' '}
-          <a
-            href={FRONTEND_URLS.REGISTER}
-            className='text-blue-500 hover:text-blue-700'
-            onClick={(e) => {
-              e.preventDefault();
-              navigate(FRONTEND_URLS.REGISTER);
-            }}
-          >
-            Register
-          </a>
-        </p>
       </div>
     </div>
   );

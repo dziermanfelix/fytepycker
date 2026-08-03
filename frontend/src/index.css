@@ -1,8 +1,33 @@
 @import 'tailwindcss';
 
 @layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background-color: #f5f5f4;
+    overscroll-behavior: none;
+  }
+
   button:not(:disabled):hover {
     cursor: pointer;
+  }
+}
+
+/* Full-viewport shell that works on older Android (vh) and modern iOS (dvh) */
+@layer utilities {
+  .app-shell {
+    min-height: 100vh;
+    height: 100vh;
+    min-height: 100dvh;
+    height: 100dvh;
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
   }
 }
 

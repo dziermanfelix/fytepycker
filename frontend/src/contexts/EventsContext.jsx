@@ -29,7 +29,6 @@ export const EventsProvider = ({ children }) => {
       selectItem(event);
       if (!event.id) return;
 
-      // Already have fight cards (e.g. re-select after detail fetch)
       if (event.fights && Object.values(event.fights).some((card) => card?.length > 0)) {
         setIsDetailError(false);
         return;

@@ -172,7 +172,7 @@ const Dash = () => {
   const location = useLocation();
 
   return (
-    <div className='flex h-screen flex-col bg-stone-100'>
+    <div className='app-shell flex flex-col bg-stone-100'>
       <div className='flex flex-1 overflow-hidden'>
         <div className='hidden md:block'>
           <Sidebar activePath={location.pathname} isMobile={false} />
