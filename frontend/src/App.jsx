@@ -9,7 +9,6 @@ import Dash from '@/pages/Dash';
 import Matchups from '@/pages/Matchups';
 import Matchup from '@/pages/Matchup';
 import Record from '@/pages/Record';
-import Messages from '@/pages/Messages';
 import Settings from '@/pages/Settings';
 import Profile from '@/pages/Profile';
 import PublicRoute from './components/PublicRoute';
@@ -56,7 +55,6 @@ function App() {
               }
             />
             <Route path='record/matchups/:id' element={<Matchup basePath='/dash/record' />} />
-            <Route path='messages' element={<Messages />} />
             <Route path='settings' element={<Settings />} />
             <Route path='profile' element={<Profile />} />
             <Route path='*' element={<Navigate to='/dash/matchups' replace />} />

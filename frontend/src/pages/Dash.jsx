@@ -1,17 +1,38 @@
 import { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { FaBell, FaUser } from 'react-icons/fa';
+import { FaUser } from 'react-icons/fa';
 import { IoMdClose } from 'react-icons/io';
 import { RxHamburgerMenu } from 'react-icons/rx';
 import { useAuth } from '@/contexts/AuthContext';
 import client from '@/api/client';
-import { API_URLS } from '@/common/urls';
+import { API_URLS, FRONTEND_URLS } from '@/common/urls';
+
+const ACCOUNT_LINKS = [
+  { id: 'profile', label: 'Profile', path: '/dash/profile' },
+  { id: 'settings', label: 'Settings', path: '/dash/settings' },
+];
 
 const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
+  const { user, logout } = useAuth();
+  const [version, setVersion] = useState('');
+
   const navItems = [
     { id: 'matchups', label: 'Matchups', path: '/dash/matchups' },
     { id: 'record', label: 'Record', path: '/dash/record' },
   ];
+
+  useEffect(() => {
+    if (!isMobile) return;
+    const getVersion = async () => {
+      try {
+        const { data } = await client.get(API_URLS.VERSION);
+        setVersion(data.version);
+      } catch {
+        setVersion('');
+      }
+    };
+    getVersion();
+  }, [isMobile]);
 
   const handleNavClick = () => {
     if (isMobile) {
@@ -19,24 +40,29 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
     }
   };
 
+  const handleLogout = () => {
+    handleNavClick();
+    logout();
+  };
+
   return (
-    <div className='bg-white shadow-sm w-75 h-full flex-shrink-0 flex flex-col'>
-      <div className='mt-12 flex items-center justify-between'>
-        {isMobile && (
+    <div className='flex h-full w-75 flex-shrink-0 flex-col bg-white shadow-sm'>
+      {isMobile && (
+        <div className='flex items-center justify-end px-4 pt-6 pb-2'>
           <button onClick={() => setIsSidebarOpen(false)} className='danger-btn'>
             <IoMdClose />
           </button>
-        )}
-      </div>
-      <nav className='mt-4 flex-1 overflow-y-auto'>
+        </div>
+      )}
+      <nav className={`flex-1 overflow-y-auto ${isMobile ? 'mt-2' : ''}`}>
         <ul>
           {navItems.map((item) => (
-            <li key={item.id} className=''>
+            <li key={item.id}>
               <Link to={item.path}>
                 <button
-                  onClick={() => handleNavClick()}
-                  className={`flex items-center w-full px-4 py-3 hover:bg-gray-200 transition-colors ${
-                    activePath === item.path ? 'bg-gray-100' : ''
+                  onClick={handleNavClick}
+                  className={`flex w-full items-center px-4 py-3 transition-colors hover:bg-gray-200 ${
+                    activePath === item.path || activePath.startsWith(`${item.path}/`) ? 'bg-gray-100' : ''
                   }`}
                 >
                   <span>{item.label}</span>
@@ -46,6 +72,40 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
           ))}
         </ul>
       </nav>
+
+      {isMobile && (
+        <div className='border-t border-stone-200 pb-[max(1.5rem,env(safe-area-inset-bottom))]'>
+          <div className='px-4 py-3 text-sm text-stone-700'>
+            <p className='font-medium'>{user.username}</p>
+            <p className='truncate text-xs text-stone-500'>{user.email}</p>
+            {version && <p className='mt-1 text-xs text-stone-400'>version {version}</p>}
+          </div>
+          <ul>
+            {ACCOUNT_LINKS.map((item) => (
+              <li key={item.id}>
+                <Link to={item.path}>
+                  <button
+                    onClick={handleNavClick}
+                    className={`flex w-full items-center px-4 py-3 text-left transition-colors hover:bg-gray-200 ${
+                      activePath === item.path ? 'bg-gray-100' : ''
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                </Link>
+              </li>
+            ))}
+            <li>
+              <button
+                onClick={handleLogout}
+                className='flex w-full items-center px-4 py-3 text-left capitalize text-red-600 transition-colors hover:bg-gray-200'
+              >
+                log out
+              </button>
+            </li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
@@ -56,15 +116,14 @@ const Header = ({ setIsSidebarOpen }) => {
   const dropdownRef = useRef(null);
   const { user, logout } = useAuth();
 
-  const dropdownOptions = [
-    { id: 'profile', label: 'Profile', path: '/dash/profile' },
-    { id: 'settings', label: 'Settings', path: '/dash/settings' },
-  ];
-
   useEffect(() => {
     const getVersion = async () => {
-      const { data } = await client.get(API_URLS.VERSION);
-      setVersion(data.version);
+      try {
+        const { data } = await client.get(API_URLS.VERSION);
+        setVersion(data.version);
+      } catch {
+        setVersion('');
+      }
     };
     getVersion();
   }, []);
@@ -82,39 +141,32 @@ const Header = ({ setIsSidebarOpen }) => {
     };
   }, []);
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
   const handleLogout = () => {
     setIsDropdownOpen(false);
     logout();
   };
 
-  const handleDropdownSelect = () => {
-    setIsDropdownOpen(false);
-  };
-
   return (
-    <header className='bg-white shadow-sm py-4 px-4 sm:px-6 flex justify-between items-center'>
-      <div className='flex items-center'>
-        <button onClick={() => setIsSidebarOpen(true)} className='mr-4 md:hidden text-gray-500 hover:text-gray-700'>
+    <header className='flex h-14 shrink-0 items-center justify-between bg-white px-4 shadow-sm sm:px-6'>
+      <div className='flex min-w-0 items-center gap-3'>
+        <button onClick={() => setIsSidebarOpen(true)} className='text-gray-500 hover:text-gray-700 md:hidden'>
           <RxHamburgerMenu />
         </button>
-      </div>
-      <div className='flex items-center space-x-2 sm:space-x-4'>
-        <Link to={'/dash/messages'}>
-          <button
-            onClick={() => handleDropdownSelect()}
-            className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 focus:outline-none'
-          >
-            <FaBell />
-          </button>
+        <Link
+          to={FRONTEND_URLS.MATCHUPS}
+          className='hidden items-center gap-2 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-amber-800/40 md:flex'
+          aria-label='Fytepycker home'
+        >
+          <img src='/icons/icon-192.png' alt='' className='h-8 w-8 rounded object-cover' />
+          <span className='text-sm font-bold uppercase tracking-wide text-stone-800'>fytepycker</span>
         </Link>
+      </div>
+
+      <div className='hidden items-center md:flex'>
         <div className='relative' ref={dropdownRef}>
           <button
-            onClick={toggleDropdown}
-            className='flex items-center justify-center w-8 h-8 bg-gray-300 rounded-full hover:bg-gray-400 focus:outline-none'
+            onClick={() => setIsDropdownOpen((open) => !open)}
+            className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 hover:bg-gray-400 focus:outline-none'
           >
             <span className='sr-only'>Open user menu</span>
             <span className='text-xs'>
@@ -123,20 +175,20 @@ const Header = ({ setIsSidebarOpen }) => {
           </button>
 
           {isDropdownOpen && (
-            <div className='absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200'>
-              <div className='px-4 py-2 text-sm text-gray-700 border-b border-gray-100 capitalize'>
+            <div className='absolute right-0 z-10 mt-2 w-48 rounded-md border border-gray-200 bg-white py-1 shadow-lg'>
+              <div className='border-b border-gray-100 px-4 py-2 text-sm capitalize text-gray-700'>
                 <p className='font-medium'>fytepycker</p>
-                <p className='text-gray-500 text-xs truncate'>version {version}</p>
+                <p className='truncate text-xs text-gray-500'>version {version}</p>
               </div>
-              <div className='px-4 py-2 text-sm text-gray-700 border-b border-gray-100'>
+              <div className='border-b border-gray-100 px-4 py-2 text-sm text-gray-700'>
                 <p className='font-medium'>{user.username}</p>
-                <p className='text-gray-500 text-xs truncate'>{user.email}</p>
+                <p className='truncate text-xs text-gray-500'>{user.email}</p>
               </div>
-              {dropdownOptions.map((item) => (
+              {ACCOUNT_LINKS.map((item) => (
                 <Link key={item.id} to={item.path}>
                   <button
-                    onClick={() => handleDropdownSelect()}
-                    className={`block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100`}
+                    onClick={() => setIsDropdownOpen(false)}
+                    className='block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100'
                   >
                     <span>{item.label}</span>
                   </button>
@@ -144,7 +196,7 @@ const Header = ({ setIsSidebarOpen }) => {
               ))}
               <button
                 onClick={handleLogout}
-                className='block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 capitalize'
+                className='block w-full px-4 py-2 text-left text-sm capitalize text-red-600 hover:bg-gray-100'
               >
                 log out
               </button>
@@ -173,21 +225,20 @@ const Dash = () => {
 
   return (
     <div className='app-shell flex flex-col bg-stone-100'>
-      <div className='flex flex-1 overflow-hidden'>
+      <Header setIsSidebarOpen={setIsSidebarOpen} />
+
+      <div className='flex min-h-0 flex-1 overflow-hidden'>
         <div className='hidden md:block'>
           <Sidebar activePath={location.pathname} isMobile={false} />
         </div>
 
-        <div className='flex min-w-0 flex-1 flex-col overflow-hidden'>
-          <Header setIsSidebarOpen={setIsSidebarOpen} />
-          <main className='min-w-0 flex-1 overflow-y-auto p-3 sm:p-6'>
-            <Outlet />
-          </main>
-        </div>
+        <main className='min-w-0 flex-1 overflow-y-auto p-3 sm:p-6'>
+          <Outlet />
+        </main>
       </div>
 
       <MobileSidebarOverlay isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen}>
-        <Sidebar isMobile={true} setIsSidebarOpen={setIsSidebarOpen} />
+        <Sidebar activePath={location.pathname} isMobile={true} setIsSidebarOpen={setIsSidebarOpen} />
       </MobileSidebarOverlay>
     </div>
   );
