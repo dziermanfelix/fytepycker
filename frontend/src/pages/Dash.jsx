@@ -3,9 +3,11 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { FaUser } from 'react-icons/fa';
 import { IoMdClose } from 'react-icons/io';
 import { RxHamburgerMenu } from 'react-icons/rx';
+import { HiOutlineChevronRight } from 'react-icons/hi2';
 import { useAuth } from '@/contexts/AuthContext';
 import client from '@/api/client';
 import { API_URLS, FRONTEND_URLS } from '@/common/urls';
+import { getInitials } from '@/utils/winningsDisplayUtils';
 
 const ACCOUNT_LINKS = [
   { id: 'profile', label: 'Profile', path: '/dash/profile' },
@@ -75,35 +77,37 @@ const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
 
       {isMobile && (
         <div className='border-t border-stone-200 pb-[max(1.5rem,env(safe-area-inset-bottom))]'>
-          <div className='px-4 py-3 text-sm text-stone-700'>
-            <p className='font-medium'>{user.username}</p>
-            <p className='truncate text-xs text-stone-500'>{user.email}</p>
-            {version && <p className='mt-1 text-xs text-stone-400'>version {version}</p>}
-          </div>
-          <ul>
-            {ACCOUNT_LINKS.map((item) => (
-              <li key={item.id}>
-                <Link to={item.path}>
-                  <button
-                    onClick={handleNavClick}
-                    className={`flex w-full items-center px-4 py-3 text-left transition-colors hover:bg-gray-200 ${
-                      activePath === item.path ? 'bg-gray-100' : ''
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                </Link>
-              </li>
-            ))}
-            <li>
-              <button
-                onClick={handleLogout}
-                className='flex w-full items-center px-4 py-3 text-left capitalize text-red-600 transition-colors hover:bg-gray-200'
-              >
-                log out
-              </button>
-            </li>
-          </ul>
+          <Link
+            to='/dash/profile'
+            onClick={handleNavClick}
+            className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-gray-200 ${
+              activePath === '/dash/profile' ? 'bg-gray-100' : ''
+            }`}
+          >
+            <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-800 text-[10px] font-bold tracking-wider text-white'>
+              {getInitials(user.username)}
+            </div>
+            <div className='min-w-0 flex-1'>
+              <p className='truncate text-sm font-medium text-stone-800'>{user.username}</p>
+              {version && <p className='text-[10px] text-stone-400'>v{version}</p>}
+            </div>
+            <HiOutlineChevronRight className='h-4 w-4 shrink-0 text-stone-400' />
+          </Link>
+          <Link
+            to='/dash/settings'
+            onClick={handleNavClick}
+            className={`flex w-full items-center px-4 py-3 transition-colors hover:bg-gray-200 ${
+              activePath === '/dash/settings' ? 'bg-gray-100' : ''
+            }`}
+          >
+            Settings
+          </Link>
+          <button
+            onClick={handleLogout}
+            className='flex w-full items-center px-4 py-3 text-left capitalize text-red-600 transition-colors hover:bg-gray-200'
+          >
+            log out
+          </button>
         </div>
       )}
     </div>
