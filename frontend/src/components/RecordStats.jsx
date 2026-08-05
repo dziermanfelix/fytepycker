@@ -20,16 +20,16 @@ const RecordStats = ({ selectedUser, totalWinnings, totalBets, onBack }) => {
           <p className='truncate text-sm font-bold uppercase tracking-wide text-white'>{selectedUser.username}</p>
         </div>
 
-        <div className='flex shrink-0 items-center gap-4'>
+        <div className='flex shrink-0 items-center gap-6'>
+          <div className='text-right'>
+            <p className='text-[10px] font-medium uppercase tracking-wide text-stone-400'>Bets</p>
+            <p className='text-base font-bold tabular-nums leading-tight text-white'>{totalBets}</p>
+          </div>
           <div className='text-right'>
             <p className='text-[10px] font-medium uppercase tracking-wide text-stone-400'>Net</p>
             <p className={`text-base font-bold tabular-nums leading-tight ${getWinningsTextColor(totalWinnings)}`}>
               {formatWinnings(totalWinnings)}
             </p>
-          </div>
-          <div className='text-right'>
-            <p className='text-[10px] font-medium uppercase tracking-wide text-stone-400'>Bets</p>
-            <p className='text-base font-bold tabular-nums leading-tight text-white'>{totalBets}</p>
           </div>
         </div>
       </div>

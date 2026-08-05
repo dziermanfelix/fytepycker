@@ -9,11 +9,6 @@ import client from '@/api/client';
 import { API_URLS, FRONTEND_URLS } from '@/common/urls';
 import { getInitials } from '@/utils/winningsDisplayUtils';
 
-const ACCOUNT_LINKS = [
-  { id: 'profile', label: 'Profile', path: '/dash/profile' },
-  { id: 'settings', label: 'Settings', path: '/dash/settings' },
-];
-
 const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
   const { user, logout } = useAuth();
   const [version, setVersion] = useState('');
@@ -188,25 +183,32 @@ const Header = ({ setIsSidebarOpen }) => {
           </button>
 
           {isDropdownOpen && (
-            <div className='absolute right-0 z-10 mt-2 w-48 rounded-md border border-gray-200 bg-white py-1 shadow-lg'>
+            <div className='absolute right-0 z-10 mt-2 w-56 rounded-md border border-gray-200 bg-white py-1 shadow-lg'>
               <div className='border-b border-gray-100 px-4 py-2 text-sm capitalize text-gray-700'>
                 <p className='font-medium'>fytepycker</p>
-                <p className='truncate text-xs text-gray-500'>version {version}</p>
+                {version && <p className='truncate text-xs text-gray-500'>version {version}</p>}
               </div>
-              <div className='border-b border-gray-100 px-4 py-2 text-sm text-gray-700'>
-                <p className='font-medium'>{user.username}</p>
-                <p className='truncate text-xs text-gray-500'>{user.email}</p>
-              </div>
-              {ACCOUNT_LINKS.map((item) => (
-                <Link key={item.id} to={item.path}>
-                  <button
-                    onClick={() => setIsDropdownOpen(false)}
-                    className='block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100'
-                  >
-                    <span>{item.label}</span>
-                  </button>
-                </Link>
-              ))}
+              <Link
+                to='/dash/profile'
+                onClick={() => setIsDropdownOpen(false)}
+                className='flex items-center gap-3 border-b border-gray-100 px-4 py-2.5 transition-colors hover:bg-gray-100'
+              >
+                <div className='flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-800 text-[10px] font-bold tracking-wider text-white'>
+                  {getInitials(user.username)}
+                </div>
+                <div className='min-w-0 flex-1'>
+                  <p className='truncate text-sm font-medium text-gray-800'>{user.username}</p>
+                  <p className='truncate text-xs text-gray-500'>{user.email}</p>
+                </div>
+                <HiOutlineChevronRight className='h-4 w-4 shrink-0 text-stone-400' />
+              </Link>
+              <Link
+                to='/dash/settings'
+                onClick={() => setIsDropdownOpen(false)}
+                className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
+              >
+                Settings
+              </Link>
               <button
                 onClick={handleLogout}
                 className='block w-full px-4 py-2 text-left text-sm capitalize text-red-600 hover:bg-gray-100'
