@@ -17,6 +17,7 @@ const Login = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -39,8 +40,6 @@ const Login = () => {
     <div className='app-shell box-border'>
       <div className='max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md'>
         <h2 className='text-2xl font-bold mb-6'>Login</h2>
-
-        {error && <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className='mb-4'>
@@ -79,6 +78,7 @@ const Login = () => {
           <button type='submit' disabled={isLoading} className='form-btn inline-flex items-center justify-center'>
             {isLoading ? <Spinner size='sm' className='border-white/30 border-t-white' /> : 'Login'}
           </button>
+          {error && <p className='text-red-500 text-sm mt-2'>{error}</p>}
         </form>
 
         <div className='mt-4 text-center'>

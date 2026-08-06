@@ -40,15 +40,16 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
+const AUTH_ENDPOINTS_SKIP_REFRESH = [API_URLS.LOGIN, API_URLS.REGISTER, API_URLS.REFRESH_TOKEN];
+
 client.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !originalRequest.url.includes(API_URLS.REFRESH_TOKEN)
-    ) {
+    const requestUrl = originalRequest?.url || '';
+    const isAuthEndpoint = AUTH_ENDPOINTS_SKIP_REFRESH.some((endpoint) => requestUrl.includes(endpoint));
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
       const newAccessToken = await refreshAccessToken();
       if (newAccessToken) {
@@ -57,7 +58,7 @@ client.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default client;
