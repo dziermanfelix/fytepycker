@@ -658,16 +658,21 @@ class SelectionTests(APITestCase):
         selection = Selection.objects.filter(matchup=self.matchup.id, fight=self.fight_main_0.id).first()
         self.assertEqual(selection.winner, self.user2)
 
-    def test_selection_updates_from_fight_change(self):
-        # simulate what the scraper does, it will add the new fight before deleting the old
-        new_main_event = Fight.objects.update_or_create(
+    def _snapshot_dibs(self):
+        return {
+            s.fight_id: s.dibs_id
+            for s in Selection.objects.filter(matchup=self.matchup)
+        }
+
+    def _create_fight(self, blue_name, red_name, card, order, weight_class="welterweight"):
+        fight, _ = Fight.objects.update_or_create(
             event_id=self.event.id,
-            blue_name="paul",
-            red_name="ozzy",
+            blue_name=blue_name,
+            red_name=red_name,
             defaults={
-                "card": "main",
-                "order": 0,
-                "weight_class": "heavyweight",
+                "card": card,
+                "order": order,
+                "weight_class": weight_class,
                 "blue_img": "https://url.img",
                 "blue_url": "https://url.img",
                 "red_img": "https://url.img",
@@ -677,29 +682,103 @@ class SelectionTests(APITestCase):
                 "round": None,
             }
         )
-        new_main_event = new_main_event[0]
+        return fight
+
+    def test_selection_updates_from_fight_change(self):
+        # simulate what the scraper does, it will add the new fight before deleting the old
+        dibs_before = self._snapshot_dibs()
+        main_0_dibs_id = dibs_before[self.fight_main_0.id]
+
+        new_main_event = self._create_fight(
+            "paul", "ozzy", "main", 0, weight_class="heavyweight"
+        )
+
+        new_selection = Selection.objects.get(matchup=self.matchup, fight=new_main_event)
+        expected_new_dibs_id = (
+            self.user2.id if main_0_dibs_id == self.user.id else self.user.id
+        )
+        self.assertEqual(new_selection.dibs_id, expected_new_dibs_id)
+        self.assertEqual(new_selection.bet, 50)
+
+        # existing dibs stay frozen while the replacement fight is added
+        for fight_id, dibs_id in dibs_before.items():
+            selection = Selection.objects.get(matchup=self.matchup, fight_id=fight_id)
+            self.assertEqual(selection.dibs_id, dibs_id)
 
         # delete existing main event
-        existing_main_event = Fight.objects.filter(id=self.fight_main_0.id).first()
-        existing_main_event.delete()
+        Fight.objects.filter(id=self.fight_main_0.id).first().delete()
 
-        # verify selection gets added for new fight
-        selections = Selection.objects.filter(matchup=self.matchup)
-        user_cycle = cycle([self.matchup.first_pick, self.matchup.user_b if self.matchup.first_pick ==
-                           self.matchup.user_a else self.matchup.user_a])
-        expected_fights = [self.fight_pre_1, self.fight_pre_0, self.fight_main_1, new_main_event]
-        expected_bets = [30, 30, 30, 50]
-        expected_index = 0
-        for s in selections:
-            self.assertEqual(s.matchup, self.matchup)
-            self.assertEqual(s.user_a_selection, None)
-            self.assertEqual(s.user_b_selection, None)
-            self.assertEqual(s.winner, None)
-            self.assertEqual(s.confirmed, False)
-            self.assertEqual(s.dibs, next(user_cycle))
-            self.assertEqual(s.fight, expected_fights[expected_index])
-            self.assertEqual(s.bet, expected_bets[expected_index])
-            expected_index += 1
+        self.assertFalse(
+            Selection.objects.filter(matchup=self.matchup, fight=self.fight_main_0).exists()
+        )
+        self.assertEqual(
+            Selection.objects.get(matchup=self.matchup, fight=new_main_event).dibs_id,
+            expected_new_dibs_id,
+        )
+        for fight_id, dibs_id in dibs_before.items():
+            if fight_id == self.fight_main_0.id:
+                continue
+            selection = Selection.objects.get(matchup=self.matchup, fight_id=fight_id)
+            self.assertEqual(selection.dibs_id, dibs_id)
+
+    def test_new_fight_appended_at_main_draft_start(self):
+        """New highest-order main fight drafts after prelims; flip off draft previous."""
+        dibs_before = self._snapshot_dibs()
+        pre_0_dibs_id = dibs_before[self.fight_pre_0.id]
+
+        new_fight = self._create_fight("new_blue", "new_red", "main", 2)
+        new_selection = Selection.objects.get(matchup=self.matchup, fight=new_fight)
+
+        # draft: pre_1, pre_0, new(main2), main_1, main_0 → previous is pre_0
+        expected_dibs_id = self.user2.id if pre_0_dibs_id == self.user.id else self.user.id
+        self.assertEqual(new_selection.dibs_id, expected_dibs_id)
+
+        for fight_id, dibs_id in dibs_before.items():
+            selection = Selection.objects.get(matchup=self.matchup, fight_id=fight_id)
+            self.assertEqual(selection.dibs_id, dibs_id)
+
+        draft_fights = list(Fight.ordered_for_draft(self.event))
+        self.assertEqual(draft_fights[2].id, new_fight.id)
+
+    def test_new_fight_last_in_draft_gets_opposite_of_previous(self):
+        """New main order=0 with later id drafts after existing main_0; flip off previous."""
+        dibs_before = self._snapshot_dibs()
+        main_0_dibs_id = dibs_before[self.fight_main_0.id]
+
+        new_fight = self._create_fight("last_blue", "last_red", "main", 0, weight_class="heavyweight")
+        new_selection = Selection.objects.get(matchup=self.matchup, fight=new_fight)
+
+        expected_dibs_id = self.user2.id if main_0_dibs_id == self.user.id else self.user.id
+        self.assertEqual(new_selection.dibs_id, expected_dibs_id)
+        self.assertEqual(list(Fight.ordered_for_draft(self.event))[-1].id, new_fight.id)
+
+        for fight_id, dibs_id in dibs_before.items():
+            selection = Selection.objects.get(matchup=self.matchup, fight_id=fight_id)
+            self.assertEqual(selection.dibs_id, dibs_id)
+
+    def test_new_fight_dibs_uses_draft_neighbor_not_raw_order(self):
+        """Shared order across cards must not pick the wrong card's order±1 neighbor."""
+        dibs_before = self._snapshot_dibs()
+        # New early fight is first in draft → neighbor is former first (pre_1).
+        # Raw order-1 would hit a different-card order=0 fight (pre_0 / main_0).
+        pre_1_dibs_id = dibs_before[self.fight_pre_1.id]
+        pre_0_dibs_id = dibs_before[self.fight_pre_0.id]
+        self.assertNotEqual(pre_1_dibs_id, pre_0_dibs_id)
+
+        new_fight = self._create_fight("early_blue", "early_red", "early", 1)
+        new_selection = Selection.objects.get(matchup=self.matchup, fight=new_fight)
+
+        expected_dibs_id = self.user2.id if pre_1_dibs_id == self.user.id else self.user.id
+        wrong_raw_order_dibs_id = (
+            self.user2.id if pre_0_dibs_id == self.user.id else self.user.id
+        )
+        self.assertEqual(new_selection.dibs_id, expected_dibs_id)
+        self.assertNotEqual(new_selection.dibs_id, wrong_raw_order_dibs_id)
+        self.assertEqual(list(Fight.ordered_for_draft(self.event))[0].id, new_fight.id)
+
+        for fight_id, dibs_id in dibs_before.items():
+            selection = Selection.objects.get(matchup=self.matchup, fight_id=fight_id)
+            self.assertEqual(selection.dibs_id, dibs_id)
 
 
 class RecordTests(APITestCase):

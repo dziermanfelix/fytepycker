@@ -1,4 +1,3 @@
-from django.db.models import Case, When, IntegerField, Value
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from channels.layers import get_channel_layer
@@ -6,6 +5,34 @@ from itertools import cycle
 from backend.ufc.models import Fight, Event
 from .models import Matchup, Selection
 from asgiref.sync import async_to_sync
+
+
+def determine_dibs_for_new_fight(matchup, fight):
+    other_user = matchup.user_b if matchup.first_pick_id == matchup.user_a_id else matchup.user_a
+    fights = list(Fight.ordered_for_draft(matchup.event))
+    try:
+        index = next(i for i, f in enumerate(fights) if f.id == fight.id)
+    except StopIteration:
+        return matchup.first_pick or matchup.user_a
+
+    adjacent_fight = None
+    if index > 0:
+        adjacent_fight = fights[index - 1]
+    elif index + 1 < len(fights):
+        adjacent_fight = fights[index + 1]
+
+    if adjacent_fight is None:
+        return matchup.first_pick or matchup.user_a
+
+    adjacent_selection = Selection.objects.filter(matchup=matchup, fight=adjacent_fight).first()
+    if not adjacent_selection or not adjacent_selection.dibs_id:
+        return matchup.first_pick or matchup.user_a
+
+    if adjacent_selection.dibs_id == matchup.user_a_id:
+        return matchup.user_b
+    if adjacent_selection.dibs_id == matchup.user_b_id:
+        return matchup.user_a
+    return other_user
 
 
 @receiver(post_save, sender=Event)
@@ -46,12 +73,7 @@ def update_selection_on_fight_update(sender, instance, **kwargs):
         for matchup in existing_matchups:
             existing_selection = Selection.objects.filter(matchup=matchup, fight=instance.id).exists()
             if not existing_selection:
-                order = instance.order
-                adjacent_fight = Fight.objects.filter(event=instance.event, order=order - 1).first()
-                if not adjacent_fight:
-                    adjacent_fight = Fight.objects.filter(event=instance.event, order=order + 1).first()
-                adjacent_selection = Selection.objects.filter(matchup=matchup, fight=adjacent_fight).first()
-                next_dibs = matchup.user_a if adjacent_selection.dibs == matchup.user_b else matchup.user_b
+                next_dibs = determine_dibs_for_new_fight(matchup, instance)
                 Selection.objects.create(matchup=matchup, fight=instance, dibs=next_dibs,
                                          bet=determine_default_bet(instance))
 
