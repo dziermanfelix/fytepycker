@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer
+from .tokens import issue_refresh_for_user
 from .models import User
 from ..matchups.models import Matchup
 from django.db.models import Q
@@ -19,7 +20,7 @@ class RegisterView(APIView):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()  # calls the create method
-            refresh = RefreshToken.for_user(user)
+            refresh = issue_refresh_for_user(user, request)
 
             return Response({
                 'user': serializer.data,
@@ -43,7 +44,7 @@ class LoginView(APIView):
             user = authenticate(username=username, password=password)
 
             if user:
-                refresh = RefreshToken.for_user(user)
+                refresh = issue_refresh_for_user(user, request)
                 return Response({
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),

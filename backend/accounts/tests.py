@@ -1,9 +1,11 @@
 from django.urls import reverse
+from django.conf import settings
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
+from .tokens import PERSISTENT_CLAIM
 
 User = get_user_model()
 
@@ -317,3 +319,146 @@ class AuthenticationTests(APITestCase):
         response = self.authenticated_client.post(self.logout_url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['error'], 'Refresh token is required.')
+
+    def _assert_refresh_lifetime(self, token_str, expected_lifetime, persistent=False):
+        token = RefreshToken(token_str)
+        self.assertEqual(bool(token.get(PERSISTENT_CLAIM)), persistent)
+        self.assertAlmostEqual(
+            token['exp'] - token['iat'],
+            int(expected_lifetime.total_seconds()),
+            delta=5,
+        )
+
+    def test_browser_login_issues_seven_day_refresh(self):
+        response = self.client.post(self.login_url, {
+            'username': 'testuser',
+            'password': 'testpass123',
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self._assert_refresh_lifetime(
+            response.data['refresh'],
+            settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
+            persistent=False,
+        )
+        refresh_response = self.client.post(
+            self.token_refresh_url, {'refresh': response.data['refresh']}, format='json'
+        )
+        self.assertEqual(refresh_response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', refresh_response.data)
+        self.assertNotIn('refresh', refresh_response.data)
+
+    def test_standalone_login_issues_persistent_refresh(self):
+        response = self.client.post(
+            self.login_url,
+            {'username': 'testuser', 'password': 'testpass123'},
+            format='json',
+            HTTP_X_CLIENT_MODE='standalone',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self._assert_refresh_lifetime(
+            response.data['refresh'],
+            settings.PWA_REFRESH_TOKEN_LIFETIME,
+            persistent=True,
+        )
+
+    def test_persistent_body_flag_issues_persistent_refresh(self):
+        response = self.client.post(self.login_url, {
+            'username': 'testuser',
+            'password': 'testpass123',
+            'persistent': True,
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self._assert_refresh_lifetime(
+            response.data['refresh'],
+            settings.PWA_REFRESH_TOKEN_LIFETIME,
+            persistent=True,
+        )
+
+    def test_standalone_register_issues_persistent_refresh(self):
+        response = self.client.post(
+            self.register_url,
+            {
+                'username': 'pwa_user',
+                'email': 'pwa@example.com',
+                'password': 'newpass123',
+                'password2': 'newpass123',
+            },
+            format='json',
+            HTTP_X_CLIENT_MODE='standalone',
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self._assert_refresh_lifetime(
+            response.data['refresh'],
+            settings.PWA_REFRESH_TOKEN_LIFETIME,
+            persistent=True,
+        )
+
+    def test_standalone_refresh_upgrades_browser_token(self):
+        login = self.client.post(self.login_url, {
+            'username': 'testuser',
+            'password': 'testpass123',
+        }, format='json')
+        response = self.client.post(
+            self.token_refresh_url,
+            {'refresh': login.data['refresh']},
+            format='json',
+            HTTP_X_CLIENT_MODE='standalone',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self._assert_refresh_lifetime(
+            response.data['refresh'],
+            settings.PWA_REFRESH_TOKEN_LIFETIME,
+            persistent=True,
+        )
+
+    def test_persistent_refresh_stays_persistent_without_header(self):
+        login = self.client.post(
+            self.login_url,
+            {'username': 'testuser', 'password': 'testpass123'},
+            format='json',
+            HTTP_X_CLIENT_MODE='standalone',
+        )
+        response = self.client.post(
+            self.token_refresh_url,
+            {'refresh': login.data['refresh']},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self._assert_refresh_lifetime(
+            response.data['refresh'],
+            settings.PWA_REFRESH_TOKEN_LIFETIME,
+            persistent=True,
+        )
+
+    def test_rotated_refresh_token_is_blacklisted(self):
+        login = self.client.post(
+            self.login_url,
+            {'username': 'testuser', 'password': 'testpass123'},
+            format='json',
+            HTTP_X_CLIENT_MODE='standalone',
+        )
+        old_refresh = login.data['refresh']
+        rotated = self.client.post(
+            self.token_refresh_url, {'refresh': old_refresh}, format='json')
+        self.assertEqual(rotated.status_code, status.HTTP_200_OK)
+        self.assertIn('refresh', rotated.data)
+
+        reused = self.client.post(
+            self.token_refresh_url, {'refresh': old_refresh}, format='json')
+        self.assertEqual(reused.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_logout_blacklists_persistent_refresh(self):
+        login = self.client.post(
+            self.login_url,
+            {'username': 'testuser', 'password': 'testpass123'},
+            format='json',
+            HTTP_X_CLIENT_MODE='standalone',
+        )
+        refresh = login.data['refresh']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {login.data["access"]}')
+        logout = self.client.post(self.logout_url, {'refresh': refresh}, format='json')
+        self.assertEqual(logout.status_code, status.HTTP_200_OK)
+
+        reused = self.client.post(
+            self.token_refresh_url, {'refresh': refresh}, format='json')
+        self.assertEqual(reused.status_code, status.HTTP_401_UNAUTHORIZED)

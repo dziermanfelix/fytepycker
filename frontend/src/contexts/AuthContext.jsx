@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }) => {
       return res.data;
     } catch (err) {
       setUser(null);
-      localStorage.removeItem('token');
       return null;
     } finally {
       setLoading(false);
@@ -35,6 +34,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     const res = await client.post(API_URLS.REGISTER, userData);
     localStorage.setItem('token', res.data.access);
+    localStorage.setItem('refresh', res.data.refresh);
     await fetchUser();
     return res.data;
   };
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (localStorage.getItem('token')) {
+    if (localStorage.getItem('token') || localStorage.getItem('refresh')) {
       fetchUser();
     } else {
       setLoading(false);

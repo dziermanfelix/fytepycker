@@ -1,6 +1,8 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from .tokens import request_wants_persistent, rotate_persistent_refresh
 
 User = get_user_model()
 
@@ -40,3 +42,15 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'email': {'required': False},
         }
+
+
+class PersistentTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        refresh = self.token_class(attrs['refresh'])
+        request = self.context.get('request')
+        if not request_wants_persistent(request, refresh):
+            return data
+        rotate_persistent_refresh(refresh)
+        data['refresh'] = str(refresh)
+        return data

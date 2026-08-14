@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_URLS } from '@/common/urls';
+import { isStandalone } from '@/utils/isStandalone';
 
 const client = axios.create({
   baseURL: '/api/v1',
@@ -8,34 +9,53 @@ const client = axios.create({
   },
 });
 
+let refreshPromise = null;
+
 function getRefreshToken() {
   return localStorage.getItem('refresh');
 }
 
 async function refreshAccessToken() {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) {
-    console.error('No refresh token found. Please log in again.');
-    window.location.href = '/login';
-    return null;
+  if (refreshPromise) {
+    return refreshPromise;
   }
 
-  try {
-    const response = await client.post(API_URLS.REFRESH_TOKEN, { refresh: refreshToken });
-    const { access } = response.data;
-    localStorage.setItem('token', access);
-    return access;
-  } catch (error) {
-    localStorage.clear();
-    window.location.href = '/login';
-    return null;
-  }
+  refreshPromise = (async () => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) {
+      console.error('No refresh token found. Please log in again.');
+      window.location.href = '/login';
+      return null;
+    }
+
+    try {
+      const response = await client.post(API_URLS.REFRESH_TOKEN, { refresh: refreshToken });
+      const { access, refresh } = response.data;
+      localStorage.setItem('token', access);
+      if (refresh) {
+        localStorage.setItem('refresh', refresh);
+      }
+      return access;
+    } catch (error) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refresh');
+      window.location.href = '/login';
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
 }
 
 client.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  if (isStandalone()) {
+    config.headers['X-Client-Mode'] = 'standalone';
   }
   return config;
 });
