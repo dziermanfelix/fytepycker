@@ -20,6 +20,14 @@ def _fight_change_info(fight):
     }
 
 
+def _keep_missing_fight_reason(fight):
+    if fight.winner:
+        return "winner"
+    if fight.round is not None:
+        return "in_progress"
+    return None
+
+
 class Scraper:
     GOTO_TIMEOUT_MS = 60_000
 
@@ -203,12 +211,25 @@ class Scraper:
                         "updated_fields": updated_fields,
                     })
 
+        if not card_fights:
+            return changes
+
         # clean up fights that have changed or been canceled
         if existing_fights:
             newly_scraped_keys = set((f.blue_name, f.red_name) for f in newly_scraped_fights)
             for fight in existing_fights:
                 key = (fight.blue_name, fight.red_name)
                 if key not in newly_scraped_keys:
+                    keep_reason = _keep_missing_fight_reason(fight)
+                    if keep_reason:
+                        changes.append({
+                            "type": "fight_missing_kept",
+                            "event_id": event.id,
+                            "event_name": event.headline,
+                            "fight": _fight_change_info(fight),
+                            "reason": keep_reason,
+                        })
+                        continue
                     changes.append({
                         "type": "fight_removed",
                         "event_id": event.id,

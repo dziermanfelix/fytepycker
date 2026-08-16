@@ -5,7 +5,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Event, Fight
+from bs4 import BeautifulSoup
+from backend.matchups.models import Matchup, Selection
+from .models import Event, Fight, FightCard
 from .serializers import EventSerializer, EventCardSerializer
 from .scraper import Scraper
 
@@ -155,3 +157,179 @@ class ScraperTests(APITestCase):
 
         result = self.scraper.normalize_name("Jan Blachowicz")
         self.assertEqual(str(result), "Jan Blachowicz")
+
+
+def _listing_fight_html(blue, red, winner=None, method="", round_text=""):
+    red_outcome = '<div class="c-listing-fight__outcome--win"></div>' if winner == red else ""
+    blue_outcome = '<div class="c-listing-fight__outcome--win"></div>' if winner == blue else ""
+    return f"""
+    <div class="c-listing-fight__content">
+      <div class="c-listing-fight__content-row">
+        <div class="c-listing-fight__details">
+          <div class="c-listing-fight__class-text">Lightweight Bout</div>
+        </div>
+        <div class="c-listing-fight__corner-name--red"><a>{red}</a></div>
+        <div class="c-listing-fight__corner-name--blue"><a>{blue}</a></div>
+        <div class="c-listing-fight__corner--blue"><div class="layout__region--content"></div></div>
+        <div class="c-listing-fight__corner-image--blue"><a href="/blue"></a></div>
+        <div class="c-listing-fight__corner-body--red">{red_outcome}</div>
+        <div class="c-listing-fight__corner-body--blue">{blue_outcome}</div>
+        <div class="c-listing-fight__corner--red"><div class="layout__region--content"></div></div>
+        <div class="c-listing-fight__corner-image--red"><a href="/red"></a></div>
+        <div class="js-listing-fight__results">
+          <div class="c-listing-fight__result-text method">{method}</div>
+          <div class="c-listing-fight__result-text round">{round_text}</div>
+        </div>
+      </div>
+    </div>
+    """
+
+
+def _main_card_listing(fights):
+    inner = "".join(_listing_fight_html(**fight) for fight in fights)
+    soup = BeautifulSoup(f'<div class="main-card">{inner}</div>', "html.parser")
+    return soup.find("div", class_="main-card")
+
+
+class FightCardCleanupTests(APITestCase):
+    def setUp(self):
+        self.scraper = Scraper()
+        self.user = get_user_model().objects.create_user(
+            username="testuser", email="testuser@gmail.com", password="testpass"
+        )
+        self.user2 = get_user_model().objects.create_user(
+            username="testuser2", email="testuser2@gmail.com", password="testpass2"
+        )
+        self.event = Event.objects.create(
+            name="UFC 330",
+            headline="Makhachev Machado Garry",
+            url="https://ufc.com/ufc330",
+            date=timezone.now() + timedelta(hours=2),
+            location="vegas",
+        )
+
+    def _create_fight(self, blue, red, order=0, winner=None, round=None):
+        return Fight.objects.create(
+            event=self.event,
+            blue_name=blue,
+            red_name=red,
+            card=FightCard.MAIN,
+            order=order,
+            weight_class="Lightweight Bout",
+            winner=winner,
+            round=round,
+        )
+
+    def _create_matchup(self):
+        return Matchup.objects.create(
+            event=self.event,
+            user_a=self.user,
+            user_b=self.user2,
+            first_pick=self.user,
+        )
+
+    def _confirm_picks(self, fight):
+        selection = Selection.objects.get(fight=fight)
+        selection.user_a_selection = fight.blue_name
+        selection.user_b_selection = fight.red_name
+        selection.confirmed = True
+        selection.save()
+        return selection
+
+    def test_empty_listing_does_not_delete_fights(self):
+        kept = self._create_fight("Eduardo Chapolin", "Charles Johnson")
+        other = self._create_fight("Esteban Ribovics", "Edson Barboza", order=1)
+
+        changes = self.scraper.get_fights_for_card(None, self.event, FightCard.MAIN)
+        self.assertEqual(changes, [])
+        self.assertTrue(Fight.objects.filter(id=kept.id).exists())
+        self.assertTrue(Fight.objects.filter(id=other.id).exists())
+
+        empty_listing = _main_card_listing([])
+        changes = self.scraper.get_fights_for_card(empty_listing, self.event, FightCard.MAIN)
+        self.assertEqual(changes, [])
+        self.assertTrue(Fight.objects.filter(id=kept.id).exists())
+        self.assertTrue(Fight.objects.filter(id=other.id).exists())
+
+    def test_fight_with_winner_is_never_deleted(self):
+        completed = self._create_fight(
+            "Dustin Stoltzfus", "Mansur Abdul-Malik", winner="Dustin Stoltzfus", round=2
+        )
+        other = self._create_fight("Esteban Ribovics", "Edson Barboza", order=1)
+        self._create_matchup()
+        self._confirm_picks(completed)
+
+        listing = _main_card_listing([
+            {"blue": other.blue_name, "red": other.red_name},
+        ])
+        changes = self.scraper.get_fights_for_card(listing, self.event, FightCard.MAIN)
+
+        self.assertTrue(Fight.objects.filter(id=completed.id).exists())
+        self.assertTrue(Selection.objects.filter(fight=completed).exists())
+        kept = [c for c in changes if c["type"] == "fight_missing_kept"]
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(kept[0]["reason"], "winner")
+        self.assertEqual(kept[0]["fight"]["id"], completed.id)
+
+    def test_in_progress_fight_with_selections_survives_missing_scrape(self):
+        live = self._create_fight("Eduardo Chapolin", "Charles Johnson", round=1)
+        other = self._create_fight("Esteban Ribovics", "Edson Barboza", order=1)
+        self._create_matchup()
+        selection = self._confirm_picks(live)
+
+        listing = _main_card_listing([
+            {"blue": other.blue_name, "red": other.red_name},
+        ])
+        changes = self.scraper.get_fights_for_card(listing, self.event, FightCard.MAIN)
+
+        live.refresh_from_db()
+        selection.refresh_from_db()
+        self.assertEqual(live.round, 1)
+        self.assertEqual(selection.user_a_selection, "Eduardo Chapolin")
+        self.assertEqual(selection.confirmed, True)
+        kept = [c for c in changes if c["type"] == "fight_missing_kept"]
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(kept[0]["reason"], "in_progress")
+
+        relist = _main_card_listing([
+            {"blue": other.blue_name, "red": other.red_name},
+            {"blue": live.blue_name, "red": live.red_name, "winner": live.red_name, "method": "Submission", "round_text": "3"},
+        ])
+        changes = self.scraper.get_fights_for_card(relist, self.event, FightCard.MAIN)
+        live.refresh_from_db()
+        self.assertEqual(live.id, kept[0]["fight"]["id"])
+        self.assertTrue(Selection.objects.filter(id=selection.id, fight_id=live.id).exists())
+        self.assertEqual(live.winner, "Charles Johnson")
+        updated = [c for c in changes if c["type"] == "fight_updated"]
+        self.assertTrue(any(c["fight"]["id"] == live.id for c in updated))
+
+    def test_unstarted_fight_with_selections_is_deleted(self):
+        cancelled = self._create_fight("Vitor Petrino", "Serghei Spivac")
+        other = self._create_fight("Esteban Ribovics", "Edson Barboza", order=1)
+        self._create_matchup()
+        self._confirm_picks(cancelled)
+
+        listing = _main_card_listing([
+            {"blue": other.blue_name, "red": other.red_name},
+        ])
+        changes = self.scraper.get_fights_for_card(listing, self.event, FightCard.MAIN)
+
+        self.assertFalse(Fight.objects.filter(id=cancelled.id).exists())
+        self.assertFalse(Selection.objects.filter(fight_id=cancelled.id).exists())
+        removed = [c for c in changes if c["type"] == "fight_removed"]
+        self.assertEqual(len(removed), 1)
+        self.assertEqual(removed[0]["fight"]["blue_name"], "Vitor Petrino")
+
+    def test_unstarted_fight_without_selections_is_deleted(self):
+        churn = self._create_fight("Gauge Young", "Kody Steele")
+        other = self._create_fight("Esteban Ribovics", "Edson Barboza", order=1)
+
+        listing = _main_card_listing([
+            {"blue": other.blue_name, "red": other.red_name},
+        ])
+        changes = self.scraper.get_fights_for_card(listing, self.event, FightCard.MAIN)
+
+        self.assertFalse(Fight.objects.filter(id=churn.id).exists())
+        removed = [c for c in changes if c["type"] == "fight_removed"]
+        self.assertEqual(len(removed), 1)
+        self.assertEqual(removed[0]["fight"]["blue_name"], "Gauge Young")
