@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { FaUser } from 'react-icons/fa';
 import { IoMdClose } from 'react-icons/io';
 import { RxHamburgerMenu } from 'react-icons/rx';
@@ -8,6 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import client from '@/api/client';
 import { API_URLS, FRONTEND_URLS } from '@/common/urls';
 import { getInitials } from '@/utils/winningsDisplayUtils';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/PullToRefreshIndicator';
 
 const Sidebar = ({ activePath, isMobile, setIsSidebarOpen }) => {
   const { user, logout } = useAuth();
@@ -239,6 +242,14 @@ const MobileSidebarOverlay = ({ isSidebarOpen, setIsSidebarOpen, children }) => 
 const Dash = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
+  const scrollRef = useRef(null);
+  const queryClient = useQueryClient();
+
+  const handleRefresh = useCallback(async () => {
+    await queryClient.refetchQueries({ type: 'active' });
+  }, [queryClient]);
+
+  const { pullDistance, isRefreshing, isPulling, threshold } = usePullToRefresh(scrollRef, handleRefresh);
 
   return (
     <div className='app-shell flex flex-col bg-stone-100'>
@@ -249,8 +260,16 @@ const Dash = () => {
           <Sidebar activePath={location.pathname} isMobile={false} />
         </div>
 
-        <main className='min-w-0 flex-1 overflow-y-auto p-3 sm:p-6'>
-          <Outlet />
+        <main ref={scrollRef} className='min-w-0 flex-1 overflow-y-auto overscroll-y-contain'>
+          <PullToRefreshIndicator
+            pullDistance={pullDistance}
+            isRefreshing={isRefreshing}
+            isPulling={isPulling}
+            threshold={threshold}
+          />
+          <div className='p-3 sm:p-6'>
+            <Outlet />
+          </div>
         </main>
       </div>
 
