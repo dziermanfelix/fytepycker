@@ -11,12 +11,13 @@ class FightInline(admin.TabularInline):
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'headline', 'date', 'location', 'complete', 'scraped_at')
+    list_display = ('id', 'name', 'headline', 'date', 'start', 'location', 'complete', 'scraped_at')
     inlines = [FightInline]
 
 
 class FightAdmin(admin.ModelAdmin):
-    list_display = ('id', 'event', 'card', 'order', 'weight_class', 'blue_name', 'red_name', 'winner', 'method', 'round')
+    list_display = ('id', 'event', 'card', 'order', 'weight_class',
+                    'blue_name', 'red_name', 'winner', 'method', 'round')
     list_editable = ('winner', 'method', 'round')
 
 

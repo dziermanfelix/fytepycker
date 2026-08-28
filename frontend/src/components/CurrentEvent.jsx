@@ -6,6 +6,7 @@ import EventViewCloseButton from '@/components/EventViewCloseButton';
 import EventFights from '@/components/EventFights';
 import CreateMatchupModal from '@/components/CreateMatchupModal';
 import { FaExternalLinkSquareAlt } from 'react-icons/fa';
+import { isBettingLocked } from '@/common/fight';
 
 const formatEventDate = (date) =>
   date
@@ -27,6 +28,7 @@ const CurrentEvent = () => {
   const nextEvent = upcomingEvents[0];
   const nextEventDate = formatEventDate(nextEvent?.date);
   const selectedEventDate = formatEventDate(selectedEvent?.date);
+  const nextEventLocked = isBettingLocked(nextEvent);
 
   const openEvent = async (e, event) => {
     if (hasCurrentMatchups) return;
@@ -79,7 +81,7 @@ const CurrentEvent = () => {
                 </div>
                 <div className='flex shrink-0 items-center gap-2'>
                   {nextEventDate && <p className='hidden text-xs text-stone-400 sm:block'>{nextEventDate}</p>}
-                  {nextEvent?.has_fights && (
+                  {nextEvent?.has_fights && !nextEventLocked && (
                     <button
                       className='action-btn !px-2.5 !py-1 !text-xs'
                       onClick={(e) => {

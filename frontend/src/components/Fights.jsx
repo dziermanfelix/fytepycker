@@ -10,7 +10,15 @@ const statusBadgeStyles = {
   lose: 'bg-sky-500/10 text-sky-700 ring-sky-500/20',
 };
 
-const Fights = ({ fights, user, selections, fighterClicked, readyFight, processingFightId = null }) => {
+const Fights = ({
+  fights,
+  user,
+  selections,
+  fighterClicked,
+  readyFight,
+  processingFightId = null,
+  betsLocked = false,
+}) => {
   const fightRefs = useRef({});
 
   useEffect(() => {
@@ -25,7 +33,7 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
   const fightCards = getFightCardTypes();
 
   const isYourTurn = (fight) => {
-    if (!user || !selections) return false;
+    if (betsLocked || !user || !selections) return false;
     const selection = selections[fight?.id];
     return Boolean(selection && !selection.confirmed && !fight?.winner && selection.dibs === user.id);
   };
@@ -54,6 +62,7 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
     const isWinner = fight?.winner === name;
     const isLoser = Boolean(fight?.winner && !isWinner);
     const selectable =
+      !betsLocked &&
       !isProcessing &&
       !fight.winner &&
       selection &&
@@ -106,6 +115,9 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
 
     if (selection.confirmed) {
       return { label: 'Picked', tone: 'confirmed', bet: selection.bet };
+    }
+    if (betsLocked) {
+      return { label: 'Picks locked', tone: 'confirmed', bet: selection.bet };
     }
     if (selection.dibs === user.id) {
       return { label: 'Your pick', tone: 'action', bet: selection.bet, pulse: true };
@@ -178,7 +190,7 @@ const Fights = ({ fights, user, selections, fighterClicked, readyFight, processi
     const selection = selections[fight?.id];
     if (!selection) return { bar: '', pulse: false };
     const yourDibs = selection.dibs === user?.id;
-    const awaitingYourPick = yourDibs && !selection.confirmed && !fight.winner;
+    const awaitingYourPick = !betsLocked && yourDibs && !selection.confirmed && !fight.winner;
     return {
       bar: yourDibs ? 'bg-rose-500' : 'bg-sky-500',
       pulse: awaitingYourPick,

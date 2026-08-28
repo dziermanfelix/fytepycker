@@ -8,6 +8,7 @@ import EventViewCloseButton from '@/components/EventViewCloseButton';
 import SelectableFights from '@/components/SelectableFights';
 import Spinner from '@/components/Spinner';
 import { formatWinnings, getWinningsTextColor } from '@/utils/winningsDisplayUtils';
+import { isBettingLocked } from '@/common/fight';
 
 const getFirstFight = (event) => Object.values(event?.fights || {}).flat()[0];
 
@@ -130,6 +131,8 @@ const MatchupContent = ({ basePath, deletable }) => {
   };
 
   const showResult = selectedMatchup && (selections.every((s) => s.confirmed) || selectedMatchup.event.complete);
+  const betsLocked = isBettingLocked(selectedMatchup?.event);
+  const hasOpenPicks = selections.some((s) => !s.confirmed);
 
   if (checkingMatchup) return <Spinner />;
   if (isError) return <p className='text-center text-rose-500'>Failed to load matchup.</p>;
@@ -138,7 +141,12 @@ const MatchupContent = ({ basePath, deletable }) => {
     <div className='mx-auto mt-2 grid max-w-3xl gap-2'>
       <div className='overflow-hidden rounded-lg border border-stone-800 bg-stone-900'>
         <div className='flex items-center justify-between gap-3 px-3 py-2'>
-          <EventViewCloseButton basePath={basePath} label={backLabel} variant='dark' className='!px-1.5 !py-1 !text-xs' />
+          <EventViewCloseButton
+            basePath={basePath}
+            label={backLabel}
+            variant='dark'
+            className='!px-1.5 !py-1 !text-xs'
+          />
           {selectedMatchup?.event?.name && (
             <p className='truncate text-xs text-stone-400'>{selectedMatchup.event.name}</p>
           )}
@@ -152,7 +160,9 @@ const MatchupContent = ({ basePath, deletable }) => {
           </div>
 
           {showResult && (
-            <p className={`shrink-0 text-base font-bold tabular-nums ${getWinningsTextColor(selectedMatchup.winnings)}`}>
+            <p
+              className={`shrink-0 text-base font-bold tabular-nums ${getWinningsTextColor(selectedMatchup.winnings)}`}
+            >
               {formatWinnings(selectedMatchup.winnings)}
             </p>
           )}
@@ -160,6 +170,12 @@ const MatchupContent = ({ basePath, deletable }) => {
       </div>
 
       <SelectableFights />
+
+      {betsLocked && hasOpenPicks && (
+        <p className='rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-center text-sm text-stone-500'>
+          Picks locked — the card has started.
+        </p>
+      )}
 
       {deletable && (
         <div>

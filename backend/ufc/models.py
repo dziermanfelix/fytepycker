@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Case, When, Value, IntegerField
+from django.utils import timezone
 
 
 class Event(models.Model):
@@ -7,6 +8,7 @@ class Event(models.Model):
     headline = models.CharField(max_length=255, default='No headline')
     url = models.URLField(blank=True, null=True)
     date = models.DateTimeField()
+    start = models.DateTimeField(blank=True, null=True)
     location = models.CharField(max_length=255)
     complete = models.BooleanField(blank=True, null=True, default=False)
     scraped_at = models.DateTimeField(auto_now_add=True)
@@ -19,6 +21,13 @@ class Event(models.Model):
             models.Index(fields=['complete'], name='ufc_event_complete_idx'),
             models.Index(fields=['date'], name='ufc_event_date_idx'),
         ]
+
+    @property
+    def lock_at(self):
+        return self.start or self.date
+
+    def is_betting_locked(self):
+        return timezone.now() >= self.lock_at
 
     def __str__(self):
         return f'[Event:{self.headline}]'

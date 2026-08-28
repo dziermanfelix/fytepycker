@@ -1,5 +1,7 @@
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from datetime import timedelta
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -31,7 +33,7 @@ class MatchupTests(APITestCase):
             name="UFC 999",
             headline="beatlemania",
             url="https://ufc.com/ufc999",
-            date=self.scraper.parse_event_date("Sat, Mar 15 / 11:00 PM UTC"),
+            date=timezone.now() + timedelta(days=14),
             location="the sun",
         )
         self.event = event[0]
@@ -94,6 +96,33 @@ class MatchupTests(APITestCase):
         }
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_matchup_rejected_when_betting_locked(self):
+        Event.objects.filter(pk=self.event.pk).update(
+            start=timezone.now() - timedelta(minutes=1)
+        )
+        data = {
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
+        }
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Picks are locked', str(response.data))
+
+    def test_create_matchup_duplicate_allowed_when_locked(self):
+        data = {
+            "event_id": self.event.id,
+            "user_a_id": self.user.id,
+            "user_b_id": self.user2.id,
+        }
+        response = self.client.post(self.matchups_url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        Event.objects.filter(pk=self.event.pk).update(
+            start=timezone.now() - timedelta(minutes=1)
+        )
         response = self.client.post(self.matchups_url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -374,7 +403,7 @@ class SelectionTests(APITestCase):
             name="UFC 999",
             headline="beatlemania",
             url="https://ufc.com/ufc999",
-            date=self.scraper.parse_event_date("Sat, Nov 22 / 11:00 PM UTC"),
+            date=timezone.now() + timedelta(days=14),
             location="the sun",
         )
         self.event = event[0]
@@ -502,6 +531,23 @@ class SelectionTests(APITestCase):
         self.assertEqual(response.data['selection']['winner'], None)
         self.assertIn(response.data['selection']['dibs'], [self.user.id, self.user2.id])
         self.assertEqual(response.data['selection']['confirmed'], True)
+
+    def test_create_selection_rejected_when_betting_locked(self):
+        Event.objects.filter(pk=self.event.pk).update(
+            start=timezone.now() - timedelta(minutes=1)
+        )
+        response = self.post_pick(self.fight_main_0, self.fight_main_0.blue_name)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Picks are locked', str(response.data))
+
+    def test_create_selection_locked_when_start_null_and_date_past(self):
+        Event.objects.filter(pk=self.event.pk).update(
+            start=None,
+            date=timezone.now() - timedelta(hours=1),
+        )
+        response = self.post_pick(self.fight_main_0, self.fight_main_0.blue_name)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Picks are locked', str(response.data))
 
     def test_create_selection_error_matchup_not_exists(self):
         data = {
@@ -821,7 +867,7 @@ class RecordTests(APITestCase):
             name="UFC 1969",
             headline="beatlemania",
             url="https://ufc.com/ufc-1969",
-            date=self.scraper.parse_event_date("Sat, Mar 15 / 11:00 PM UTC"),
+            date=timezone.now() + timedelta(days=14),
             location="Abbey Road",
         )
         self.event = event[0]

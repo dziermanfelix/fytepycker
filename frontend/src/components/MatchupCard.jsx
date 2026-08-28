@@ -12,6 +12,11 @@ const statusStyles = {
     badge: 'bg-amber-500/10 text-amber-800 ring-amber-500/20',
     label: 'Their Picks',
   },
+  locked: {
+    bar: 'bg-stone-400',
+    badge: 'bg-stone-500/10 text-stone-600 ring-stone-500/20',
+    label: 'Picks locked',
+  },
   complete: {
     bar: 'bg-stone-400',
     badge: 'bg-stone-500/10 text-stone-600 ring-stone-500/20',
@@ -25,7 +30,9 @@ const MatchupCard = ({ matchup, handleClick }) => {
   const otherUser = user.id == matchup?.user_a.id ? matchup?.user_b?.username : matchup?.user_a?.username;
   const openSelections = matchup.selections.filter((selection) => !selection.confirmed);
   const yourOpenPicks = openSelections.filter((selection) => selection.dibs === user.id).length;
-  const statusKey = openSelections.length === 0 ? 'complete' : yourOpenPicks > 0 ? 'yours' : 'waiting';
+  const betsLocked = Boolean(matchup.event?.bets_locked);
+  const statusKey =
+    openSelections.length === 0 ? 'complete' : betsLocked ? 'locked' : yourOpenPicks > 0 ? 'yours' : 'waiting';
   const status = statusStyles[statusKey];
   const confirmed = matchup.selections.length - openSelections.length;
 
@@ -43,7 +50,7 @@ const MatchupCard = ({ matchup, handleClick }) => {
             <span
               className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset ${status.badge}`}
             >
-              {statusKey !== 'complete' && (
+              {statusKey !== 'complete' && statusKey !== 'locked' && (
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${status.bar} ${statusKey === 'yours' ? 'animate-pulse' : ''}`}
                 />
@@ -67,7 +74,9 @@ const MatchupCard = ({ matchup, handleClick }) => {
         </div>
 
         <div className='shrink-0 text-right'>
-          <p className={`text-sm font-bold tabular-nums leading-tight sm:text-base ${getWinningsTextColor(matchup.winnings)}`}>
+          <p
+            className={`text-sm font-bold tabular-nums leading-tight sm:text-base ${getWinningsTextColor(matchup.winnings)}`}
+          >
             {formatWinnings(matchup.winnings)}
           </p>
           <p className='text-[10px] text-stone-400'>Bets {matchup.bets}</p>

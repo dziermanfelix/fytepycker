@@ -1,6 +1,7 @@
 from django.urls import reverse
 from django.utils import timezone
-from datetime import timedelta
+from datetime import datetime, timedelta
+import pytz
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
@@ -30,7 +31,7 @@ class EventTests(APITestCase):
             name="UFC 999",
             headline="Beatle Showdown",
             url="https://ufc.com/ufc999",
-            date=self.scraper.parse_event_date("Sun, Feb 23 / 2:00 AM UTC"),
+            date=timezone.now() - timedelta(days=14),
             location="the sun",
         )
         self.event = event[0]
@@ -78,6 +79,9 @@ class EventTests(APITestCase):
         self.assertEqual(response.data['upcoming'][0], EventCardSerializer(future_event).data)
         self.assertNotIn('fights', response.data['upcoming'][0])
         self.assertTrue(response.data['upcoming'][0]['has_fights'])
+        self.assertIn('bets_locked', response.data['upcoming'][0])
+        self.assertFalse(response.data['upcoming'][0]['bets_locked'])
+        self.assertIn('start', response.data['upcoming'][0])
 
     def test_get_events_include_past(self):
         response = self.client.get(self.events_url, {'include_past': 1})
@@ -145,7 +149,7 @@ class ScraperTests(APITestCase):
 
         date_str = "Sun, Feb 23 / 2:00 AM UTC"
         result = self.scraper.parse_event_date(date_str)
-        self.assertEqual(str(result), "2026-02-23 02:00:00+00:00")
+        self.assertEqual(str(result), "2027-02-23 02:00:00+00:00")
 
         date_str = "Sat, Mar 15 / 11:00 PM UTC"
         result = self.scraper.parse_event_date(date_str)
@@ -333,3 +337,81 @@ class FightCardCleanupTests(APITestCase):
         removed = [c for c in changes if c["type"] == "fight_removed"]
         self.assertEqual(len(removed), 1)
         self.assertEqual(removed[0]["fight"]["blue_name"], "Gauge Young")
+
+
+def _broadcaster_soup(*timestamps):
+    nodes = "".join(
+        f'<div class="c-event-fight-card-broadcaster__time" data-timestamp="{ts}"></div>'
+        for ts in timestamps
+    )
+    return BeautifulSoup(f"<div>{nodes}</div>", "html.parser")
+
+
+class EventStartDatetimeTests(APITestCase):
+    def setUp(self):
+        self.scraper = Scraper()
+        self.event = Event.objects.create(
+            name="UFC Start",
+            headline="Start Times",
+            url="https://ufc.com/start",
+            date=timezone.now() + timedelta(days=7),
+            location="vegas",
+        )
+
+    def test_earliest_of_early_prelim_and_main(self):
+        early, prelim, main = 1787980000, 1787990000, 1787997600
+        result = self.scraper.earliest_card_start(_broadcaster_soup(main, prelim, early))
+        self.assertEqual(result, datetime.fromtimestamp(early, tz=pytz.utc))
+
+    def test_earliest_of_prelim_and_main(self):
+        prelim, main = 1787990000, 1787997600
+        result = self.scraper.earliest_card_start(_broadcaster_soup(main, prelim))
+        self.assertEqual(result, datetime.fromtimestamp(prelim, tz=pytz.utc))
+
+    def test_main_only(self):
+        main = 1787997600
+        result = self.scraper.earliest_card_start(_broadcaster_soup(main))
+        self.assertEqual(result, datetime.fromtimestamp(main, tz=pytz.utc))
+
+    def test_no_nodes_returns_none(self):
+        soup = BeautifulSoup("<div></div>", "html.parser")
+        self.assertIsNone(self.scraper.earliest_card_start(soup))
+
+    def test_skips_invalid_timestamps(self):
+        soup = BeautifulSoup(
+            """
+            <div>
+              <div class="c-event-fight-card-broadcaster__time" data-timestamp="not-a-number"></div>
+              <div class="c-event-fight-card-broadcaster__time" data-timestamp="1787997600"></div>
+            </div>
+            """,
+            "html.parser",
+        )
+        result = self.scraper.earliest_card_start(soup)
+        self.assertEqual(result, datetime.fromtimestamp(1787997600, tz=pytz.utc))
+
+    def test_update_sets_earliest_on_event(self):
+        early, main = 1787980000, 1787997600
+        self.scraper.update_start(self.event, _broadcaster_soup(main, early))
+        self.event.refresh_from_db()
+        self.assertEqual(self.event.start, datetime.fromtimestamp(early, tz=pytz.utc))
+
+    def test_update_does_not_clear_existing_when_no_timestamps(self):
+        existing = datetime.fromtimestamp(1787980000, tz=pytz.utc)
+        self.event.start = existing
+        self.event.save(update_fields=["start"])
+        self.scraper.update_start(self.event, BeautifulSoup("<div></div>", "html.parser"))
+        self.event.refresh_from_db()
+        self.assertEqual(self.event.start, existing)
+
+    def test_event_card_serializer_includes_bets_locked(self):
+        self.event.start = timezone.now() + timedelta(days=1)
+        self.event.save(update_fields=["start"])
+        data = EventCardSerializer(self.event).data
+        self.assertIn("start", data)
+        self.assertFalse(data["bets_locked"])
+
+        self.event.start = timezone.now() - timedelta(minutes=1)
+        self.event.save(update_fields=["start"])
+        data = EventCardSerializer(self.event).data
+        self.assertTrue(data["bets_locked"])

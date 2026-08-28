@@ -118,6 +118,7 @@ class Scraper:
             }
         )
         ev = event[0]
+        self.update_start(ev, soup)
         changes = []
         changes.extend(self.get_fights_for_card(soup.find("div", class_="main-card"), ev, FightCard.MAIN))
         changes.extend(self.get_fights_for_card(soup.find("div", class_="fight-card-prelims"), ev, FightCard.PRELIM))
@@ -260,6 +261,28 @@ class Scraper:
 
     def normalize_name(self, name):
         return unidecode(name)
+
+    def earliest_card_start(self, soup):
+        times = []
+        for el in soup.select(".c-event-fight-card-broadcaster__time[data-timestamp]"):
+            raw = el.get("data-timestamp")
+            if not raw:
+                continue
+            try:
+                ts = int(raw)
+            except (TypeError, ValueError):
+                continue
+            times.append(datetime.fromtimestamp(ts, tz=pytz.utc))
+        return min(times) if times else None
+
+    def update_start(self, event, soup):
+        start = self.earliest_card_start(soup)
+        if start is None:
+            return event
+        if event.start != start:
+            Event.objects.filter(pk=event.pk).update(start=start)
+            event.start = start
+        return event
 
     def parse_event_date(self, date_str):
         date_str = date_str.strip()

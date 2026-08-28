@@ -7,7 +7,7 @@ import Fights from '@/components/Fights';
 import Spinner from '@/components/Spinner';
 import { useMatchups } from '@/contexts/MatchupsContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { getReadyFight } from '@/common/fight';
+import { getReadyFight, isBettingLocked } from '@/common/fight';
 
 const SelectableFights = () => {
   const {
@@ -112,6 +112,7 @@ const SelectableFights = () => {
           fighterClicked={fighterClicked}
           readyFight={readyFight}
           processingFightId={processingFightId}
+          betsLocked={isBettingLocked(selectedMatchup?.event)}
         />
       </div>
     );

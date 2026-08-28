@@ -6,15 +6,15 @@
   "scripts": {
     "dev": "concurrently --kill-others --raw \"PYTHONUNBUFFERED=1 python manage.py runserver\" \"npm run redis\" \"npm run daphne\" \"cd frontend && npm run dev\"",
     "createsuperuser": "python manage.py createsuperuser",
-    "makemigrations": "python manage.py makemigrations",
-    "migrate": "python manage.py migrate",
+    "db:makemigrations": "python manage.py makemigrations",
+    "db:migrate": "python manage.py migrate",
     "server": "concurrently --kill-others --raw \"npm run build && PYTHONUNBUFFERED=1 python manage.py runserver\" \"npm run redis\" \"npm run daphne\"",
     "redis": "redis-server",
     "daphne": "daphne -b 127.0.0.1 -p 8001 backend.core.asgi:application",
     "test": "python manage.py test",
     "build": "./scripts/build.sh",
     "deploy": "./scripts/deploy.sh",
-    "db:backup-prod-to-local": "bash scripts/db/backup-prod-and-restore-to-local.sh"
+    "db:restore-p2l": "bash scripts/db/backup-prod-and-restore-to-local.sh"
   },
   "repository": {
     "type": "git",

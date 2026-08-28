@@ -183,3 +183,5 @@ static/
 
 # db backups
 scripts/db/backups/
+
+.vscode

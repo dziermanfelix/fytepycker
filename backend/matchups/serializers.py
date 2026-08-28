@@ -30,6 +30,9 @@ class CustomSelectionPostSerializer(serializers.Serializer):
         if existing_selection.dibs_id != user.id:
             raise serializers.ValidationError("You do not have dibs on this fight.")
 
+        if matchup.event.is_betting_locked():
+            raise serializers.ValidationError("Picks are locked. The card has started.")
+
         k = 'user_a_selection' if user == matchup.user_b else 'user_b_selection'
         existing_fighter = getattr(existing_selection, k, None)
         if existing_fighter == fighter:

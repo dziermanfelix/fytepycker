@@ -25,6 +25,21 @@ class MatchupView(APIView):
                 'user_a': validated_data['user_a'],
                 'user_b': validated_data['user_b'],
             }
+            event = unique_fields['event']
+            user_a = unique_fields['user_a']
+            user_b = unique_fields['user_b']
+            existing = Matchup.objects.filter(event=event).filter(
+                (Q(user_a=user_a) & Q(user_b=user_b)) |
+                (Q(user_a=user_b) & Q(user_b=user_a))
+            ).first()
+            if existing:
+                result_serializer = MatchupSerializer(existing)
+                return Response({'matchup': result_serializer.data, }, status=status.HTTP_200_OK)
+            if event.is_betting_locked():
+                return Response(
+                    {'error': 'Picks are locked. The card has started.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             defaults = {k: v for k, v in validated_data.items() if k not in unique_fields}
             matchup, created = Matchup.objects.get_or_create(
                 **unique_fields,

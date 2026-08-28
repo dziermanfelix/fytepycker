@@ -1,5 +1,7 @@
+export const isBettingLocked = (event) => Boolean(event?.bets_locked);
+
 export const getReadyFight = (selections, matchup, userId = null) => {
-  if (matchup.event.complete) return null;
+  if (matchup.event.complete || isBettingLocked(matchup.event)) return null;
   const cardPriority = { early: 0, prelim: 1, main: 2 };
   const allFights = [
     ...(matchup.event.fights.early || []),
